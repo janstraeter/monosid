@@ -1,19 +1,31 @@
-#import "src/constants.asm"
+/* -------------------------------------------------------------------
+ *
+ * monosid
+ * -------
+ *
+ * A litte software mono-synth for the good old C64
+ *
+ * ---------------------------------------------------------------- */ 
 
 .file [name="monosid.prg", segments="Code, Data"]
 
-.segment Code [start=$8000, modify="BasicUpstart", _start=$8000]
+.segment Code [start=$801]
 
-// ******************************************************************
-// 
-// Hauptprogramm
-//
-// ******************************************************************
+
+/* -------------------------------------------------------------------
+ *
+ * Main program
+ *
+ * ---------------------------------------------------------------- */ 
+
+#import "src/constants.asm"
+
+BasicUpstart2(mainProgram)
 
 mainProgram:
 {
     jsr setupRasterInterrupt
-    
+
     lda #BLACK
     sta VIC.BORDERCOLOR
     sta VIC.BACKGROUND_COLOR_0
@@ -40,6 +52,8 @@ charloop:
     ldx #$00*/
 
 waitLoop:
+    lda ZEROPAGE.CURRENT_PRESSED_KEY
+    sta currentPressedKey
     jmp waitLoop
 
 /*screenloop:
@@ -56,68 +70,279 @@ quit:
     rts
 }
 
-// ******************************************************************
-// 
-// Setup Raster Interrupt Routine
-//
-// ******************************************************************
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Sets up the raster interrupt
+ *
+ * Parameters:   None
+ * Return value: None     
+ *
+ * ---------------------------------------------------------------- */ 
 
 setupRasterInterrupt:
 {
-    sei                                 // Interrupts sperren
+    sei
 
-    lda #<rasterInterrupRoutine         // LSB der Interrupt-Routine in den Interrupt Vector schreiben
-    sta INTERRUPT_VECTOR_LO            
-    lda #>rasterInterrupRoutine         // und MSB
+    lda #<rasterInterrupRoutine
+    sta INTERRUPT_VECTOR_LO
+    lda #>rasterInterrupRoutine
     sta INTERRUPT_VECTOR_HI
 
-    lda #$00                            // Raster-IRQ soll bei Zeile 0 ausgelöst werden
+    lda #$00
     sta VIC.RASTER_COUNTER             
 
-    lda VIC.CONTROL_REGISTER_1          // Zur Sicherheit auch noch
-    and #%01111111                      // das höhste Bit für den
-    sta VIC.CONTROL_REGISTER_1          // gewünschten Raster-IRQ löschen 
+    lda VIC.CONTROL_REGISTER_1
+    and #%01111111
+    sta VIC.CONTROL_REGISTER_1
 
-    lda VIC.INTERRUPT_ENABLED           // IRQs vom
-    ora #%00000001                      // VIC-II aktivieren
+    lda VIC.INTERRUPT_ENABLED
+    ora #%00000001
     sta VIC.INTERRUPT_ENABLED
 
-    cli                                 // Interrupts wieder erlauben
-
+    cli
     rts
 }
 
-// ******************************************************************
-// 
-// Raster Interrupt Routine
-//
-// ******************************************************************
+/* -------------------------------------------------------------------
+ * Interrupt routine
+ * -----------------
+ *
+ * Raster interrupt routine to play the currently selected note
+ *
+ * Parameters:   None
+ * Return value: None
+ *
+ * Reads global variables: currentNote, noteChange
+ * Writes global varibles: currentNote, noteChange
+  *
+ * ---------------------------------------------------------------- */ 
 
 rasterInterrupRoutine:
 {    
     lda VIC.INTERRUPT_REGISTER
-    bmi doRasterIrq                     // wenn ja -> Raster IRQ
-    lda CIA.INTERRUPT_CONTROL_STATE     // sonst, CIA-IRQ bestätigen  
-    cli                                 // IRQs erlauben
-    jmp KERNAL.INTERRUPT_ROUTINE        // und zur ROM-Routine springen
+    bmi doRasterIrq
+    // and #%10000001
+    // cmp #%10000001
+    // beq doRasterIrq
+
+    lda CIA.INTERRUPT_CONTROL_STATE
+    cli
+    jmp KERNAL.INTERRUPT_ROUTINE
 
 doRasterIrq:
-    sta VIC.INTERRUPT_REGISTER          // IRQ bestätigen
 
-    // inc VIC.BORDERCOLOR                 // zum Testen Rahmenfarbe hochzählen
-
-/*    lda $C5
-    sta SCREENMEM+1
-    lda $CB
-    sta SCREENMEM*/
-
-    jsr updateCurrentNote
+    // lda VIC.INTERRUPT_REGISTER
+    sta VIC.INTERRUPT_REGISTER
     
-    /*lda currentNote
-    clc
-    adc #$30
-    sta SCREENMEM*/
+    jsr updateCurrentNote
+    jsr playCurrentNote
 
+exit:
+    pla
+    tay
+    pla
+    tax
+    pla
+    rti
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Interprets the currently pressed key as a note
+ *
+ * Parameters:   None
+ * Return value: None
+ *
+ * Reads global variables: None
+ * Writes global varibles: None
+ *
+ * ---------------------------------------------------------------- */ 
+
+updateCurrentNote:
+{
+    lda #<keyboardPianoKeyCodes
+    sta ZEROPAGE.TEMP_1_LO
+    lda #>keyboardPianoKeyCodes
+    sta ZEROPAGE.TEMP_1_HI
+    ldy #$00
+
+arrayLoop:
+    lda (ZEROPAGE.TEMP_1), y
+    cmp currentPressedKey
+    beq found
+    iny
+    cpy #$0D
+    bne arrayLoop
+    jmp notFound
+
+found:
+    sty tempCurrentNote
+    jmp checkForNotChange
+
+notFound:
+    lda #$FF
+    sta tempCurrentNote
+    jmp checkForNotChange
+
+checkForNotChange:
+    lda currentNote
+    cmp tempCurrentNote
+    beq noteHasNotChanged
+
+noteHasChanged:
+    lda currentNote
+    sta previousNote
+    lda tempCurrentNote
+    sta currentNote
+    lda #$01
+    sta noteChange
+    rts
+
+noteHasNotChanged:
+    lda #$00
+    sta noteChange
+    rts
+
+tempCurrentNote:
+    .byte($ff)
+}
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Updated the control registers of the SID chip according to the 
+ * settings
+ *
+ * Parameters:   None
+ * Return value: None
+ *
+ * Reads global variables: None
+ * Writes global varibles: None
+ *
+ * ---------------------------------------------------------------- */ 
+
+updateSid:
+{
+    // Volume volle Pulle
+    lda #$0F
+    sta SID.FILTER_MODE_MAIN_VOLUME
+
+    // Aktuelle Note laden und testen, ob überhaupt etwas gespielt werde soll
+    lda currentNote
+    cmp #$FF
+    bne playNote
+    
+    // Keine Note soll gespielt werden: Gate für Stimme 1 auf FALSE setzen
+    lda #$10
+    sta SID.VOICE_1_CONTROL_REGISTER
+    jmp return
+
+playNote:
+    // Eine Note soll gespielt werden
+    lda #$10
+    sta SID.VOICE_1_CONTROL_REGISTER
+
+    lda #$29
+    sta SID.VOICE_1_ATTACK_DECAY
+
+    lda #$05
+    sta SID.VOICE_1_SUSTAIN_RELEASE
+
+    // Aktuelle Note laden, mit 48 (4 Oktaven) multiplizieren und im Y-Register ablegen
+    lda currentNote
+    clc
+    adc #48
+    tay
+
+    // LO Byte der Frequenz der aktuellen Note laden und für Stimme 1 setzen
+    lda #<FreqTablePalLo
+    sta ZEROPAGE.TEMP_1_LO
+    lda #>FreqTablePalLo
+    sta ZEROPAGE.TEMP_1_HI
+    lda (ZEROPAGE.TEMP_1), y
+    sta SID.VOICE_1_FREQUENCY_LO
+
+    // HI Byte der Frequenz der aktuellen Note laden und für Stimme 1 setzen
+    lda #<FreqTablePalHi
+    sta ZEROPAGE.TEMP_1_LO
+    lda #>FreqTablePalHi
+    sta ZEROPAGE.TEMP_1_HI
+    lda (ZEROPAGE.TEMP_1), y
+    sta SID.VOICE_1_FREQUENCY_HI
+
+    // Gate für Stimme 1 auf TRUE setzen und Waveform auf TRIANGLE
+    lda #$11
+    sta SID.VOICE_1_CONTROL_REGISTER
+
+return:
+    rts
+}
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Plays the current note via the SID chip
+ *
+ * Parameters:   None
+ * Return value: None
+ *
+ * Reads global variables: previousNote, currentNote, noteChange
+ * Writes global varibles: None
+ *
+ * ---------------------------------------------------------------- */ 
+
+playCurrentNote:
+{
+
+    lda previousNote
+    cmp #$FF
+    beq noNoteToPlay2
+
+    lda previousNote
+    clc
+    asl
+    tay
+
+    lda #<noteNames
+    sta ZEROPAGE.TEMP_1_LO
+    lda #>noteNames
+    sta ZEROPAGE.TEMP_1_HI
+
+    lda (ZEROPAGE.TEMP_1), y
+    sta SCREENMEM+120
+    iny
+    lda (ZEROPAGE.TEMP_1), y
+    sta SCREENMEM+121
+    jmp test
+
+noNoteToPlay2:
+    lda #$2D
+    sta SCREENMEM+120
+    sta SCREENMEM+121
+test:
+
+    // lda currentNote
+    // cmp previousNote
+    // beq outputNoteName
+
+    lda noteChange
+    cmp #$01
+    bne outputNoteName
+
+playNewNote:
+    inc VIC.BORDERCOLOR
+    // lda currentNote
+    // sta previousNote
+    jsr updateSid
+
+outputNoteName:
     lda currentNote
     cmp #$FF
     beq noNoteToPlay
@@ -125,8 +350,6 @@ doRasterIrq:
     clc
     asl
     tay
-
-    // ldy #$00
 
     lda #<noteNames
     sta ZEROPAGE.TEMP_1_LO
@@ -146,113 +369,25 @@ noNoteToPlay:
     sta SCREENMEM+81
 
 exit:
-    pla                                 // Y vom Stack
-    tay
-    pla                                 // X vom Stack
-    tax
-    pla                                 // Akku vom Stack
-    rti                                 // Interrupt verlassen
+    rts
 }
 
-// ******************************************************************
-// 
-// Funktion um Keyboard-Eingaben als Noten interpretieren
-//
-// ******************************************************************
 
-updateCurrentNote:
-{
-    lda ZEROPAGE.CURRENT_PRESSED_KEY
-    sta currentPressedKey
+/* -------------------------------------------------------------------
+ *
+ * Subroutines
+ *
+ * ---------------------------------------------------------------- */ 
 
-    lda #<keyboardPianoKeyCodes
-    sta ZEROPAGE.TEMP_1_LO
-    lda #>keyboardPianoKeyCodes
-    sta ZEROPAGE.TEMP_1_HI
-    ldy #$00
+#import "src/screen.asm"
 
-arrayLoop:
-    lda (ZEROPAGE.TEMP_1), y
-    cmp currentPressedKey
-    beq found
-    iny
-    cpy #$0D
-    bne arrayLoop
-    jmp notFound
 
-found:
-    sty currentNote
-    rts
-
-notFound:
-    lda #$FF
-    sta currentNote
-    rts
-
-currentPressedKey:
-    .byte(0)
-}
-
+/* -------------------------------------------------------------------
+ *
+ * Global variables
+ *
+ * ---------------------------------------------------------------- */ 
 
 .segmentdef Data [startAfter="Code"]
 
-.encoding "screencode_upper"
-
-// ******************************************************************
-// TEMP
-// ******************************************************************
-introtext:
-    .text "MONOSID - USE WASD TO PLAY NOTES"
-    .byte 0
-
-
-// ******************************************************************
-// 
-// Globale Variable: Aktuell gespielte Note (255 = keine)
-//
-// ******************************************************************
-currentNote:
-    .byte($FF)
-
-// ******************************************************************
-//
-// Keyboard-Piano (1 Oktave C-C)
-// 
-//  w e   t y u
-// a s d f g h j k
-//
-// ******************************************************************
-keyboardPianoKeyCodes:
-    .byte(10) // A
-    .byte(9)  // W
-    .byte(13) // S
-    .byte(14) // E
-    .byte(18) // D
-    .byte(21) // F
-    .byte(22) // T
-    .byte(26) // G
-    .byte(25) // Y
-    .byte(29) // H
-    .byte(30) // U
-    .byte(34) // J
-    .byte(37) // K
-
-// ******************************************************************
-// 
-// Noten Namen für alle 12 (Halb)töne
-// 
-// ******************************************************************
-noteNames:
-    .text "C "
-    .text "C#"
-    .text "D "
-    .text "D#"
-    .text "E "
-    .text "F "
-    .text "F#"
-    .text "G "
-    .text "G#"
-    .text "A "
-    .text "A#"
-    .text "B "
-    .text "C "
+#import "src/globals.asm"

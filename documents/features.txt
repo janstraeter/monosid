@@ -1,0 +1,28 @@
+monosid Festures
+----------------
+
+Voices (x3)
+----------------
+- On/Off (Boolean)
+- Waveform (Triangle, Pulse, Sawtooth und Noise) (Auswahl)
+- Pulse-Width (12 Bit)
+- ADSR (Attack, Decay, Sustain, Release jeweils 4 Bit)
+- Sync (Boolean)
+- Ring-Mod (Boolean)
+
+Filter
+-----------------
+- Cutoff-Frequency (11 Bit)
+- Resonance (4 Bit)
+- Voice 1-3 (jeweils Boolean)
+- Low-Pass, High-Pass, Bandwidth (jeweils Boolean)
+
+Main
+-----------------
+- Master-Volume (4 Bit)
+
+[LFO
+-----------------
+- Waveform (Triangle, Square) (Auswahl)
+- LFO Rate (8 Bit?)
+]
