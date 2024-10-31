@@ -29,41 +29,24 @@ mainProgram:
     lda #BLACK
     sta VIC.BORDERCOLOR
     sta VIC.BACKGROUND_COLOR_0
-    lda #WHITE
+    
+    /*lda #WHITE
     sta KERNAL.TEXTCOLOR
-    jsr KERNAL.CLS
-    ldx #$0
+    jsr KERNAL.CLS*/
 
-introloop:
-    lda introtext,x
-    beq charloop
-    sta SCREENMEM,x
-    inx
-    jmp introloop
+    jsr screenClear
+    lda #RED
+    jsr screenClearColor
 
-charloop:    
-/*    jsr KERNAL.CHRIN
-    cmp #$00
-    beq charloop
-    cmp #$103
-    beq quit
-    sec
-    sbc #$40
-    ldx #$00*/
+    screenPutStringColor(0, 0, introtext, RED)
+    screenDrawRectangleColor(3, 2, 35, 21, YELLOW)
+    screenDrawRectangleColor(4, 3, 10, 10, GREEN)
 
 waitLoop:
     lda ZEROPAGE.CURRENT_PRESSED_KEY
     sta currentPressedKey
-    jmp waitLoop
 
-/*screenloop:
-    sta SCREENMEM, x
-    sta SCREENMEM+255, x
-    sta SCREENMEM+510, x
-    sta SCREENMEM+744, x
-    inx
-    bne screenloop
-    jmp charloop*/
+    jmp waitLoop
 
 quit:
     jsr KERNAL.CLS
@@ -114,8 +97,8 @@ setupRasterInterrupt:
  * Parameters:   None
  * Return value: None
  *
- * Reads global variables: currentNote, noteChange
- * Writes global varibles: currentNote, noteChange
+ * Reads global variables:  currentNote, noteChange
+ * Writes global variables: currentNote, noteChange
   *
  * ---------------------------------------------------------------- */ 
 
@@ -135,10 +118,23 @@ doRasterIrq:
 
     // lda VIC.INTERRUPT_REGISTER
     sta VIC.INTERRUPT_REGISTER
+
+    // Save ZEROPAGE.TEMP_1 on stack, because the interrupt subroutines use it
+    lda ZEROPAGE.TEMP_1_LO
+    pha
+    lda ZEROPAGE.TEMP_1_HI
+    pha
     
+    // Call the subroutines
     jsr updateCurrentNote
     jsr playCurrentNote
 
+    // Restore ZEROPAGE.TEMP_1 from stack
+    pla
+    sta ZEROPAGE.TEMP_1_HI
+    pla
+    sta ZEROPAGE.TEMP_1_LO
+ 
 exit:
     pla
     tay
@@ -158,8 +154,8 @@ exit:
  * Parameters:   None
  * Return value: None
  *
- * Reads global variables: None
- * Writes global varibles: None
+ * Reads global variables:  None
+ * Writes global variables: None
  *
  * ---------------------------------------------------------------- */ 
 
@@ -222,8 +218,8 @@ tempCurrentNote:
  * Parameters:   None
  * Return value: None
  *
- * Reads global variables: None
- * Writes global varibles: None
+ * Reads global variables:  None
+ * Writes global variables: None
  *
  * ---------------------------------------------------------------- */ 
 
@@ -293,8 +289,8 @@ return:
  * Parameters:   None
  * Return value: None
  *
- * Reads global variables: previousNote, currentNote, noteChange
- * Writes global varibles: None
+ * Reads global variables:  previousNote, currentNote, noteChange
+ * Writes global variables: None
  *
  * ---------------------------------------------------------------- */ 
 
@@ -379,6 +375,7 @@ exit:
  *
  * ---------------------------------------------------------------- */ 
 
+#import "src/math.asm"
 #import "src/screen.asm"
 
 

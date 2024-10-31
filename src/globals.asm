@@ -4,7 +4,7 @@
 
 introtext:
     .text "MONOSID - USE WASD TO PLAY NOTES"
-    .byte 0
+    .byte($00)
 
 
 /* -------------------------------------------------------------------
