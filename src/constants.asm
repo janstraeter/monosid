@@ -5,31 +5,9 @@
 .label SCREENMEM                    = $0400
 .label COLORMEM                     = $D800
 
-.namespace ZEROPAGE {
-    .label TEMP_0                   = $02
+.namespace ZP {
     .label LAST_PRESSED_KEY         = $C5
     .label CURRENT_PRESSED_KEY      = $CB
-    .label TEMP_1                   = $FB
-    .label TEMP_1_LO                = $FB
-    .label TEMP_1_HI                = $FC
-    .label TEMP_2                   = $FD
-    .label TEMP_2_LO                = $FD
-    .label TEMP_2_HI                = $FE
-    .label TEMP_3                   = $61
-    .label TEMP_3_LO                = $61
-    .label TEMP_3_HI                = $62
-    .label TEMP_4                   = $63
-    .label TEMP_4_LO                = $63
-    .label TEMP_4_HI                = $64
-    .label TEMP_5                   = $65
-    .label TEMP_5_LO                = $65
-    .label TEMP_5_HI                = $66
-    .label TEMP_6                   = $69
-    .label TEMP_6_LO                = $69
-    .label TEMP_6_HI                = $6A
-    .label TEMP_7                   = $6B
-    .label TEMP_7_LO                = $6B
-    .label TEMP_7_HI                = $6C
 }
 
 .namespace CIA {
@@ -87,4 +65,9 @@
 
     .label OSCILLATOR_VOICE_3       = $d41b
     .label ENVELOPE_VOICE_3         = $d41c
+}
+
+.namespace MODE {
+    .label MAIN                     = $01
+    .label MENU                     = $02
 }

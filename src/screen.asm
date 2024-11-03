@@ -62,12 +62,6 @@
  *
  * Clears the screen memory (fills the sceen memory with the space character)
  *
- * Parameters:   None
- * Return value: None
- *
- * Reads global variables:  None
- * Writes global variables: None
- *
  * ---------------------------------------------------------------- */ 
 
 screenClear:
@@ -93,10 +87,6 @@ loop:
  * Clears the color memory (fills it with the specified color)
  *
  * Parameters:   Accu: Color
- * Return value: None
- *
- * Reads global variables:  None
- * Writes global variables: None
  *
  * ---------------------------------------------------------------- */ 
 
@@ -116,22 +106,106 @@ loop:
 
 
 /* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Pre-calculates the screen-memory address of the specified position
+ * and writes the specified PETSCII character to this address
+ *
+ * Parameters:   left:  X-position of first character
+ *               right: Y-position of the first character
+ *               char : PETSCII character
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro screenPutChar(left, top, char) {
+    .var memoryAddress = screenCalculateMemoryAddress(left, top)
+    lda #char
+    sta memoryAddress
+}
+
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Pre-calculates the color-memory address of the specified position
+ * and writes the specified color to this address
+ *
+ * Parameters:   left:   X-position of first character
+ *               right:  Y-position of the first character
+ *               color:  color value 
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro screenPutColor(left, top, color) {
+    .var colorMemoryAddress = screenCalculateColorMemoryAddress(left, top)
+    lda #color
+    sta colorMemoryAddress
+}
+
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Pre-calculates the screen-memory and color-memory addresses of the
+ * specified position and writes the specified PETSCII character and color
+ * to this addresses
+ *
+ * Parameters:  left:  X-position of first character
+ *              right: Y-position of the first character
+ *              char:  PETSCII character
+ *              color: color of character 
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro screenPutCharColor(left, top, char, color) {
+    screenPutChar(left, top, char)
+    screenPutColor(left, top, color)
+}
+
+
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Pre-calculates the color-memory address of the specified position
+ * and writes the specified color for the specified length
+ *
+ * Parameters:   left:   X-position of first character
+ *               right:  Y-position of the first character
+ *               length: Number of bytes to color
+ *               color:  color value 
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro screenPutColorLength(left, top, length, color) {
+    .var colorMemoryAddress = screenCalculateColorMemoryAddress(left, top)
+    loadPointerToZPR(colorMemoryAddress, ZPR_1)
+    lda #color
+    ldy #$00
+loop:
+    sta (ZPR_1), y
+    iny
+    cpy #length
+    bne loop
+}
+
+
+/* -------------------------------------------------------------------
  * Subroutine
  * ----------
  *
  * Puts a null terminated string into screen memory
  * starting at the specified 16-bit address
  *
- * Parameters:   ZEROPAGE.TEMP_1_LO: Low byte of 16 bit address of string
- *               ZEROPAGE.TEMP_1_HI: High byte of 16 bit address of string
- *               ZEROPAGE.TEMP_2_LO: Low byte of screen memory start address
- *               ZEROPAGE.TEMP_2_HI: High byte of screen memory start address
+ * Parameters:   ZPR_1_LO: Low byte of 16 bit address of string
+ *               ZPR_1_HI: High byte of 16 bit address of string
+ *               ZPR_2_LO: Low byte of screen memory start address
+ *               ZPR_2_HI: High byte of screen memory start address
  * 
- * Return value: None
- *
- * Reads global variables:  None
- * Writes global variables: None
- *
  * ---------------------------------------------------------------- */ 
 
 screenPutStringAddress:
@@ -139,9 +213,9 @@ screenPutStringAddress:
     ldy #$00
     
 loop:
-    lda (ZEROPAGE.TEMP_1), y
+    lda (ZPR_1), y
     beq exit
-    sta (ZEROPAGE.TEMP_2), y
+    sta (ZPR_2), y
     iny
     jmp loop
 
@@ -161,23 +235,12 @@ exit:
  *               right: Y-position of the first character
  *               string: Adress of the null-terminated string
  * 
- * Return value: None
- *
- * Reads global variables:  None
- * Writes global variables: None
- *
  * ---------------------------------------------------------------- */ 
 
 .macro screenPutString(left, top, string) {
-    lda #<string
-    sta ZEROPAGE.TEMP_1_LO
-    lda #>string
-    sta ZEROPAGE.TEMP_1_HI
+    loadPointerToZPR(string, ZPR_1)
     .var memoryAddress = screenCalculateMemoryAddress(left, top)
-    lda #<memoryAddress
-    sta ZEROPAGE.TEMP_2_LO
-    lda #>memoryAddress
-    sta ZEROPAGE.TEMP_2_HI
+    loadPointerToZPR(memoryAddress, ZPR_2)
     jsr screenPutStringAddress
 }
 
@@ -189,29 +252,24 @@ exit:
  * Puts a null terminated string into screen memory
  * at a specified position (X, Y). It calculates the start address itself
  *
- * Parameters:   ZEROPAGE.TEMP_1_LO: Low byte of 16 bit address of string
- *               ZEROPAGE.TEMP_1_HI: High byte of 16 bit address of string
- *               ZEROPAGE.TEMP_2_LO: X position on screen
- *               ZEROPAGE.TEMP_2_HI: Y position on screen
+ * Parameters:   ZPR_1_LO: Low byte of 16 bit address of string
+ *               ZPR_1_HI: High byte of 16 bit address of string
+ *               ZPR_2_LO: X position on screen
+ *               ZPR_2_HI: Y position on screen
  * 
- * Return value: None
- *
- * Reads global variables:  None
- * Writes global variables: None
- *
  * ---------------------------------------------------------------- */ 
 
 screenPutStringXY:
 {
     // calculate offset (Y * 40 + X)
-    lda ZEROPAGE.TEMP_2_HI
+    lda ZPR_2_HI
     ldx #$28
     jsr mathMultiply
     stx screenOffsetLo
     sta screenOffsetHi
     clc
     lda screenOffsetLo
-    adc ZEROPAGE.TEMP_2_LO
+    adc ZPR_2_LO
     sta screenOffsetLo
     lda screenOffsetHi
     adc #$00
@@ -221,18 +279,18 @@ screenPutStringXY:
     clc
     lda #<SCREENMEM
     adc screenOffsetLo
-    sta ZEROPAGE.TEMP_2_LO
+    sta ZPR_2_LO
     lda #>SCREENMEM
     adc screenOffsetHi
-    sta ZEROPAGE.TEMP_2_HI
+    sta ZPR_2_HI
 
     // Copy the string until the null byte is loaded
     ldy #$00
     
 loop:
-    lda (ZEROPAGE.TEMP_1), y
+    lda (ZPR_1), y
     beq exit
-    sta (ZEROPAGE.TEMP_2), y
+    sta (ZPR_2), y
     iny
     jmp loop
 
@@ -252,19 +310,14 @@ exit:
  * Puts a null terminated string into screen memory
  * starting at the specified 16-bit address with a specified foreground color
  *
- * Parameters:   ZEROPAGE.TEMP_1_LO: Low byte of 16 bit address of string
- *               ZEROPAGE.TEMP_1_HI: High byte of 16 bit address of string
- *               ZEROPAGE.TEMP_2_LO: Low byte of screen memory start address
- *               ZEROPAGE.TEMP_2_HI: high byte of screen memory start address
- *               ZEROPAGE.TEMP_3_LO: Low byte of color memory start address
- *               ZEROPAGE.TEMP_3_HI: high byte of color memory start address
- *               ZEROPAGE.TEMP_0:    Text color
+ * Parameters:   ZPR_1_LO: Low byte of 16 bit address of string
+ *               ZPR_1_HI: High byte of 16 bit address of string
+ *               ZPR_2_LO: Low byte of screen memory start address
+ *               ZPR_2_HI: high byte of screen memory start address
+ *               ZPR_3_LO: Low byte of color memory start address
+ *               ZPR_3_HI: high byte of color memory start address
+ *               ZPR_0:    Text color
  * 
- * Return value: None
- *
- * Reads global variables:  None
- * Writes global variables: None
- *
  * ---------------------------------------------------------------- */ 
 
 screenPutStringAddressColor:
@@ -272,11 +325,11 @@ screenPutStringAddressColor:
     ldy #$00
     
 loop:
-    lda (ZEROPAGE.TEMP_1), y
+    lda (ZPR_1), y
     beq exit
-    sta (ZEROPAGE.TEMP_2), y
-    lda ZEROPAGE.TEMP_0
-    sta (ZEROPAGE.TEMP_3), y
+    sta (ZPR_2), y
+    lda ZPR_0
+    sta (ZPR_3), y
     iny
     jmp loop
 
@@ -298,30 +351,16 @@ exit:
  *               string: Adress of the null-terminated string
  *               color:  color of string
  * 
- * Return value: None
- *
- * Reads global variables:  None
- * Writes global variables: None
- *
  * ---------------------------------------------------------------- */ 
 
 .macro screenPutStringColor(left, top, string, color) {
-    lda #<string
-    sta ZEROPAGE.TEMP_1_LO
-    lda #>string
-    sta ZEROPAGE.TEMP_1_HI
+    loadPointerToZPR(string, ZPR_1)
     .var memoryAddress = screenCalculateMemoryAddress(left, top)
-    lda #<memoryAddress
-    sta ZEROPAGE.TEMP_2_LO
-    lda #>memoryAddress
-    sta ZEROPAGE.TEMP_2_HI
+    loadPointerToZPR(memoryAddress, ZPR_2)    
     .var colorMemoryAddress = screenCalculateColorMemoryAddress(left, top)
-    lda #<colorMemoryAddress
-    sta ZEROPAGE.TEMP_3_LO
-    lda #>colorMemoryAddress
-    sta ZEROPAGE.TEMP_3_HI
+    loadPointerToZPR(colorMemoryAddress, ZPR_3)
     lda #color
-    sta ZEROPAGE.TEMP_0
+    sta ZPR_0
     jsr screenPutStringAddressColor
 }
 
@@ -334,62 +373,57 @@ exit:
  * at a specified position (X, Y) with a specified foreground color.
  * It calculates the start addresses of screen- and color memory itself.
  *
- * Parameters:   ZEROPAGE.TEMP_1_LO: Low byte of 16 bit address of string
- *               ZEROPAGE.TEMP_1_HI: High byte of 16 bit address of string
- *               ZEROPAGE.TEMP_2_LO: X position on screen
- *               ZEROPAGE.TEMP_2_HI: Y position on screen
- *               ZEROPAGE.TEMP_0:    Text color
+ * Parameters:   ZPR_1_LO: Low byte of 16 bit address of string
+ *               ZPR_1_HI: High byte of 16 bit address of string
+ *               ZPR_2_LO: X position on screen
+ *               ZPR_2_HI: Y position on screen
+ *               ZPR_0:    Text color
  * 
- * Return value: None
- *
- * Reads global variables:  None
- * Writes global variables: None
- *
  * ---------------------------------------------------------------- */ 
 
 screenPutStringXYColor:
 {
     // calculate offset (Y * 40 + X)
-    lda ZEROPAGE.TEMP_2_HI
+    lda ZPR_2_HI
     ldx #$28
     jsr mathMultiply
-    stx ZEROPAGE.TEMP_3_LO
-    sta ZEROPAGE.TEMP_4_HI
+    stx ZPR_3_LO
+    sta ZPR_4_HI
     clc
-    lda ZEROPAGE.TEMP_3_LO
-    adc ZEROPAGE.TEMP_2_LO
-    sta ZEROPAGE.TEMP_3_LO
-    lda ZEROPAGE.TEMP_4_HI
+    lda ZPR_3_LO
+    adc ZPR_2_LO
+    sta ZPR_3_LO
+    lda ZPR_4_HI
     adc #$00
-    sta ZEROPAGE.TEMP_4_HI
+    sta ZPR_4_HI
 
     // Add start of screen memory to offset
     clc
     lda #<SCREENMEM
-    adc ZEROPAGE.TEMP_3_LO
-    sta ZEROPAGE.TEMP_2_LO
+    adc ZPR_3_LO
+    sta ZPR_2_LO
     lda #>SCREENMEM
-    adc ZEROPAGE.TEMP_4_HI
-    sta ZEROPAGE.TEMP_2_HI
+    adc ZPR_4_HI
+    sta ZPR_2_HI
 
     // Add start of color memory to offset
     clc
     lda #<COLORMEM
-    adc ZEROPAGE.TEMP_3_LO
-    sta ZEROPAGE.TEMP_4_LO
+    adc ZPR_3_LO
+    sta ZPR_4_LO
     lda #>COLORMEM
-    adc ZEROPAGE.TEMP_4_HI
-    sta ZEROPAGE.TEMP_4_HI
+    adc ZPR_4_HI
+    sta ZPR_4_HI
 
     // Copy the string and set the color until the null byte is loaded
     ldy #$00
     
 loop:
-    lda (ZEROPAGE.TEMP_1), y
+    lda (ZPR_1), y
     beq exit
-    sta (ZEROPAGE.TEMP_2), y
-    lda ZEROPAGE.TEMP_0
-    sta (ZEROPAGE.TEMP_4), y
+    sta (ZPR_2), y
+    lda ZPR_0
+    sta (ZPR_4), y
     iny
     jmp loop
 
@@ -405,29 +439,24 @@ exit:
  * Draws a rectangle with PETSCII characters from (X, Y)
  * with the specified (inner) width and height in the specified color
  *
- * Parameters:   ZEROPAGE.TEMP_1_LO: Low byte of screen-memory address of upper left corner
- *               ZEROPAGE.TEMP_1_HI: High byte of screen-memory address of upper left corner
- *               ZEROPAGE.TEMP_2_LO: inner width
- *               ZEROPAGE.TEMP_2_HI: inner height
- *               ZEROPAGE.TEMP_3_LO: Low byte of color-memory address of upper left corner
- *               ZEROPAGE.TEMP_3_HI: High byte of color-memory address of upper left corner
- *               ZEROPAGE.TEMP_0:    color
+ * Parameters:   ZPR_1_LO: Low byte of screen-memory address of upper left corner
+ *               ZPR_1_HI: High byte of screen-memory address of upper left corner
+ *               ZPR_2_LO: inner width
+ *               ZPR_2_HI: inner height
+ *               ZPR_3_LO: Low byte of color-memory address of upper left corner
+ *               ZPR_3_HI: High byte of color-memory address of upper left corner
+ *               ZPR_0:    color
  * 
- * Return value: None
- *
- * Reads global variables:  None
- * Writes global variables: None
- *
  * ---------------------------------------------------------------- */ 
 
 screenDrawRectangleAddressColor:
 {
     // local variables
-    .label offsetY         = ZEROPAGE.TEMP_5
-    .label innerWidthPlus1 = ZEROPAGE.TEMP_6
+    .label offsetY         = ZPR_4
+    .label innerWidthPlus1 = ZPR_5
 
     // Calculate inner width + 1
-    lda ZEROPAGE.TEMP_2_LO
+    lda ZPR_2_LO
     sta innerWidthPlus1
     inc innerWidthPlus1
 
@@ -441,100 +470,100 @@ screenDrawRectangleAddressColor:
     // Draw upper left corner
     lda #$4f
     ldy #$00
-    sta (ZEROPAGE.TEMP_1), y
-    lda ZEROPAGE.TEMP_0
-    sta (ZEROPAGE.TEMP_3), y
+    sta (ZPR_1), y
+    lda ZPR_0
+    sta (ZPR_3), y
     iny
 
     // Draw upper verticval line (inner width)
-    ldx ZEROPAGE.TEMP_2_LO
+    ldx ZPR_2_LO
 
 xLoop1:
     lda #$77
-    sta (ZEROPAGE.TEMP_1), y
-    lda ZEROPAGE.TEMP_0
-    sta (ZEROPAGE.TEMP_3), y
+    sta (ZPR_1), y
+    lda ZPR_0
+    sta (ZPR_3), y
     iny
     dex
     bne xLoop1
 
     // Draw upper right corner
     lda #$50
-    sta (ZEROPAGE.TEMP_1), y
-    lda ZEROPAGE.TEMP_0
-    sta (ZEROPAGE.TEMP_3), y
+    sta (ZPR_1), y
+    lda ZPR_0
+    sta (ZPR_3), y
 
     // Go to beginning of next line (screen memory)
     clc
-    lda ZEROPAGE.TEMP_1_LO
+    lda ZPR_1_LO
     adc #$28
-    sta ZEROPAGE.TEMP_1_LO
-    lda ZEROPAGE.TEMP_1_HI
+    sta ZPR_1_LO
+    lda ZPR_1_HI
     adc #$00
-    sta ZEROPAGE.TEMP_1_HI
+    sta ZPR_1_HI
 
     // Go to beginning of next line (color memory)
     clc
-    lda ZEROPAGE.TEMP_3_LO
+    lda ZPR_3_LO
     adc #$28
-    sta ZEROPAGE.TEMP_3_LO
-    lda ZEROPAGE.TEMP_3_HI
+    sta ZPR_3_LO
+    lda ZPR_3_HI
     adc #$00
-    sta ZEROPAGE.TEMP_3_HI
+    sta ZPR_3_HI
 
     // Draw vertical lines (left and right)
-    ldx ZEROPAGE.TEMP_2_HI
+    ldx ZPR_2_HI
     ldy #$00
 
 yLoop:
     // Draw left line part
     lda #$74
-    sta (ZEROPAGE.TEMP_1), y
-    lda ZEROPAGE.TEMP_0
-    sta (ZEROPAGE.TEMP_3), y
+    sta (ZPR_1), y
+    lda ZPR_0
+    sta (ZPR_3), y
 
     // Go to last character in the current line of the rectangle
     clc
-    lda ZEROPAGE.TEMP_1_LO
+    lda ZPR_1_LO
     adc innerWidthPlus1
-    sta ZEROPAGE.TEMP_1_LO
-    lda ZEROPAGE.TEMP_1_HI
+    sta ZPR_1_LO
+    lda ZPR_1_HI
     adc #$00
-    sta ZEROPAGE.TEMP_1_HI
+    sta ZPR_1_HI
 
     // Go to last color-byte in the current line of the rectangle
     clc
-    lda ZEROPAGE.TEMP_3_LO
+    lda ZPR_3_LO
     adc innerWidthPlus1
-    sta ZEROPAGE.TEMP_3_LO
-    lda ZEROPAGE.TEMP_3_HI
+    sta ZPR_3_LO
+    lda ZPR_3_HI
     adc #$00
-    sta ZEROPAGE.TEMP_3_HI
+    sta ZPR_3_HI
 
     // Draw right line part
     lda #$6a
-    sta (ZEROPAGE.TEMP_1), y
-    lda ZEROPAGE.TEMP_0
-    sta (ZEROPAGE.TEMP_3), y
+    sta (ZPR_1), y
+    lda ZPR_0
+    sta (ZPR_3), y
 
 
     // Go to beginning of next line (screen memory)
     clc
-    lda ZEROPAGE.TEMP_1_LO
+    lda ZPR_1_LO
     adc offsetY
-    sta ZEROPAGE.TEMP_1_LO
-    lda ZEROPAGE.TEMP_1_HI
+    sta ZPR_1_LO
+    lda ZPR_1_HI
     adc #$00
-    sta ZEROPAGE.TEMP_1_HI
+    sta ZPR_1_HI
 
     // Go to beginning of next line (color memory)
     clc
-    lda ZEROPAGE.TEMP_3_LO
+    lda ZPR_3_LO
     adc offsetY
-    sta ZEROPAGE.TEMP_3_LO
-    lda ZEROPAGE.TEMP_3_HI
+    sta ZPR_3_LO
+    lda ZPR_3_HI
     adc #$00
-    sta ZEROPAGE.TEMP_3_HI
+    sta ZPR_3_HI
 
     // Loop until all vertical lines are drawn
     dex
@@ -542,28 +571,28 @@ yLoop:
 
     // Draw lower left corner
     lda #$4c
-    sta (ZEROPAGE.TEMP_1), y
-    lda ZEROPAGE.TEMP_0
-    sta (ZEROPAGE.TEMP_3), y
+    sta (ZPR_1), y
+    lda ZPR_0
+    sta (ZPR_3), y
     iny
 
     // Draw lower vertical line (inner width)
-    ldx ZEROPAGE.TEMP_2_LO
+    ldx ZPR_2_LO
 
 xLoop2:
     lda #$6f
-    sta (ZEROPAGE.TEMP_1), y
-    lda ZEROPAGE.TEMP_0
-    sta (ZEROPAGE.TEMP_3), y
+    sta (ZPR_1), y
+    lda ZPR_0
+    sta (ZPR_3), y
     iny
     dex
     bne xLoop2
 
     // Draw lower right corner
     lda #$7a
-    sta (ZEROPAGE.TEMP_1), y
-    lda ZEROPAGE.TEMP_0
-    sta (ZEROPAGE.TEMP_3), y
+    sta (ZPR_1), y
+    lda ZPR_0
+    sta (ZPR_3), y
 
     // Finally...
     rts
@@ -583,30 +612,19 @@ xLoop2:
  *               string: Adress of the null-terminated string
  *               color:  color of string
  * 
- * Return value: None
- *
- * Reads global variables:  None
- * Writes global variables: None
- *
  * ---------------------------------------------------------------- */ 
 
 .macro screenDrawRectangleColor(left, top, innerWidth, innerHeight, color) {
     .var memoryAddress = screenCalculateMemoryAddress(left, top)
-    lda #<memoryAddress
-    sta ZEROPAGE.TEMP_1_LO
-    lda #>memoryAddress
-    sta ZEROPAGE.TEMP_1_HI
+    loadPointerToZPR(memoryAddress, ZPR_1)
     lda #innerWidth
-    sta ZEROPAGE.TEMP_2_LO
+    sta ZPR_2_LO
     lda #innerHeight
-    sta ZEROPAGE.TEMP_2_HI
+    sta ZPR_2_HI
     .var colorMemoryAddress = screenCalculateColorMemoryAddress(left, top)
-    lda #<colorMemoryAddress
-    sta ZEROPAGE.TEMP_3_LO
-    lda #>colorMemoryAddress
-    sta ZEROPAGE.TEMP_3_HI
+    loadPointerToZPR(colorMemoryAddress, ZPR_3)
     lda #color
-    sta ZEROPAGE.TEMP_0
+    sta ZPR_0
     jsr screenDrawRectangleAddressColor    
 }
 
@@ -618,34 +636,29 @@ xLoop2:
  * Draws a rectangle with PETSCII characters from (X, Y)
  * with the specified (inner) width and height in the specified color
  *
- * Parameters:   ZEROPAGE.TEMP_1_LO: X position of upper left corner
- *               ZEROPAGE.TEMP_1_HI: Y position of upper left corner
- *               ZEROPAGE.TEMP_2_LO: inner width
- *               ZEROPAGE.TEMP_2_HI: inner height
- *               ZEROPAGE.TEMP_0:    Color
+ * Parameters:   ZPR_1_LO: X position of upper left corner
+ *               ZPR_1_HI: Y position of upper left corner
+ *               ZPR_2_LO: inner width
+ *               ZPR_2_HI: inner height
+ *               ZPR_0:    Color
  * 
- * Return value: None
- *
- * Reads global variables:  None
- * Writes global variables: None
- *
  * ---------------------------------------------------------------- */ 
 
 screenDrawRectangleXYColor:
 {
     // local variables
-    .label screenOffsetLo  = ZEROPAGE.TEMP_4_LO
-    .label screenOffsetHi  = ZEROPAGE.TEMP_4_HI
+    .label screenOffsetLo  = ZPR_4_LO
+    .label screenOffsetHi  = ZPR_4_HI
 
     // calculate offset (Y * 40 + X)
-    lda ZEROPAGE.TEMP_1_HI
+    lda ZPR_1_HI
     ldx #$28
     jsr mathMultiply
     stx screenOffsetLo
     sta screenOffsetHi
     clc
     lda screenOffsetLo
-    adc ZEROPAGE.TEMP_1_LO
+    adc ZPR_1_LO
     sta screenOffsetLo
     lda screenOffsetHi
     adc #$00
@@ -655,19 +668,19 @@ screenDrawRectangleXYColor:
     clc
     lda #<SCREENMEM
     adc screenOffsetLo
-    sta ZEROPAGE.TEMP_1_LO
+    sta ZPR_1_LO
     lda #>SCREENMEM
     adc screenOffsetHi
-    sta ZEROPAGE.TEMP_1_HI
+    sta ZPR_1_HI
 
     // Add start of color memory to offset
     clc
     lda #<COLORMEM
     adc screenOffsetLo
-    sta ZEROPAGE.TEMP_3_LO
+    sta ZPR_3_LO
     lda #>COLORMEM
     adc screenOffsetHi
-    sta ZEROPAGE.TEMP_3_HI
+    sta ZPR_3_HI
 
     // Call the subroutine
     jsr screenDrawRectangleAddressColor

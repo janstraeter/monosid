@@ -1,10 +1,15 @@
 #importonce
 
-.encoding "screencode_upper"
+/* -------------------------------------------------------------------
+ *
+ * Currently selected program mode
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
 
-introtext:
-    .text "MONOSID - USE WASD TO PLAY NOTES"
-    .byte($00)
+currentMode:
+    .byte(MODE.MAIN)
 
 
 /* -------------------------------------------------------------------
@@ -160,4 +165,97 @@ FreqTablePalHi:
     .byte $22, $24, $27, $29, $2b, $2e, $31, $34, $37, $3a, $3e, $41  // 5
     .byte $45, $49, $4e, $52, $57, $5c, $62, $68, $6e, $75, $7c, $83  // 6
     .byte $8b, $93, $9c, $a5, $af, $b9, $c4, $d0, $dd, $ea, $f8, $ff  // 7
+
+
+/* -------------------------------------------------------------------
+ *
+ * Definition of module "VOICE1"
+ *
+ * Type: STRUCT_MODULE
+ *
+ * ---------------------------------------------------------------- */ 
+
+moduleVoice1:
+    createStructModule(strModuleNameVoice1, 0,  2, 38, 3, GRAY)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Definition of module "VOICE2"
+ *
+ * Type: STRUCT_MODULE
+ *
+ * ---------------------------------------------------------------- */ 
+
+moduleVoice2:
+    createStructModule(strModuleNameVoice2, 0,  8, 38, 3, GRAY)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Definition of module "VOICE3"
+ *
+ * Type: STRUCT_MODULE
+ *
+ * ---------------------------------------------------------------- */ 
+
+moduleVoice3:
+    createStructModule(strModuleNameVoice3, 0, 14, 38, 3, GRAY)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Definition of module "FILTER"
+ *
+ * Type: STRUCT_MODULE
+ *
+ * ---------------------------------------------------------------- */ 
+
+moduleFilter:
+    createStructModule(strModuleNameFilter, 0, 20, 31, 3, RED)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Definition of module "MAIN"
+ *
+ * Type: STRUCT_MODULE
+ *
+ * ---------------------------------------------------------------- */ 
+
+moduleMain:
+    createStructModule(strModuleNameMain,  34, 20,  4, 3, PURPLE)
+
+
+/* -------------------------------------------------------------------
+ *
+ * List of all the modules
+ *
+ * Type: Array of 16-bit pointers
+ *
+ * ---------------------------------------------------------------- */ 
+
+modules:
+    .byte(<moduleVoice1)
+    .byte(>moduleVoice1)
+    .byte(<moduleVoice2)
+    .byte(>moduleVoice2)
+    .byte(<moduleVoice3)
+    .byte(>moduleVoice3)
+    .byte(<moduleFilter)
+    .byte(>moduleFilter)
+    .byte(<moduleMain)
+    .byte(>moduleMain)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Number of modules
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+modulesNum:
+    .byte($05)
 

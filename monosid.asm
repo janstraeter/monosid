@@ -14,11 +14,20 @@
 
 /* -------------------------------------------------------------------
  *
- * Main program
+ * Constants and structs
  *
  * ---------------------------------------------------------------- */ 
 
 #import "src/constants.asm"
+#import "src/structs.asm"
+#import "src/zpregisters.asm"
+
+
+/* -------------------------------------------------------------------
+ *
+ * Main program
+ *
+ * ---------------------------------------------------------------- */ 
 
 BasicUpstart2(mainProgram)
 
@@ -42,8 +51,16 @@ mainProgram:
     screenDrawRectangleColor(3, 2, 35, 21, YELLOW)
     screenDrawRectangleColor(4, 3, 10, 10, GREEN)
 
+    screenPutChar(0, 0, test)
+    screenPutChar(1, 0, $ab)
+    screenPutColor(0, 0, BLUE)
+    screenPutCharColor(39, 24, $51, GREEN)
+    screenPutColorLength(4, 3, 12, BLUE)
+
+    jsr userinterfaceDrawMain
+
 waitLoop:
-    lda ZEROPAGE.CURRENT_PRESSED_KEY
+    lda ZP.CURRENT_PRESSED_KEY
     sta currentPressedKey
 
     jmp waitLoop
@@ -51,6 +68,8 @@ waitLoop:
 quit:
     jsr KERNAL.CLS
     rts
+
+    test: .byte($00)
 }
 
 /* -------------------------------------------------------------------
@@ -58,9 +77,6 @@ quit:
  * ----------
  *
  * Sets up the raster interrupt
- *
- * Parameters:   None
- * Return value: None     
  *
  * ---------------------------------------------------------------- */ 
 
@@ -94,9 +110,6 @@ setupRasterInterrupt:
  *
  * Raster interrupt routine to play the currently selected note
  *
- * Parameters:   None
- * Return value: None
- *
  * Reads global variables:  currentNote, noteChange
  * Writes global variables: currentNote, noteChange
   *
@@ -119,21 +132,21 @@ doRasterIrq:
     // lda VIC.INTERRUPT_REGISTER
     sta VIC.INTERRUPT_REGISTER
 
-    // Save ZEROPAGE.TEMP_1 on stack, because the interrupt subroutines use it
-    lda ZEROPAGE.TEMP_1_LO
+    // Save ZPR_1 on stack, because the interrupt subroutines use it
+    lda ZPR_1_LO
     pha
-    lda ZEROPAGE.TEMP_1_HI
+    lda ZPR_1_HI
     pha
     
     // Call the subroutines
     jsr updateCurrentNote
     jsr playCurrentNote
 
-    // Restore ZEROPAGE.TEMP_1 from stack
+    // Restore ZPR_1 from stack
     pla
-    sta ZEROPAGE.TEMP_1_HI
+    sta ZPR_1_HI
     pla
-    sta ZEROPAGE.TEMP_1_LO
+    sta ZPR_1_LO
  
 exit:
     pla
@@ -151,24 +164,21 @@ exit:
  *
  * Interprets the currently pressed key as a note
  *
- * Parameters:   None
- * Return value: None
- *
- * Reads global variables:  None
- * Writes global variables: None
+ * Reads global variables:  keyboardPianoKeyCodes, currentPressedKey
+ * Writes global variables: currentNote, noteChange
  *
  * ---------------------------------------------------------------- */ 
 
 updateCurrentNote:
 {
     lda #<keyboardPianoKeyCodes
-    sta ZEROPAGE.TEMP_1_LO
+    sta ZPR_1_LO
     lda #>keyboardPianoKeyCodes
-    sta ZEROPAGE.TEMP_1_HI
+    sta ZPR_1_HI
     ldy #$00
 
 arrayLoop:
-    lda (ZEROPAGE.TEMP_1), y
+    lda (ZPR_1), y
     cmp currentPressedKey
     beq found
     iny
@@ -208,6 +218,7 @@ tempCurrentNote:
     .byte($ff)
 }
 
+
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------
@@ -215,11 +226,7 @@ tempCurrentNote:
  * Updated the control registers of the SID chip according to the 
  * settings
  *
- * Parameters:   None
- * Return value: None
- *
- * Reads global variables:  None
- * Writes global variables: None
+ * Reads global variables:  currentNote, FreqTablePalLo, FreqTablePalHi
  *
  * ---------------------------------------------------------------- */ 
 
@@ -244,13 +251,13 @@ playNote:
     lda #$10
     sta SID.VOICE_1_CONTROL_REGISTER
 
-    lda #$29
+    lda #$00
     sta SID.VOICE_1_ATTACK_DECAY
 
-    lda #$05
+    lda #$FA
     sta SID.VOICE_1_SUSTAIN_RELEASE
 
-    // Aktuelle Note laden, mit 48 (4 Oktaven) multiplizieren und im Y-Register ablegen
+    // Aktuelle Note laden, mit 48 (4 Oktaven) dazu addieren und im Y-Register ablegen
     lda currentNote
     clc
     adc #48
@@ -258,18 +265,18 @@ playNote:
 
     // LO Byte der Frequenz der aktuellen Note laden und für Stimme 1 setzen
     lda #<FreqTablePalLo
-    sta ZEROPAGE.TEMP_1_LO
+    sta ZPR_1_LO
     lda #>FreqTablePalLo
-    sta ZEROPAGE.TEMP_1_HI
-    lda (ZEROPAGE.TEMP_1), y
+    sta ZPR_1_HI
+    lda (ZPR_1), y
     sta SID.VOICE_1_FREQUENCY_LO
 
     // HI Byte der Frequenz der aktuellen Note laden und für Stimme 1 setzen
     lda #<FreqTablePalHi
-    sta ZEROPAGE.TEMP_1_LO
+    sta ZPR_1_LO
     lda #>FreqTablePalHi
-    sta ZEROPAGE.TEMP_1_HI
-    lda (ZEROPAGE.TEMP_1), y
+    sta ZPR_1_HI
+    lda (ZPR_1), y
     sta SID.VOICE_1_FREQUENCY_HI
 
     // Gate für Stimme 1 auf TRUE setzen und Waveform auf TRIANGLE
@@ -279,6 +286,7 @@ playNote:
 return:
     rts
 }
+
 
 /* -------------------------------------------------------------------
  * Subroutine
@@ -307,14 +315,14 @@ playCurrentNote:
     tay
 
     lda #<noteNames
-    sta ZEROPAGE.TEMP_1_LO
+    sta ZPR_1_LO
     lda #>noteNames
-    sta ZEROPAGE.TEMP_1_HI
+    sta ZPR_1_HI
 
-    lda (ZEROPAGE.TEMP_1), y
+    lda (ZPR_1), y
     sta SCREENMEM+120
     iny
-    lda (ZEROPAGE.TEMP_1), y
+    lda (ZPR_1), y
     sta SCREENMEM+121
     jmp test
 
@@ -348,14 +356,14 @@ outputNoteName:
     tay
 
     lda #<noteNames
-    sta ZEROPAGE.TEMP_1_LO
+    sta ZPR_1_LO
     lda #>noteNames
-    sta ZEROPAGE.TEMP_1_HI
+    sta ZPR_1_HI
 
-    lda (ZEROPAGE.TEMP_1), y
+    lda (ZPR_1), y
     sta SCREENMEM+80
     iny
-    lda (ZEROPAGE.TEMP_1), y
+    lda (ZPR_1), y
     sta SCREENMEM+81
     jmp exit
 
@@ -377,6 +385,7 @@ exit:
 
 #import "src/math.asm"
 #import "src/screen.asm"
+#import "src/userinterface.asm"
 
 
 /* -------------------------------------------------------------------
@@ -387,4 +396,5 @@ exit:
 
 .segmentdef Data [startAfter="Code"]
 
+#import "src/strings.asm"
 #import "src/globals.asm"
