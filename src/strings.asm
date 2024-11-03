@@ -1,0 +1,106 @@
+#importonce
+
+/* -------------------------------------------------------------------
+ *
+ * All the null-terminated strings used in the program
+ *
+ * ---------------------------------------------------------------- */ 
+
+.encoding "screencode_upper"
+
+introtext:
+    .text "MONOSID - USE WASD TO PLAY NOTES"
+    .byte($00)
+
+strModuleNameVoice1:
+    .text("VOICE 1")
+    .byte($00)
+
+strModuleNameVoice2:
+    .text("VOICE 2")
+    .byte($00)
+
+strModuleNameVoice3:
+    .text("VOICE 3")
+    .byte($00)
+
+strModuleNameFilter:
+    .text("FILTER") 
+    .byte($00)
+
+strModuleNameMain:  
+    .text("MAIN")   
+    .byte($00)
+
+strInputNameVoiceWaveform:   
+    .text("WAVE")      
+    .byte($00)
+
+strInputNameVoicePulseWidth: 
+    .text("PULSE")     
+    .byte($00)
+
+strInputNameVoiceAttack:     
+    .text("ATC")       
+    .byte($00)
+
+strInputNameVoiceDecay:      
+    .text("DCY")       
+    .byte($00)
+
+strInputNameVoiceSustain:    
+    .text("SUS")       
+    .byte($00)
+
+strInputNameVoiceRelease:    
+    .text("RLS")       
+    .byte($00)
+
+strInputNameVoiceUse:        
+    .text("USE")       
+    .byte($00)
+
+strInputNameVoiceSync:       
+    .text("SYNC")      
+    .byte($00)
+
+strInputNameVoiceRingMod:    
+    .text("RING")      
+    .byte($00)
+
+strInputNameFilterCutoff:    
+    .text("CUTOFF")    
+    .byte($00)
+
+strInputNameFilterResonance: 
+    .text("RES")       
+    .byte($00)
+
+strInputNameFilterVoice1:    
+    .text("VOICE1")    
+    .byte($00)
+
+strInputNameFilterVoice2:    
+    .text("VOICE2")    
+    .byte($00)
+
+strInputNameFilterVoice3:    
+    .text("VOICE3")    
+    .byte($00)
+
+strInputNameFilterLowpass:   
+    .text("LOWPASS")   
+    .byte($00)
+
+strInputNameFilterHighpass:  
+    .text("HIGHPASS")  
+    .byte($00)
+
+strInputNameFilterBandwidth: 
+    .text("BANDWIDTH") 
+    .byte($00)
+
+strInputNameMainVol:         
+    .text("VOL")       
+    .byte($00)
+
