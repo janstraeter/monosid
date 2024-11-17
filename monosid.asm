@@ -33,43 +33,22 @@ BasicUpstart2(mainProgram)
 
 mainProgram:
 {
-    jsr setupRasterInterrupt
-
-    lda #BLACK
-    sta VIC.BORDERCOLOR
-    sta VIC.BACKGROUND_COLOR_0
-    
-    /*lda #WHITE
-    sta KERNAL.TEXTCOLOR
-    jsr KERNAL.CLS*/
-
-    jsr screenClear
-    lda #RED
-    jsr screenClearColor
-
-    screenPutStringColor(0, 0, introtext, RED)
-    screenDrawRectangleColor(3, 2, 35, 21, YELLOW)
-    screenDrawRectangleColor(4, 3, 10, 10, GREEN)
-
-    screenPutChar(0, 0, test)
-    screenPutChar(1, 0, $ab)
-    screenPutColor(0, 0, BLUE)
-    screenPutCharColor(39, 24, $51, GREEN)
-    screenPutColorLength(4, 3, 12, BLUE)
-
+    jsr userinterfaceInitScreen
     jsr userinterfaceDrawMain
+    jsr setupRasterInterrupt
 
 waitLoop:
     lda ZP.CURRENT_PRESSED_KEY
     sta currentPressedKey
 
+    jsr updateCurrentKeyboardPianoOctave
+    jsr updateCurrentNote
+
     jmp waitLoop
 
 quit:
-    jsr KERNAL.CLS
+//    jsr KERNAL.CLS
     rts
-
-    test: .byte($00)
 }
 
 /* -------------------------------------------------------------------
@@ -111,8 +90,9 @@ setupRasterInterrupt:
  * Raster interrupt routine to play the currently selected note
  *
  * Reads global variables:  currentNote, noteChange
+ *
  * Writes global variables: currentNote, noteChange
-  *
+ *
  * ---------------------------------------------------------------- */ 
 
 rasterInterrupRoutine:
@@ -139,7 +119,6 @@ doRasterIrq:
     pha
     
     // Call the subroutines
-    jsr updateCurrentNote
     jsr playCurrentNote
 
     // Restore ZPR_1 from stack
@@ -162,19 +141,69 @@ exit:
  * Subroutine
  * ----------
  *
+ * Checks if the current pressed key is one of the keys 1-8.
+ * If it is, sets the current keyboard piano octave accordingly.
+ *
+ * Reads global variables:  currentPressedKey, keyboardPianoOctaveKeyCodes,
+ *                          keyboardPianoOctaveOffsets
+ *
+ * Writes global variables: currentKeyboardPianoOctave,
+                            currentKeyboardPianoNoteOffset
+ *
+ * ---------------------------------------------------------------- */ 
+
+updateCurrentKeyboardPianoOctave:
+{
+    lda currentPressedKey
+    cmp #64
+    beq notFound
+
+    loadPointerToZPR(keyboardPianoOctaveKeyCodes, ZPR_1)
+    ldy #$00
+
+arrayLoop:
+    lda (ZPR_1), y
+    cmp currentPressedKey
+    beq found
+    iny
+    cpy #$08
+    bne arrayLoop
+    jmp notFound
+
+found:
+    sty currentKeyboardPianoOctave
+    loadPointerToZPR(keyboardPianoOctaveOffsets, ZPR_1)
+    lda (ZPR_1), y
+    sta currentKeyboardPianoNoteOffset
+
+    jsr userInterfaceOutputCurrentKeyboardPianoOctave
+
+notFound:
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
  * Interprets the currently pressed key as a note
  *
- * Reads global variables:  keyboardPianoKeyCodes, currentPressedKey
- * Writes global variables: currentNote, noteChange
+ * Reads global variables:  keyboardPianoKeyCodes, currentPressedKey,
+ *                          keyboardPianoKeyCodes, currentKeyboardPianoNoteOffset,
+ *                          maxFreqTableNum
+ *
+ * Writes global variables: currentNote, noteChange, currentNoteOfOctave
  *
  * ---------------------------------------------------------------- */ 
 
 updateCurrentNote:
 {
-    lda #<keyboardPianoKeyCodes
-    sta ZPR_1_LO
-    lda #>keyboardPianoKeyCodes
-    sta ZPR_1_HI
+    lda currentPressedKey
+    cmp #64
+    beq notFound
+
+    loadPointerToZPR(keyboardPianoKeyCodes, ZPR_1)
     ldy #$00
 
 arrayLoop:
@@ -188,34 +217,47 @@ arrayLoop:
 
 found:
     sty tempCurrentNote
-    jmp checkForNotChange
+    tya
+    clc
+    adc currentKeyboardPianoNoteOffset
+    sta tempCurrentNote
+
+    cmp maxFreqTableNum
+    bcs notFound
+
+    jmp checkForNoteChange
 
 notFound:
     lda #$FF
     sta tempCurrentNote
-    jmp checkForNotChange
 
-checkForNotChange:
+checkForNoteChange:
     lda currentNote
     cmp tempCurrentNote
     beq noteHasNotChanged
 
-noteHasChanged:
     lda currentNote
     sta previousNote
     lda tempCurrentNote
     sta currentNote
+
+    cmp #$FF
+    beq doNotSubstractNoteOffset
+    sec
+    sbc currentKeyboardPianoNoteOffset
+
+doNotSubstractNoteOffset:
+    sta currentNoteOfOctave
+
     lda #$01
-    sta noteChange
+    sta noteHasChangedFlag
     rts
 
 noteHasNotChanged:
-    lda #$00
-    sta noteChange
     rts
 
-tempCurrentNote:
-    .byte($ff)
+    // Local variables
+    tempCurrentNote: .byte($ff)
 }
 
 
@@ -248,8 +290,9 @@ updateSid:
 
 playNote:
     // Eine Note soll gespielt werden
-    lda #$10
-    sta SID.VOICE_1_CONTROL_REGISTER
+
+    // lda #$10
+    // sta SID.VOICE_1_CONTROL_REGISTER
 
     lda #$00
     sta SID.VOICE_1_ATTACK_DECAY
@@ -257,25 +300,17 @@ playNote:
     lda #$FA
     sta SID.VOICE_1_SUSTAIN_RELEASE
 
-    // Aktuelle Note laden, mit 48 (4 Oktaven) dazu addieren und im Y-Register ablegen
+    // Aktuelle Note laden und im Y-Register ablegen
     lda currentNote
-    clc
-    adc #48
     tay
 
     // LO Byte der Frequenz der aktuellen Note laden und für Stimme 1 setzen
-    lda #<FreqTablePalLo
-    sta ZPR_1_LO
-    lda #>FreqTablePalLo
-    sta ZPR_1_HI
+    loadPointerToZPR(freqTablePalLo, ZPR_1)
     lda (ZPR_1), y
     sta SID.VOICE_1_FREQUENCY_LO
 
     // HI Byte der Frequenz der aktuellen Note laden und für Stimme 1 setzen
-    lda #<FreqTablePalHi
-    sta ZPR_1_LO
-    lda #>FreqTablePalHi
-    sta ZPR_1_HI
+    loadPointerToZPR(freqTablePalHi, ZPR_1)
     lda (ZPR_1), y
     sta SID.VOICE_1_FREQUENCY_HI
 
@@ -297,80 +332,22 @@ return:
  * Parameters:   None
  * Return value: None
  *
- * Reads global variables:  previousNote, currentNote, noteChange
- * Writes global variables: None
+ * Reads global variables:  currentNote, noteHasChangedFlag
+ * Writes global variables: noteHasChangedFlag
  *
  * ---------------------------------------------------------------- */ 
 
 playCurrentNote:
 {
-
-    lda previousNote
-    cmp #$FF
-    beq noNoteToPlay2
-
-    lda previousNote
-    clc
-    asl
-    tay
-
-    lda #<noteNames
-    sta ZPR_1_LO
-    lda #>noteNames
-    sta ZPR_1_HI
-
-    lda (ZPR_1), y
-    sta SCREENMEM+120
-    iny
-    lda (ZPR_1), y
-    sta SCREENMEM+121
-    jmp test
-
-noNoteToPlay2:
-    lda #$2D
-    sta SCREENMEM+120
-    sta SCREENMEM+121
-test:
-
-    // lda currentNote
-    // cmp previousNote
-    // beq outputNoteName
-
-    lda noteChange
+    lda noteHasChangedFlag
     cmp #$01
-    bne outputNoteName
+    bne exit
 
-playNewNote:
-    inc VIC.BORDERCOLOR
-    // lda currentNote
-    // sta previousNote
     jsr updateSid
+    jsr userinterfaceOutputCurrentNote
 
-outputNoteName:
-    lda currentNote
-    cmp #$FF
-    beq noNoteToPlay
-
-    clc
-    asl
-    tay
-
-    lda #<noteNames
-    sta ZPR_1_LO
-    lda #>noteNames
-    sta ZPR_1_HI
-
-    lda (ZPR_1), y
-    sta SCREENMEM+80
-    iny
-    lda (ZPR_1), y
-    sta SCREENMEM+81
-    jmp exit
-
-noNoteToPlay:
-    lda #$2D
-    sta SCREENMEM+80
-    sta SCREENMEM+81
+    lda #$00
+    sta noteHasChangedFlag
 
 exit:
     rts

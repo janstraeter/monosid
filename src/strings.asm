@@ -8,99 +8,110 @@
 
 .encoding "screencode_upper"
 
-introtext:
-    .text "MONOSID - USE WASD TO PLAY NOTES"
-    .byte($00)
+strMenu:
+	.byte $5f, $a0, $8d, $85, $8e, $95, $a0, $69, $00
+
+strOctave:
+	.text "OCT:"
+	.byte $00
+
+strNote:
+	.text "NOTE:"
+	.byte $00
+
+strMonosid:
+    .text "MONOSID"
+    .byte $00
 
 strModuleNameVoice1:
-    .text("VOICE 1")
-    .byte($00)
+    .text "VOICE 1"
+    .byte $00
 
 strModuleNameVoice2:
-    .text("VOICE 2")
-    .byte($00)
+    .text "VOICE 2"
+    .byte $00
 
 strModuleNameVoice3:
-    .text("VOICE 3")
-    .byte($00)
+    .text "VOICE 3"
+    .byte $00
 
 strModuleNameFilter:
-    .text("FILTER") 
-    .byte($00)
+    .text "FILTER"
+    .byte $00
 
 strModuleNameMain:  
-    .text("MAIN")   
-    .byte($00)
+    .text "MAIN"
+    .byte $00
 
 strInputNameVoiceWaveform:   
-    .text("WAVE")      
-    .byte($00)
+    .text "WAVE"
+    .byte $00
 
 strInputNameVoicePulseWidth: 
-    .text("PULSE")     
-    .byte($00)
+    .text "PULSE"
+    .byte $00
 
 strInputNameVoiceAttack:     
-    .text("ATC")       
-    .byte($00)
+    .text "ATC"
+    .byte $00
 
 strInputNameVoiceDecay:      
-    .text("DCY")       
-    .byte($00)
+    .text "DCY"
+    .byte $00
 
 strInputNameVoiceSustain:    
-    .text("SUS")       
-    .byte($00)
+    .text "SUS"
+    .byte $00
 
 strInputNameVoiceRelease:    
-    .text("RLS")       
-    .byte($00)
+    .text "RLS"
+    .byte $00
 
 strInputNameVoiceUse:        
-    .text("USE")       
-    .byte($00)
+    .text "USE"
+    .byte $00
 
 strInputNameVoiceSync:       
-    .text("SYNC")      
-    .byte($00)
+    .text "SYNC"
+    .byte $00
 
 strInputNameVoiceRingMod:    
-    .text("RING")      
-    .byte($00)
+    .text "RING"
+    .byte $00
 
 strInputNameFilterCutoff:    
-    .text("CUTOFF")    
-    .byte($00)
+    .text "CUTOFF"
+    .byte $00
 
 strInputNameFilterResonance: 
-    .text("RES")       
-    .byte($00)
+    .text "RES"
+    .byte $00
 
 strInputNameFilterVoice1:    
-    .text("VOICE1")    
-    .byte($00)
+    .text "VOICE1"
+    .byte $00
 
 strInputNameFilterVoice2:    
-    .text("VOICE2")    
-    .byte($00)
+    .text "VOICE2"
+    .byte $00
 
 strInputNameFilterVoice3:    
-    .text("VOICE3")    
-    .byte($00)
+    .text "VOICE3"
+    .byte $00
 
 strInputNameFilterLowpass:   
-    .text("LOWPASS")   
-    .byte($00)
+    .text "LOWPASS"
+    .byte $00
 
 strInputNameFilterHighpass:  
-    .text("HIGHPASS")  
-    .byte($00)
+    .text "HIGHPASS"
+    .byte $00
 
 strInputNameFilterBandwidth: 
-    .text("BANDWIDTH") 
-    .byte($00)
+    .text "BANDWIDTH"
+    .byte $00
 
 strInputNameMainVol:         
-    .text("VOL")       
-    .byte($00)
+    .text "VOL"
+    .byte $00
 

@@ -1,8 +1,26 @@
 #importonce
 
+userinterfaceInitScreen:
+{
+    lda #CYAN
+    sta VIC.BORDERCOLOR
+    lda #DARK_GRAY
+    sta VIC.BACKGROUND_COLOR_0
+	jsr screenClear
+    lda #GRAY
+    jsr screenClearColor
+    rts
+}
+
 userinterfaceDrawMain:
 {
-	jsr screenClear
+	screenPutString(9, 0, strMenu)
+	screenPutString(18, 0, strOctave)
+	screenPutString(24, 0, strNote)
+	screenPutString(33, 0, strMonosid)
+    jsr userInterfaceOutputCurrentKeyboardPianoOctave
+    jsr userinterfaceOutputCurrentNote
+
 	
 	lda modulesNum
 	sta moduleLoopCounter
@@ -50,4 +68,52 @@ modulesLoop:
 	// Local variables
 	moduleIndex:       .byte($00)
 	moduleLoopCounter: .byte($00)
+}
+
+userinterfaceOutputCurrentNote:
+{
+	// Check if a note is to be played
+	lda currentNoteOfOctave
+    cmp #$FF
+    beq noNoteToPlay
+
+    // Yes, a note. Multiply the note number with 2 (the size of the
+    // note-name array elements) and transfer it to the Y-register
+    clc
+    asl
+    tay
+
+    // Load the address of the note-name array
+    lda #<noteNames
+    sta ZPR_1_LO
+    lda #>noteNames
+    sta ZPR_1_HI
+
+    // Output the note name at line 0, char 29
+    lda (ZPR_1), y
+    sta SCREENMEM+29
+    iny
+    lda (ZPR_1), y
+    sta SCREENMEM+30
+    jmp exit
+
+noNoteToPlay:
+    
+    // No note to play.
+    // Output "--" at line 0, char 29
+    lda #$2D
+    sta SCREENMEM+29
+    sta SCREENMEM+30
+
+exit:
+    rts
+}
+
+userInterfaceOutputCurrentKeyboardPianoOctave:
+{
+    lda currentKeyboardPianoOctave
+    clc
+    adc #$30
+    sta SCREENMEM+22
+    rts
 }

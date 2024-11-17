@@ -51,16 +51,25 @@
  * ---------------------------------------------------------------- */ 
 
 .namespace STRUCT_MODULE {
+    // label of module
     .label NAME = $00
+    
+    // position and size of module
     .label LEFT = $02
     .label RIGHT = $03
     .label INNER_WIDTH = $04
     .label INNER_HEIGHT = $05
+    
+    // color of module border
     .label COLOR = $06
+    
+    // precalculated offsets into screen- and color-memory
     .label NAME_SCREEN_MEMORY = $07
     .label NAME_COLOR_MEMORY = $09
     .label RECT_SCREEN_MEMORY = $0B
     .label RECT_COLOR_MEMORY = $0D
+    
+    // array with input elements
     .label INPUT_ARRAY_NUM = $0F
     .label INPUT_ARRAY = $10
 }
@@ -73,7 +82,7 @@
  *
  * ---------------------------------------------------------------- */ 
 
-.macro createStructModule(name, left, top, innerWidth, innerHeight, color) {    
+.macro createStructModule(name, left, top, innerWidth, innerHeight, color, inputArrayNum, inputArray) {
     
     // We can pre-calculate the screen- and color-memory adresses
     // to avoid the costly multiplications during run-time because
@@ -103,7 +112,95 @@
     .byte(>rectMemoryAddress)      // $0C
     .byte(<rectColorMemoryAddress) // $0D RECT_COLOR_MEMORY
     .byte(>rectColorMemoryAddress) // $0E
-    .byte($00)                     // $0F INPUT_ARRAY_NUM
-    .byte($00)                     // $10 INPUT_ARRAY
+    .byte(inputArrayNum)           // $0F INPUT_ARRAY_NUM
+    .byte(<inputArray)             // $10 INPUT_ARRAY
+    .byte(>inputArray)             // $11
 }
+
+
+/* -------------------------------------------------------------------
+ * Struct definition
+ * -----------------
+ *
+ * Holds all information of an input element
+ *
+ * ---------------------------------------------------------------- */ 
+
+.namespace STRUCT_INPUT {
+    // type of input
+    .label TYPE = $00
+
+    // position of input and precalculated offsets into screen- and color-memory
+    .label LEFT = $01
+    .label TOP = $02
+    .label WIDTH = $03
+    .label SCREEN_MEMORY = $04
+    .label COLOR_MEMORY = $06
+
+    // label, position of label and precalculated offsets into screen- and color-memory
+    .label LABEL = $08
+    .label LABEL_LEFT = $0a
+    .label LABEL_TOP = $0b
+    .label LABEL_WIDTH = $0c
+    .label LABEL_SCREEN_MEMORY = $0d
+    .label LABEL_COLOR_MEMORY = $0f
+
+    // current value of input
+    .label VALUE = $11
+}
+
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Creates a new instance of the input struct
+ *
+ * ---------------------------------------------------------------- */ 
+
+.macro createStructInput(type, left, top, width, label, valueLo, valueHi) {    
+    
+    // For the boolean inputs the label starts 1 character right to the input
+    // for all other inputs the label starts 1 line above
+    .var labelLeft = left
+    .var labelTop = top - 1
+    .var labelWidth = width
+
+    .if (type == INPUT_TYPE.BOOLEAN) {
+        .var labelLeft = left + 1
+        .var labelTop = top
+        .var labelWidth = width - 1
+    }
+
+    // We can pre-calculate the screen- and color-memory adresses
+    // to avoid the costly multiplications during run-time because
+    // the position on the screen will never change
+
+    .var inputMemoryAddress = screenCalculateMemoryAddress(left, top)
+    .var inputColorMemoryAddress = screenCalculateColorMemoryAddress(left, top)
+
+    .var labelMemoryAddress = screenCalculateMemoryAddress(labelLeft, labelTop)
+    .var labelColorMemoryAddress = screenCalculateColorMemoryAddress(labelLeft, labelTop)
+
+    .byte(type)                         // $00 TYPE
+    .byte(left)                         // $01 LEFT
+    .byte(top)                          // $02 TOP
+    .byte(width)                        // $03 WIDTH
+    .byte(<inputMemoryAddress)          // $04 SCREEN_MEMORY
+    .byte(>inputMemoryAddress)          // $05
+    .byte(<inputColorMemoryAddress)     // $06 COLOR_MEMORY
+    .byte(>inputColorMemoryAddress)     // $07
+    .byte(<label)                       // $08 LABEL
+    .byte(>label)                       // $09
+    .byte(labelLeft)                    // $0a LABEL_LEFT
+    .byte(labelTop)                     // $0b LABEL_TOP
+    .byte(labelWidth)                   // $0c LABEL_WIDTH
+    .byte(<labelMemoryAddress)          // $0d LABEL_SCREEN_MEMORY
+    .byte(>labelMemoryAddress)          // $0e
+    .byte(<labelColorMemoryAddress)     // $0f LABEL_COLOR_MEMORY
+    .byte(>labelColorMemoryAddress)     // $10
+    .byte(valueLo)                      // $11 VALUE
+    .byte(valueHi)                      // $12
+}
+
 

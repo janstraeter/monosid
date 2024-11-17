@@ -71,3 +71,11 @@
     .label MAIN                     = $01
     .label MENU                     = $02
 }
+
+.namespace INPUT_TYPE {
+    .label WAVEFORM                 = $01
+    .label INTEGER_4_BITS           = $02
+    .label INTEGER_11_BITS          = $03
+    .label INTEGER_12_BITS          = $04
+    .label BOOLEAN                  = $05
+}

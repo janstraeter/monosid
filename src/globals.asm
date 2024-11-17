@@ -28,18 +28,19 @@ currentPressedKey:
 /* -------------------------------------------------------------------
  *
  * Is true if the current note changed in the last input cycle
+ * and the player routine needs to update the SID
  *
  * Type: Boolean
  *
  * ---------------------------------------------------------------- */ 
 
-noteChange:
+noteHasChangedFlag:
     .byte($00)
 
 
 /* -------------------------------------------------------------------
  *
- * Current note to be played
+ * Current note to be played (index into the frequency-table)
  * 255 = no note
  *
  * Type: Integer
@@ -52,7 +53,7 @@ currentNote:
 
 /* -------------------------------------------------------------------
  *
- * Previusly played note
+ * Previously played note (index into the frequency-table)
  * 255 = no note
  *
  * Type: Integer
@@ -65,7 +66,21 @@ previousNote:
 
 /* -------------------------------------------------------------------
  *
- * Currently selected octave for the keyboard piano
+ * Current note relative to the currently selected octave of the
+ * keyboard piano), a value between 0-11
+ * 255 = no note
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentNoteOfOctave:
+    .byte($FF)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Currently selected octave of the keyboard piano
  *
  * Type: Integer
  *
@@ -73,6 +88,19 @@ previousNote:
 
 currentKeyboardPianoOctave:
     .byte($04)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Note-offset for the currently selected octave of the keyboard piano
+ * (currentKeyboardPianoOctave * 12)
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentKeyboardPianoNoteOffset:
+    .byte($30)
 
 
 /* -------------------------------------------------------------------
@@ -103,6 +131,45 @@ keyboardPianoKeyCodes:
 
 /* -------------------------------------------------------------------
  *
+ * Key codes used by the keyboard piano to switch the octave 0-7
+ *
+ * Type: Array of integers
+ *
+ * ---------------------------------------------------------------- */ 
+
+keyboardPianoOctaveKeyCodes:
+    .byte(56) // key 1 -> octave 0
+    .byte(59) // key 2 -> octave 1
+    .byte(8)  // key 3 -> octave 2
+    .byte(11) // key 4 -> octave 3
+    .byte(16) // key 5 -> octave 4
+    .byte(19) // key 6 -> octave 5
+    .byte(24) // key 7 -> octave 6
+    .byte(27) // key 8 -> octave 7
+
+
+/* -------------------------------------------------------------------
+ *
+ * Offset for the index into the frequency tables
+ * (to avoid the costly multiplications for current octave * 12)
+ *
+ * Type: Array of integers
+ *
+ * ---------------------------------------------------------------- */ 
+
+keyboardPianoOctaveOffsets:
+    .byte(0)  // octave 0
+    .byte(12) // octave 1
+    .byte(24) // octave 2 
+    .byte(36) // octave 3 
+    .byte(48) // octave 4
+    .byte(60) // octave 5
+    .byte(72) // octave 6
+    .byte(84) // octave 7
+
+
+/* -------------------------------------------------------------------
+ *
  * Names of the 7 notes and 5 half-notes
  *
  * Type: Array of text (2 chars each)
@@ -127,6 +194,18 @@ noteNames:
 
 /* -------------------------------------------------------------------
  *
+ * Number of entries in the frequency table (number of available notes)
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+maxFreqTableNum:
+    .byte($60)
+
+
+/* -------------------------------------------------------------------
+ *
  * Frequencies of the notes (PAL version)
  * Lo bytes
  *
@@ -134,7 +213,7 @@ noteNames:
  *
  * ---------------------------------------------------------------- */ 
 
-FreqTablePalLo:
+freqTablePalLo:
 //         C    C#   D    D#   E    F    F#   G    G#   A    A#   B
     .byte $16, $27, $39, $4b, $5f, $74, $8a, $a1, $ba, $d4, $f0, $0e  // 0
     .byte $2d, $4e, $71, $96, $be, $e7, $14, $42, $74, $a9, $e0, $1b  // 1
@@ -155,7 +234,7 @@ FreqTablePalLo:
  *
  * ---------------------------------------------------------------- */ 
 
-FreqTablePalHi:
+freqTablePalHi:
 //         C    C#   D    D#   E    F    F#   G    G#   A    A#   B
     .byte $01, $01, $01, $01, $01, $01, $01, $01, $01, $01, $01, $02  // 0
     .byte $02, $02, $02, $02, $02, $02, $03, $03, $03, $03, $03, $04  // 1
@@ -169,6 +248,236 @@ FreqTablePalHi:
 
 /* -------------------------------------------------------------------
  *
+ * Definition of the structs for the input elements
+ * for the module "VOICE 1"
+ *
+ * ---------------------------------------------------------------- */ 
+
+voice1InputWaveform:
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 4, 5, strInputNameVoiceWaveform, $01, $00)
+
+voice1InputPulseWidth:
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 4, 6, strInputNameVoicePulseWidth, $00, $00)
+
+voice1InputAttack:
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 4, 4, strInputNameVoiceAttack, $00, $00)
+
+voice1InputDecay:
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 4, 4, strInputNameVoiceDecay, $00, $00)
+
+voice1InputSustain:
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 4, 4, strInputNameVoiceSustain, $0F, $00)
+
+voice1InputRelease:
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 4, 4, strInputNameVoiceRelease, $00, $00)
+
+voice1InputUse:
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 3, 4, strInputNameVoiceUse, $01, $00)
+
+voice1InputSync:
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 4, 4, strInputNameVoiceSync, $00, $00)
+
+voice1InputRingMod:
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 5, 4, strInputNameVoiceRingMod, $00, $00)
+
+voice1InputArray:
+    .byte(<voice1InputWaveform)
+    .byte(>voice1InputWaveform)
+    .byte(<voice1InputPulseWidth)
+    .byte(>voice1InputPulseWidth)
+    .byte(<voice1InputAttack)
+    .byte(>voice1InputAttack)
+    .byte(<voice1InputDecay)
+    .byte(>voice1InputDecay)
+    .byte(<voice1InputSustain)
+    .byte(>voice1InputSustain)
+    .byte(<voice1InputRelease)
+    .byte(>voice1InputRelease)
+    .byte(<voice1InputUse)
+    .byte(>voice1InputUse)
+    .byte(<voice1InputSync)
+    .byte(>voice1InputSync)
+    .byte(<voice1InputRingMod)
+    .byte(>voice1InputRingMod)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Definition of the structs for the input elements
+ * for the module "VOICE 2"
+ *
+ * ---------------------------------------------------------------- */ 
+
+voice2InputWaveform:
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 10, 5, strInputNameVoiceWaveform, $01, $00)
+
+voice2InputPulseWidth:
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 10, 6, strInputNameVoicePulseWidth, $00, $00)
+
+voice2InputAttack:
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 10, 4, strInputNameVoiceAttack, $00, $00)
+
+voice2InputDecay:
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 10, 4, strInputNameVoiceDecay, $00, $00)
+
+voice2InputSustain:
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 10, 4, strInputNameVoiceSustain, $0F, $00)
+
+voice2InputRelease:
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 10, 4, strInputNameVoiceRelease, $00, $00)
+
+voice2InputUse:
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 9, 4, strInputNameVoiceUse, $00, $00)
+
+voice2InputSync:
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 10, 4, strInputNameVoiceSync, $00, $00)
+
+voice2InputRingMod:
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 11, 4, strInputNameVoiceRingMod, $00, $00)
+
+voice2InputArray:
+    .byte(<voice2InputWaveform)
+    .byte(>voice2InputWaveform)
+    .byte(<voice2InputPulseWidth)
+    .byte(>voice2InputPulseWidth)
+    .byte(<voice2InputAttack)
+    .byte(>voice2InputAttack)
+    .byte(<voice2InputDecay)
+    .byte(>voice2InputDecay)
+    .byte(<voice2InputSustain)
+    .byte(>voice2InputSustain)
+    .byte(<voice2InputRelease)
+    .byte(>voice2InputRelease)
+    .byte(<voice2InputUse)
+    .byte(>voice2InputUse)
+    .byte(<voice2InputSync)
+    .byte(>voice2InputSync)
+    .byte(<voice2InputRingMod)
+    .byte(>voice2InputRingMod)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Definition of the structs for the input elements
+ * for the module "VOICE 3"
+ *
+ * ---------------------------------------------------------------- */ 
+
+voice3InputWaveform:
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 16, 5, strInputNameVoiceWaveform, $01, $00)
+
+voice3InputPulseWidth:
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 16, 6, strInputNameVoicePulseWidth, $00, $00)
+
+voice3InputAttack:
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 16, 4, strInputNameVoiceAttack, $00, $00)
+
+voice3InputDecay:
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 16, 4, strInputNameVoiceDecay, $00, $00)
+
+voice3InputSustain:
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 16, 4, strInputNameVoiceSustain, $0F, $00)
+
+voice3InputRelease:
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 16, 4, strInputNameVoiceRelease, $00, $00)
+
+voice3InputUse:
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 15, 4, strInputNameVoiceUse, $00, $00)
+
+voice3InputSync:
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 16, 4, strInputNameVoiceSync, $00, $00)
+
+voice3InputRingMod:
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 17, 4, strInputNameVoiceRingMod, $00, $00)
+
+voice3InputArray:
+    .byte(<voice3InputWaveform)
+    .byte(>voice3InputWaveform)
+    .byte(<voice3InputPulseWidth)
+    .byte(>voice3InputPulseWidth)
+    .byte(<voice3InputAttack)
+    .byte(>voice3InputAttack)
+    .byte(<voice3InputDecay)
+    .byte(>voice3InputDecay)
+    .byte(<voice3InputSustain)
+    .byte(>voice3InputSustain)
+    .byte(<voice3InputRelease)
+    .byte(>voice3InputRelease)
+    .byte(<voice3InputUse)
+    .byte(>voice3InputUse)
+    .byte(<voice3InputSync)
+    .byte(>voice3InputSync)
+    .byte(<voice3InputRingMod)
+    .byte(>voice3InputRingMod)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Definition of the structs for the input elements
+ * for the module "FILTER"
+ *
+ * ---------------------------------------------------------------- */ 
+
+filterInputCutoff:
+    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 1, 22, 6, strInputNameFilterCutoff, $00, $00)
+
+filterInputResonance:
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 8, 22, 4, strInputNameFilterResonance, $00, $00)
+
+filterInputVoice1:
+    createStructInput(INPUT_TYPE.BOOLEAN, 13, 21, 7, strInputNameFilterVoice1, $00, $00)
+
+filterInputVoice2:
+    createStructInput(INPUT_TYPE.BOOLEAN, 13, 22, 7, strInputNameFilterVoice2, $00, $00)
+
+filterInputVoice3:
+    createStructInput(INPUT_TYPE.BOOLEAN, 13, 22, 7, strInputNameFilterVoice3, $00, $00)
+
+filterInputLowpass:
+    createStructInput(INPUT_TYPE.BOOLEAN, 21, 21, 7, strInputNameFilterLowpass, $00, $00)
+
+filterInputHighpass:
+    createStructInput(INPUT_TYPE.BOOLEAN, 21, 22, 7, strInputNameFilterHighpass, $00, $00)
+
+filterInputBandwidth:
+    createStructInput(INPUT_TYPE.BOOLEAN, 21, 23, 7, strInputNameFilterBandwidth, $00, $00)
+
+filterInputArray:
+    .byte(<filterInputCutoff)
+    .byte(>filterInputCutoff)
+    .byte(<filterInputResonance)
+    .byte(>filterInputResonance)
+    .byte(<filterInputVoice1)
+    .byte(>filterInputVoice1)
+    .byte(<filterInputVoice2)
+    .byte(>filterInputVoice2)
+    .byte(<filterInputVoice3)
+    .byte(>filterInputVoice3)
+    .byte(<filterInputLowpass)
+    .byte(>filterInputLowpass)
+    .byte(<filterInputHighpass)
+    .byte(>filterInputHighpass)
+    .byte(<filterInputBandwidth)
+    .byte(>filterInputBandwidth)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Definition of the structs for the input elements
+ * for the module "MAIN"
+ *
+ * ---------------------------------------------------------------- */ 
+
+mainInputVol:
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 35, 22, 4, strInputNameMainVol, $0F, $00)
+
+mainInputArray:
+    .byte(<mainInputVol)
+    .byte(>mainInputVol)
+
+
+/* -------------------------------------------------------------------
+ *
  * Definition of module "VOICE1"
  *
  * Type: STRUCT_MODULE
@@ -176,7 +485,7 @@ FreqTablePalHi:
  * ---------------------------------------------------------------- */ 
 
 moduleVoice1:
-    createStructModule(strModuleNameVoice1, 0,  2, 38, 3, GRAY)
+    createStructModule(strModuleNameVoice1, 0,  2, 38, 3, GRAY, 9, voice1InputArray)
 
 
 /* -------------------------------------------------------------------
@@ -188,7 +497,7 @@ moduleVoice1:
  * ---------------------------------------------------------------- */ 
 
 moduleVoice2:
-    createStructModule(strModuleNameVoice2, 0,  8, 38, 3, GRAY)
+    createStructModule(strModuleNameVoice2, 0,  8, 38, 3, GRAY, 9, voice2InputArray)
 
 
 /* -------------------------------------------------------------------
@@ -200,7 +509,7 @@ moduleVoice2:
  * ---------------------------------------------------------------- */ 
 
 moduleVoice3:
-    createStructModule(strModuleNameVoice3, 0, 14, 38, 3, GRAY)
+    createStructModule(strModuleNameVoice3, 0, 14, 38, 3, GRAY, 9, voice3InputArray)
 
 
 /* -------------------------------------------------------------------
@@ -212,7 +521,7 @@ moduleVoice3:
  * ---------------------------------------------------------------- */ 
 
 moduleFilter:
-    createStructModule(strModuleNameFilter, 0, 20, 31, 3, RED)
+    createStructModule(strModuleNameFilter, 0, 20, 31, 3, LIGHT_RED, 8, filterInputArray)
 
 
 /* -------------------------------------------------------------------
@@ -224,7 +533,7 @@ moduleFilter:
  * ---------------------------------------------------------------- */ 
 
 moduleMain:
-    createStructModule(strModuleNameMain,  34, 20,  4, 3, PURPLE)
+    createStructModule(strModuleNameMain,  34, 20,  4, 3, PURPLE, 1, mainInputArray)
 
 
 /* -------------------------------------------------------------------
