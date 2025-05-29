@@ -5,6 +5,8 @@
 #import "structs.asm"
 #import "math.asm"
 #import "screen.asm"
+#import "globals.asm"
+
 
 userinterfaceInitScreen:
 {
