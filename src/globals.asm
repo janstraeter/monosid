@@ -1,5 +1,9 @@
 #importonce
 
+#import "constants.asm"
+#import "strings.asm"
+#import "structs.asm"
+
 /* -------------------------------------------------------------------
  *
  * Currently selected program mode
@@ -431,7 +435,7 @@ filterInputVoice2:
     createStructInput(INPUT_TYPE.BOOLEAN, 13, 22, 7, strInputNameFilterVoice2, $00, $00)
 
 filterInputVoice3:
-    createStructInput(INPUT_TYPE.BOOLEAN, 13, 22, 7, strInputNameFilterVoice3, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 13, 23, 7, strInputNameFilterVoice3, $00, $00)
 
 filterInputLowpass:
     createStructInput(INPUT_TYPE.BOOLEAN, 21, 21, 7, strInputNameFilterLowpass, $00, $00)

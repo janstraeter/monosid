@@ -42,6 +42,27 @@
 
 
 /* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Uses indirect-indexed addressing to load 2 bytes from a struct
+ * and saves the hi-byte into the accu and the lo-byte into the X-register
+ *
+ * Parameters:   srcZPR:      address of zeropage register (the struct)
+ *               structIndex: index to load into the X register
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro structLoadWordToXAccu(srcZPR, structIndex) {
+    ldy #structIndex
+    lda (srcZPR), y
+    tax
+    iny
+    lda (srcZPR), y
+}
+
+
+/* -------------------------------------------------------------------
  * Struct definition
  * -----------------
  *
@@ -167,9 +188,9 @@
     .var labelWidth = width
 
     .if (type == INPUT_TYPE.BOOLEAN) {
-        .var labelLeft = left + 1
-        .var labelTop = top
-        .var labelWidth = width - 1
+        .eval labelLeft = left + 1
+        .eval labelTop = top
+        .eval labelWidth = width - 1
     }
 
     // We can pre-calculate the screen- and color-memory adresses

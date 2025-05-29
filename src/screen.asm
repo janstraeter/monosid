@@ -1,5 +1,9 @@
 #importonce
 
+#import "constants.asm"
+#import "zpregisters.asm"
+#import "math.asm"
+
 /* -------------------------------------------------------------------
  * Kick Assembler function
  * -----------------------
