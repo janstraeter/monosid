@@ -7,38 +7,39 @@
  *
  * ---------------------------------------------------------------- */ 
 
-.file [name="monosid.prg", segments="Data, Subroutines, MainProgram"]
-
+.file [name="monosid.prg", segments="Start, Data, Subroutines, MainProgram"]
 
 // *******************************************************************
-.segment Data [start=$80d]
+.segment Start [start=$801, modify="BasicUpstart", _start=mainProgram]
 // *******************************************************************
 
+// *******************************************************************
+.segment Data [startAfter="MainProgram"]
+// *******************************************************************
 
 /* -------------------------------------------------------------------
  *
- * Constants and structs
+ * Constants, ZP registers, memory functions and structs
  *
  * ---------------------------------------------------------------- */ 
 
 #import "src/constants.asm"
-#import "src/structs.asm"
 #import "src/zpregisters.asm"
+#import "src/screenmemoryfunctions.asm"
+#import "src/structs.asm"
 
 /* -------------------------------------------------------------------
  *
- * Global variables
+ * Strings and global variables
  *
  * ---------------------------------------------------------------- */ 
 
 #import "src/strings.asm"
 #import "src/globals.asm"
 
-
 // *******************************************************************
-.segment Subroutines [startAfter="Data"]
+.segment Subroutines [start=$80d]
 // *******************************************************************
-
 
 /* -------------------------------------------------------------------
  *
@@ -50,11 +51,9 @@
 #import "src/screen.asm"
 #import "src/userinterface.asm"
 
-
 // *******************************************************************
-.segment MainProgram [startAfter="Subroutines", modify="BasicUpstart", _start=mainProgram]
+.segment MainProgram [startAfter="Subroutines"]
 // *******************************************************************
-
 
 /* -------------------------------------------------------------------
  *
@@ -167,7 +166,6 @@ exit:
     rti
 }
 
-
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------
@@ -212,7 +210,6 @@ found:
 notFound:
     rts
 }
-
 
 /* -------------------------------------------------------------------
  * Subroutine
@@ -290,7 +287,6 @@ noteHasNotChanged:
     // Local variables
     tempCurrentNote: .byte($ff)
 }
-
 
 /* -------------------------------------------------------------------
  * Subroutine
