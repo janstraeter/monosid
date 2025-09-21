@@ -67,6 +67,31 @@
 
 
 /* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Uses indirect-indexed addressing to load 2 bytes from an array of
+ * pointers and saves the hi-byte into the accu and the lo-byte into the X-register
+ * 
+ * Parameters:   arrayAddressZPR:   address of zeropage register (pointer to array)
+ *               arrayIndex:        index of array item
+ *               destZPR:           address of zeropage register to write into
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro stuctLoadPointerArrayItemToZPR(arrayAddressZPR, arrayIndex, destZPR) {
+	lda arrayIndex
+	asl
+	tay
+	lda (arrayAddressZPR), y
+	sta destZPR
+	iny 
+	lda (arrayAddressZPR), y
+	sta destZPR+1
+}
+
+
+/* -------------------------------------------------------------------
  * Struct definition
  * -----------------
  *

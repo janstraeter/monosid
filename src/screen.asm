@@ -148,6 +148,32 @@ loop:
  * Subroutine
  * ----------
  *
+ * Writes the specified color for the specified length into the 
+ * color memory starting at the specified address
+ *
+ * Parameters:   ZPR_3: Color memory start address
+ *               X-register: length
+ *               Accu: color value
+ * 
+ * ---------------------------------------------------------------- */ 
+
+screenPutColorLengthAddress:
+{
+    ldy #$00
+loop:
+    sta (ZPR_3), y
+    iny
+    dex
+    bne loop
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
  * Puts a null terminated string into screen memory
  * starting at the specified 16-bit address
  *

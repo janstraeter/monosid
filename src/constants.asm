@@ -27,7 +27,7 @@
     .label TEXTCOLOR                = $0286
     .label CLS                      = $e544
     .label INTERRUPT_ROUTINE        = $ea31
-    .label CHRIN                    = $ffe4
+    .label GETIN                    = $ffe4
 }
 
 .namespace SID {
@@ -72,10 +72,33 @@
     .label MENU                     = $02
 }
 
+.namespace MODE_MAIN_SUBMODE {
+    .label SELECT_INPUT             = $01
+    .label INPUT_EDITOR             = $02
+}
+
+.namespace MODE_MENU_SUBMODE {
+    .label SELECT_ITEM              = $01
+}
+
 .namespace INPUT_TYPE {
     .label WAVEFORM                 = $01
     .label INTEGER_4_BITS           = $02
     .label INTEGER_11_BITS          = $03
     .label INTEGER_12_BITS          = $04
     .label BOOLEAN                  = $05
+}
+
+.namespace WAVEFORM {
+    .label TRIANGULAR               = $01
+    .label SAWTOOTH                 = $02
+    .label SQUARE                   = $03
+    .label NOISE                    = $04
+}
+
+.namespace PETSCII {
+    .label CURSOR_DOWN              = $11;
+    .label CURSOR_RIGHT             = $1D;
+    .label CURSOR_UP                = $91;
+    .label CURSOR_LEFT              = $9D;    
 }

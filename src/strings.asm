@@ -115,3 +115,14 @@ strInputNameMainVol:
     .text "VOL"
     .byte $00
 
+strWaveformTriangular:
+    .byte 148, 146, 137, 0
+
+strWaveformSawtooth:
+    .byte 147, 129, 151, 0
+
+strWaveformSquare:
+    .byte 147, 145, 146, 0
+
+strWaveformNoise:
+    .byte 142, 147, 133, 0

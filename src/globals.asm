@@ -19,6 +19,18 @@ currentMode:
 
 /* -------------------------------------------------------------------
  *
+ * Currently selected sub mode of the current program mode
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentSubMode:
+    .byte(MODE_MAIN_SUBMODE.SELECT_INPUT)
+
+
+/* -------------------------------------------------------------------
+ *
  * Currently pressed key (read from zero page addr. 203)
  * 64 = no key
  *
@@ -259,10 +271,10 @@ freqTablePalHi:
  * ---------------------------------------------------------------- */ 
 
 voice1InputWaveform:
-    createStructInput(INPUT_TYPE.WAVEFORM, 1, 4, 5, strInputNameVoiceWaveform, $01, $00)
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 4, 5, strInputNameVoiceWaveform, WAVEFORM.TRIANGULAR, $00)
 
 voice1InputPulseWidth:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 4, 6, strInputNameVoicePulseWidth, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 4, 6, strInputNameVoicePulseWidth, $FF, $00)
 
 voice1InputAttack:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 4, 4, strInputNameVoiceAttack, $00, $00)
@@ -314,10 +326,10 @@ voice1InputArray:
  * ---------------------------------------------------------------- */ 
 
 voice2InputWaveform:
-    createStructInput(INPUT_TYPE.WAVEFORM, 1, 10, 5, strInputNameVoiceWaveform, $01, $00)
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 10, 5, strInputNameVoiceWaveform, WAVEFORM.SAWTOOTH, $00)
 
 voice2InputPulseWidth:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 10, 6, strInputNameVoicePulseWidth, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 10, 6, strInputNameVoicePulseWidth, $FF, %00001111)
 
 voice2InputAttack:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 10, 4, strInputNameVoiceAttack, $00, $00)
@@ -369,7 +381,7 @@ voice2InputArray:
  * ---------------------------------------------------------------- */ 
 
 voice3InputWaveform:
-    createStructInput(INPUT_TYPE.WAVEFORM, 1, 16, 5, strInputNameVoiceWaveform, $01, $00)
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 16, 5, strInputNameVoiceWaveform, WAVEFORM.SQUARE, $00)
 
 voice3InputPulseWidth:
     createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 16, 6, strInputNameVoicePulseWidth, $00, $00)
@@ -572,4 +584,29 @@ modules:
 
 modulesNum:
     .byte($05)
+
+
+/* -------------------------------------------------------------------
+ *
+ * The index of the currently selected module
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentModuleIndex:
+    .byte($00)
+
+
+/* -------------------------------------------------------------------
+ *
+ * The index of the currently selected input in the currently
+ * selected module
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentInputIndex:
+    .byte($00)
 

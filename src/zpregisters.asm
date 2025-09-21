@@ -20,30 +20,42 @@
 
 // ZPR_1 and ZPR_2 are safe to use (unsed memory locations)
 // and can be used for indirect-indexed addressing
-.label ZPR_1    = $FB
-.label ZPR_1_LO = $FB
-.label ZPR_1_HI = $FC
-.label ZPR_2    = $FD
-.label ZPR_2_LO = $FD
-.label ZPR_2_HI = $FE
+.label ZPR_1     = $FB
+.label ZPR_1_LO  = $FB
+.label ZPR_1_HI  = $FC
+.label ZPR_2     = $FD
+.label ZPR_2_LO  = $FD
+.label ZPR_2_HI  = $FE
 
-// ZPR_3 through ZPR_7 are mostly safe to use
+// ZPR_3 through ZPR_8 are mostly safe to use
 // (they are used by the KERNAL as registers for the floating point functions)
-.label ZPR_3    = $61
-.label ZPR_3_LO = $61
-.label ZPR_3_HI = $62
-.label ZPR_4    = $63
-.label ZPR_4_LO = $63
-.label ZPR_4_HI = $64
-.label ZPR_5    = $65
-.label ZPR_5_LO = $65
-.label ZPR_5_HI = $66
-.label ZPR_6    = $69
-.label ZPR_6_LO = $69
-.label ZPR_6_HI = $6A
-.label ZPR_7    = $6B
-.label ZPR_7_LO = $6B
-.label ZPR_7_HI = $6C
+.label ZPR_3     = $61
+.label ZPR_3_LO  = $61
+.label ZPR_3_HI  = $62
+.label ZPR_4     = $63
+.label ZPR_4_LO  = $63
+.label ZPR_4_HI  = $64
+.label ZPR_5     = $65
+.label ZPR_5_LO  = $65
+.label ZPR_5_HI  = $66
+.label ZPR_6     = $69
+.label ZPR_6_LO  = $69
+.label ZPR_6_HI  = $6A
+.label ZPR_7     = $6B
+.label ZPR_7_LO  = $6B
+.label ZPR_7_HI  = $6C
+.label ZPR_8     = $6D
+.label ZPR_8_LO  = $6D
+.label ZPR_8_HI  = $6E
+
+// ZPR_9 and ZPR_10 are safe to use (unsed memory locations)
+// and can be used for indirect-indexed addressing
+.label ZPR_9     = $FB
+.label ZPR_9_LO  = $FB
+.label ZPR_9_HI  = $FC
+.label ZPR_10    = $FD
+.label ZPR_10_LO = $FD
+.label ZPR_10_HI = $FE
 
 
 /* -------------------------------------------------------------------
@@ -62,5 +74,99 @@
     lda #<pointer
     sta ZPR
     lda #>pointer
+    sta ZPR+1
+}
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Pushes the specified 16-bit ZPR to the stack
+ *
+ * Parameters:   ZPR: address of zeropage register
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro pushZPR(ZPR) {
+    lda ZPR+1
+    pha
+    lda ZPR
+    pha
+}
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Pulls the last 2 bytes from the stack and saves them in the specified ZPR
+ *
+ * Parameters:   ZPR: address of zeropage register
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro pullZPR(ZPR) {
+    pla
+    sta ZPR
+    pla
+    sta ZPR+1
+}
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Copies the value of one 16-bit ZPR to another
+ *
+ * Parameters:   srcZPR: address of source zeropage register
+ *               destZPR: address of source zeropage register
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro copyZPR(srcZPR, destZPR) {
+    lda srcZPR
+    sta destZPR
+    lda srcZPR+1
+    sta destZPR+1
+}
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Adds an 8-bit value to an ZPR containing an 16-bit address
+ *
+ * Parameters:   ZPR: address of zeropage register
+ *               byteValue: value to be added
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro addByteValueToZPRAddress(ZPR, byteValue) {
+    clc
+    lda ZPR
+    adc #byteValue
+    sta ZPR
+    lda ZPR+1
+    adc #$00
+    sta ZPR+1
+}
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Adds the first byte of an memory address to an ZPR containing an 16-bit address
+ *
+ * Parameters:   ZPR: address of zeropage register
+ *               byteValue: value to be added
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro addByteAddressToZPRAddress(ZPR, byteAddress) {
+    clc
+    lda ZPR
+    adc byteAddress
+    sta ZPR
+    lda ZPR+1
+    adc #$00
     sta ZPR+1
 }

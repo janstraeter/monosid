@@ -48,6 +48,7 @@
  * ---------------------------------------------------------------- */ 
 
 #import "src/math.asm"
+#import "src/convert.asm"
 #import "src/screen.asm"
 #import "src/userinterface.asm"
 
@@ -63,22 +64,63 @@
 
 mainProgram:
 {
+    // Draw the UI in it's inital state
     jsr userinterfaceInitScreen
     jsr userinterfaceDrawMain
+    jsr userinterfaceAddModuleFocus
+    
+    // setup the raster interrup which plays the sounds
     jsr setupRasterInterrupt
 
 waitLoop:
+    // read the current pressed key and save it in a global variable
     lda ZP.CURRENT_PRESSED_KEY
     sta currentPressedKey
 
-    jsr updateCurrentKeyboardPianoOctave
-    jsr updateCurrentNote
+//     jsr KERNAL.GETIN
+//     cmp #$00
+//     beq noKeychange
+//     sta lastPressedKey
+// noKeychange:
+// 
+//     // lda #128
+//     lda lastPressedKey
+//     jsr debugDumpByte
 
+	// Switch for the current program mode
+	lda currentMode
+	cmp #MODE.MAIN
+	beq modeMain
+	cmp #MODE.MENU
+	beq modeMain
     jmp waitLoop
 
-quit:
-//    jsr KERNAL.CLS
-    rts
+modeMain:
+	// Switch for the current program mode sub mode
+	lda currentSubMode
+	cmp #MODE_MAIN_SUBMODE.SELECT_INPUT
+	beq subModeMainSelectInput
+	cmp #MODE_MAIN_SUBMODE.INPUT_EDITOR
+	beq subModeMainInputEditor
+    jmp waitLoop
+
+subModeMainSelectInput:
+    // check for pressed keys, play notes or move the focus of the currently selected module/input
+    jsr updateCurrentKeyboardPianoOctave
+    jsr updateCurrentNote
+    jsr updateInputFocus
+    jmp waitLoop
+
+subModeMainInputEditor:
+    //** @TODO: Implement input editor */
+    jmp waitLoop
+
+modeMenu:
+    //** @TODO: Implement menu */
+    jmp waitLoop
+
+// lastPressedKey:
+//     .byte(0)
 }
 
 /* -------------------------------------------------------------------
@@ -177,7 +219,7 @@ exit:
  *                          keyboardPianoOctaveOffsets
  *
  * Writes global variables: currentKeyboardPianoOctave,
-                            currentKeyboardPianoNoteOffset
+ *                          currentKeyboardPianoNoteOffset
  *
  * ---------------------------------------------------------------- */ 
 
@@ -292,7 +334,7 @@ noteHasNotChanged:
  * Subroutine
  * ----------
  *
- * Updated the control registers of the SID chip according to the 
+ * Updates the control registers of the SID chip according to the 
  * settings
  *
  * Reads global variables:  currentNote, FreqTablePalLo, FreqTablePalHi
@@ -378,4 +420,208 @@ playCurrentNote:
 
 exit:
     rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Checks if the currently selected module/input element
+ * should be updated and if so updates the corresponding global
+ * variables accordingly, then updates the user interface
+ *
+ * Reads global variables:  currentPressedKey
+ * Writes global variables: currentModuleIndex, currentInputIndex
+ *
+ * ---------------------------------------------------------------- */ 
+
+updateInputFocus:
+{
+    // Read pressed keycode, if no key pressed, exit
+    jsr KERNAL.GETIN
+    cmp #$00
+    beq exit
+
+	// Switch for the cursor keys
+    cmp #PETSCII.CURSOR_DOWN
+	beq cursorDown
+	cmp #PETSCII.CURSOR_RIGHT
+	beq cursorRight
+	cmp #PETSCII.CURSOR_UP
+	beq cursorUp
+	cmp #PETSCII.CURSOR_LEFT
+	beq cursorLeft
+
+    // If no cursor key, exit
+exit:
+    rts
+
+cursorDown:
+    // Cursor down: increase current module index,
+    // wrap around if number of modules is reached
+    jsr userinterfaceRemoveModuleFocus
+    jsr userinterfaceRemoveInputFocus
+    inc currentModuleIndex
+    lda currentModuleIndex
+    cmp modulesNum
+    bne cursorDownNoWrap
+    lda #$00
+    sta currentModuleIndex
+
+cursorDownNoWrap:
+    jsr correctCurrentInputIndex
+    jsr userinterfaceAddModuleFocus
+    jsr userinterfaceAddInputFocus
+    rts
+
+cursorRight:
+    // Cursor right: increase current input index,
+    // wrap around if current module´s input number is reached
+    jsr userinterfaceRemoveInputFocus
+    jsr loadCurrentModuleInputNumToAccu
+    sta currentModuleInputNum
+    inc currentInputIndex
+    lda currentInputIndex
+    cmp currentModuleInputNum
+    bne cursorRightNoWrap
+    lda #$00
+    sta currentInputIndex
+
+cursorRightNoWrap:
+    jsr userinterfaceAddInputFocus
+    rts
+
+cursorUp:
+    // Cursor up: decrease current module index,
+    // wrap around if below zero is reached
+    jsr userinterfaceRemoveModuleFocus
+    jsr userinterfaceRemoveInputFocus
+    dec currentModuleIndex
+    bpl cursorUpNoWrap
+    lda modulesNum
+    sec
+    sbc #1
+    sta currentModuleIndex
+
+cursorUpNoWrap:
+    jsr correctCurrentInputIndex
+    jsr userinterfaceAddModuleFocus
+    jsr userinterfaceAddInputFocus
+    rts
+
+cursorLeft:
+    // Cursor left: dncrease current input index,
+    // wrap around if below zero is reached
+    jsr userinterfaceRemoveInputFocus
+    jsr loadCurrentModuleInputNumToAccu
+    sta currentModuleInputNum
+    dec currentInputIndex
+    bpl cursorLeftNoWrap
+    lda currentModuleInputNum
+    sec
+    sbc #1
+    sta currentInputIndex
+
+cursorLeftNoWrap:
+    jsr userinterfaceAddInputFocus
+    rts
+
+currentModuleInputNum:
+	.byte(0)
+}
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Loads the number of input elements of the currently selected module
+ * into the accu register
+ *
+ * Reads global variables:  modules, currentModuleIndex
+ * Writes global variables: none
+ * 
+ * ---------------------------------------------------------------- */ 
+
+loadCurrentModuleInputNumToAccu:
+{
+	loadPointerToZPR(modules, ZPR_6)
+    stuctLoadPointerArrayItemToZPR(ZPR_6, currentModuleIndex, ZPR_7);
+	structLoadByteToAccu(ZPR_7, STRUCT_MODULE.INPUT_ARRAY_NUM)
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Checks if the current input index is bigger than the max
+ * input index of the current module and sets it to the max
+ * value if neccessary
+ *
+ * Reads global variables:  modules, currentModuleIndex, currentInputIndex
+ * Writes global variables: none
+ * 
+ * ---------------------------------------------------------------- */ 
+
+correctCurrentInputIndex:
+{
+    jsr loadCurrentModuleInputNumToAccu
+    sta inputNum
+    lda currentInputIndex
+    cmp inputNum
+    bcc exit
+
+    lda inputNum
+    sec
+    sbc #1
+    sta currentInputIndex
+
+exit:
+    rts
+
+inputNum:
+    .byte(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * prints the value of the accu register at the top left corner of
+ * the screen
+ *
+ * ---------------------------------------------------------------- */ 
+
+debugDumpByte:
+{
+    // lda #0
+    sta ZPR_1_LO
+    lda #$00
+    sta ZPR_1_HI
+
+    loadPointerToZPR(stringBuffer, ZPR_2)
+    
+    lda #$30
+    sta ZPR_0
+    
+    jsr convertIntegerToString
+
+    screenPutCharColor(0, 0, $20, WHITE)
+    screenPutCharColor(1, 0, $20, WHITE)
+    screenPutCharColor(2, 0, $20, WHITE)
+
+    screenPutString(0, 0, stringBuffer)
+
+    rts
+
+stringBuffer:
+    .byte(0)
+    .byte(0)
+    .byte(0)
+    .byte(0)
+    .byte(0)
+    .byte(0)
 }
