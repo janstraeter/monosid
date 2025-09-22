@@ -274,7 +274,7 @@ voice1InputWaveform:
     createStructInput(INPUT_TYPE.WAVEFORM, 1, 4, 5, strInputNameVoiceWaveform, WAVEFORM.TRIANGULAR, $00)
 
 voice1InputPulseWidth:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 4, 6, strInputNameVoicePulseWidth, $FF, $00)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 4, 6, strInputNameVoicePulseWidth, $00, $00)
 
 voice1InputAttack:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 4, 4, strInputNameVoiceAttack, $00, $00)
@@ -329,7 +329,7 @@ voice2InputWaveform:
     createStructInput(INPUT_TYPE.WAVEFORM, 1, 10, 5, strInputNameVoiceWaveform, WAVEFORM.SAWTOOTH, $00)
 
 voice2InputPulseWidth:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 10, 6, strInputNameVoicePulseWidth, $FF, %00001111)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 10, 6, strInputNameVoicePulseWidth, $FF, $00)
 
 voice2InputAttack:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 10, 4, strInputNameVoiceAttack, $00, $00)
@@ -384,7 +384,7 @@ voice3InputWaveform:
     createStructInput(INPUT_TYPE.WAVEFORM, 1, 16, 5, strInputNameVoiceWaveform, WAVEFORM.SQUARE, $00)
 
 voice3InputPulseWidth:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 16, 6, strInputNameVoicePulseWidth, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 16, 6, strInputNameVoicePulseWidth, $F0, $0F)
 
 voice3InputAttack:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 16, 4, strInputNameVoiceAttack, $00, $00)
@@ -436,7 +436,7 @@ voice3InputArray:
  * ---------------------------------------------------------------- */ 
 
 filterInputCutoff:
-    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 1, 22, 6, strInputNameFilterCutoff, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 1, 22, 6, strInputNameFilterCutoff, $F0, $07)
 
 filterInputResonance:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 8, 22, 4, strInputNameFilterResonance, $00, $00)

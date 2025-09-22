@@ -100,5 +100,10 @@
     .label CURSOR_DOWN              = $11;
     .label CURSOR_RIGHT             = $1D;
     .label CURSOR_UP                = $91;
-    .label CURSOR_LEFT              = $9D;    
+    .label CURSOR_LEFT              = $9D;
+
+    .label RETURN                   = $0D;
+    .label SPACE                    = $20;
+    .label PLUS                     = $2B;
+    .label MINUS                    = $2D;
 }

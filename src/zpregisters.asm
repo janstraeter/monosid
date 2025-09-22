@@ -16,7 +16,7 @@
 // ZPR_0 is safe to use, but is only a single-byte zeropage register,
 // because the unused memory location at $02 is only one single byte
 // so it can't be used for indirect-indexed addressing
-.label ZPR_0    = $02
+.label ZPR_0     = $02
 
 // ZPR_1 and ZPR_2 are safe to use (unsed memory locations)
 // and can be used for indirect-indexed addressing
@@ -77,6 +77,7 @@
     sta ZPR+1
 }
 
+
 /* -------------------------------------------------------------------
  * Macro
  * -----
@@ -93,6 +94,7 @@
     lda ZPR
     pha
 }
+
 
 /* -------------------------------------------------------------------
  * Macro
@@ -111,6 +113,7 @@
     sta ZPR+1
 }
 
+
 /* -------------------------------------------------------------------
  * Macro
  * -----
@@ -128,6 +131,7 @@
     lda srcZPR+1
     sta destZPR+1
 }
+
 
 /* -------------------------------------------------------------------
  * Macro
@@ -149,6 +153,7 @@
     adc #$00
     sta ZPR+1
 }
+
 
 /* -------------------------------------------------------------------
  * Macro

@@ -32,6 +32,7 @@ userinterfaceInitScreen:
     rts
 }
 
+
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------
@@ -101,6 +102,7 @@ modulesLoop:
 	moduleLoopCounter: .byte($00)
 }
 
+
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------
@@ -152,6 +154,7 @@ exit:
     rts
 }
 
+
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------
@@ -172,6 +175,7 @@ userInterfaceOutputCurrentKeyboardPianoOctave:
     sta SCREENMEM+22
     rts
 }
+
 
 /* -------------------------------------------------------------------
  * Subroutine
@@ -253,6 +257,7 @@ inputsLoop:
 	inputLoopCounter: .byte($00)
 }
 
+
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------
@@ -324,25 +329,10 @@ typeInteger12Bits:
 	rts
 
 typeBoolean:
-	structLoadWordToZPR(ZPR_7, STRUCT_INPUT.SCREEN_MEMORY, ZPR_1)
-	ldy #0
-	lda #$51
-	sta (ZPR_1), y
-	structLoadWordToZPR(ZPR_7, STRUCT_INPUT.COLOR_MEMORY, ZPR_1)
-	structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
-	bne booleanInputActive
-	lda #GRAY
-	jmp booleanOutputColor
-
-booleanInputActive:
-	lda #GREEN
-	
-booleanOutputColor:
-	ldy #0
-	sta (ZPR_1), y
-
+	jsr userinterfaceDrawBoolean
 	rts
 }
+
 
 /* -------------------------------------------------------------------
  * Subroutine
@@ -390,6 +380,7 @@ loop2:
 	loopCounter: .byte($00)
 }
 
+
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------
@@ -422,6 +413,7 @@ charLoop:
 	loopCounter: .byte($00)
 }
 
+
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------
@@ -450,6 +442,7 @@ userInterfaceDrawInputLeftRight:
 	rts
 }
 
+
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------
@@ -477,6 +470,7 @@ userInterfaceDrawInputPlusMinus:
 
 	rts
 }
+
 
 /* -------------------------------------------------------------------
  * Subroutine
@@ -523,6 +517,7 @@ output:
 	jsr screenPutStringAddress
 	rts
 }
+
 
 /* -------------------------------------------------------------------
  * Subroutine
@@ -592,6 +587,7 @@ charLookUpTable:
 	.byte(177)
 	.byte(181)
 }
+
 
 /* -------------------------------------------------------------------
  * Subroutine
@@ -676,6 +672,38 @@ stringBuffer:
 	.byte(0)
 	.byte(0)
 	.byte(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Outputs an boolean input as a colored disk (green if true, gray if false)
+ *
+ * Parameters:	ZPR_7: Address of the input struct 
+ *
+ * ---------------------------------------------------------------- */ 
+
+userinterfaceDrawBoolean:
+{
+	structLoadWordToZPR(ZPR_7, STRUCT_INPUT.SCREEN_MEMORY, ZPR_1)
+	ldy #0
+	lda #$51
+	sta (ZPR_1), y
+	structLoadWordToZPR(ZPR_7, STRUCT_INPUT.COLOR_MEMORY, ZPR_1)
+	structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+	bne booleanInputActive
+	lda #GRAY
+	jmp booleanOutputColor
+
+booleanInputActive:
+	lda #GREEN
+	
+booleanOutputColor:
+	ldy #0
+	sta (ZPR_1), y
+	rts
 }
 
 
@@ -943,4 +971,57 @@ inputIndex:
 	.byte(0)
 moduleIndex:
 	.byte(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Updates an input element (only current value,
+ * the label ist not redrawn, no colorization)
+ *
+ * Parameters: ZPR_7: Address of the input struct 
+ *
+ * ---------------------------------------------------------------- */ 
+
+userInterfaceUpdateInput:
+{
+	// Load screen memory addresses for the input element itself (one line further down)
+	structLoadWordToZPR(ZPR_7, STRUCT_INPUT.SCREEN_MEMORY, ZPR_2)
+	structLoadWordToZPR(ZPR_7, STRUCT_INPUT.COLOR_MEMORY, ZPR_3)
+
+	// Switch for the input´s type
+	structLoadByteToAccu(ZPR_7, STRUCT_INPUT.TYPE)
+	cmp #INPUT_TYPE.WAVEFORM
+	beq typeWaveform
+	cmp #INPUT_TYPE.INTEGER_4_BITS
+	beq typeInteger4Bits
+	cmp #INPUT_TYPE.INTEGER_11_BITS
+	beq typeInteger11Bits
+	cmp #INPUT_TYPE.INTEGER_12_BITS
+	beq typeInteger12Bits
+	cmp #INPUT_TYPE.BOOLEAN
+	beq typeBoolean
+	rts
+
+typeWaveform:
+	jsr userInterfacePrintWaveform
+	rts
+
+typeInteger4Bits:
+	jsr userInterfacePrint4BitInteger
+	rts
+
+typeInteger11Bits:
+	jsr userInterfacePrint12BitInteger
+	rts
+
+typeInteger12Bits:
+	jsr userInterfacePrint12BitInteger
+	rts
+
+typeBoolean:
+	jsr userinterfaceDrawBoolean
+	rts
 }

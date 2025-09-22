@@ -51,6 +51,7 @@
 #import "src/convert.asm"
 #import "src/screen.asm"
 #import "src/userinterface.asm"
+#import "src/input.asm"
 
 // *******************************************************************
 .segment MainProgram [startAfter="Subroutines"]
@@ -68,6 +69,7 @@ mainProgram:
     jsr userinterfaceInitScreen
     jsr userinterfaceDrawMain
     jsr userinterfaceAddModuleFocus
+    jsr userinterfaceAddInputFocus
     
     // setup the raster interrup which plays the sounds
     jsr setupRasterInterrupt
@@ -108,7 +110,7 @@ subModeMainSelectInput:
     // check for pressed keys, play notes or move the focus of the currently selected module/input
     jsr updateCurrentKeyboardPianoOctave
     jsr updateCurrentNote
-    jsr updateInputFocus
+    jsr mainModeHandleKeyboardInputForSubModeInputSelect
     jmp waitLoop
 
 subModeMainInputEditor:
@@ -122,6 +124,7 @@ modeMenu:
 // lastPressedKey:
 //     .byte(0)
 }
+
 
 /* -------------------------------------------------------------------
  * Subroutine
@@ -154,6 +157,7 @@ setupRasterInterrupt:
     cli
     rts
 }
+
 
 /* -------------------------------------------------------------------
  * Interrupt routine
@@ -208,6 +212,7 @@ exit:
     rti
 }
 
+
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------
@@ -252,6 +257,7 @@ found:
 notFound:
     rts
 }
+
 
 /* -------------------------------------------------------------------
  * Subroutine
@@ -329,6 +335,7 @@ noteHasNotChanged:
     // Local variables
     tempCurrentNote: .byte($ff)
 }
+
 
 /* -------------------------------------------------------------------
  * Subroutine
@@ -427,6 +434,9 @@ exit:
  * Subroutine
  * ----------
  *
+ * Handles the keyboard input while the program is in main mode,
+ * submode input selection
+ * 
  * Checks if the currently selected module/input element
  * should be updated and if so updates the corresponding global
  * variables accordingly, then updates the user interface
@@ -436,28 +446,47 @@ exit:
  *
  * ---------------------------------------------------------------- */ 
 
-updateInputFocus:
+mainModeHandleKeyboardInputForSubModeInputSelect:
 {
     // Read pressed keycode, if no key pressed, exit
     jsr KERNAL.GETIN
     cmp #$00
     beq exit
 
-	// Switch for the cursor keys
+	// Switch for the handled keys.
+    // Because the subroutine is rather long, use a little trick to avoid the
+    // problems with branching instructions on the 6502, which only can jump -127/+127 bytes.
+    // see here: https://www.lemon64.com/forum/viewtopic.php?t=81358
     cmp #PETSCII.CURSOR_DOWN
-	beq cursorDown
+	bne *+5
+    jmp cursorDownKeyPressed
 	cmp #PETSCII.CURSOR_RIGHT
-	beq cursorRight
+	bne *+5
+    jmp cursorRightKeyPressed
 	cmp #PETSCII.CURSOR_UP
-	beq cursorUp
+	bne *+5
+    jmp cursorUpKeyPressed
 	cmp #PETSCII.CURSOR_LEFT
-	beq cursorLeft
+	bne *+5
+    jmp cursorLeftKeyPressed
+	cmp #PETSCII.RETURN
+	bne *+5
+    jmp returnKeyPressed
+	cmp #PETSCII.SPACE
+	bne *+5
+    jmp spaceKeyPressed
+	cmp #PETSCII.PLUS
+	bne *+5
+    jmp plusKeyPressed
+	cmp #PETSCII.MINUS
+	bne *+5
+    jmp minusKeyPressed
 
-    // If no cursor key, exit
+    // If no key pressed we can handle here, exit
 exit:
     rts
 
-cursorDown:
+cursorDownKeyPressed:
     // Cursor down: increase current module index,
     // wrap around if number of modules is reached
     jsr userinterfaceRemoveModuleFocus
@@ -475,7 +504,7 @@ cursorDownNoWrap:
     jsr userinterfaceAddInputFocus
     rts
 
-cursorRight:
+cursorRightKeyPressed:
     // Cursor right: increase current input index,
     // wrap around if current module´s input number is reached
     jsr userinterfaceRemoveInputFocus
@@ -492,7 +521,7 @@ cursorRightNoWrap:
     jsr userinterfaceAddInputFocus
     rts
 
-cursorUp:
+cursorUpKeyPressed:
     // Cursor up: decrease current module index,
     // wrap around if below zero is reached
     jsr userinterfaceRemoveModuleFocus
@@ -510,8 +539,8 @@ cursorUpNoWrap:
     jsr userinterfaceAddInputFocus
     rts
 
-cursorLeft:
-    // Cursor left: dncrease current input index,
+cursorLeftKeyPressed:
+    // Cursor left: decrease current input index,
     // wrap around if below zero is reached
     jsr userinterfaceRemoveInputFocus
     jsr loadCurrentModuleInputNumToAccu
@@ -527,9 +556,43 @@ cursorLeftNoWrap:
     jsr userinterfaceAddInputFocus
     rts
 
+returnKeyPressed:
+    // for number input fields: start the editor mode
+    // for waveform inputs: switch to next waveform
+    // for boolean inputs: toggle
+    jsr inputLoadAddressOfCurrentInputToZPR7
+    jsr inputHandleReturnKeyPressed
+    jsr userInterfaceUpdateInput
+    rts
+
+spaceKeyPressed:
+    // for waveform inputs: switch to next waveform
+    // for boolean inputs: toggle
+    jsr inputLoadAddressOfCurrentInputToZPR7
+    jsr inputHandleSpaceKeyPressed
+    jsr userInterfaceUpdateInput
+    rts
+
+plusKeyPressed:
+    // for number input fields: increase value by 1 (if max value is not reached)
+    // for waveform inputs: switch to next waveform
+    jsr inputLoadAddressOfCurrentInputToZPR7
+    jsr inputHandlePlusKeyPressed
+    jsr userInterfaceUpdateInput
+    rts
+
+minusKeyPressed:
+    // for number input fields: decrease value by 1 (if greater than zero)
+    // for waveform inputs: switch to previous waveform
+    jsr inputLoadAddressOfCurrentInputToZPR7
+    jsr inputHandleMinusKeyPressed
+    jsr userInterfaceUpdateInput
+    rts
+
 currentModuleInputNum:
 	.byte(0)
 }
+
 
 /* -------------------------------------------------------------------
  * Subroutine
