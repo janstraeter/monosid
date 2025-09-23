@@ -47,6 +47,7 @@
  *
  * ---------------------------------------------------------------- */ 
 
+#import "src/string.asm"
 #import "src/math.asm"
 #import "src/convert.asm"
 #import "src/screen.asm"
@@ -79,16 +80,6 @@ waitLoop:
     lda ZP.CURRENT_PRESSED_KEY
     sta currentPressedKey
 
-//     jsr KERNAL.GETIN
-//     cmp #$00
-//     beq noKeychange
-//     sta lastPressedKey
-// noKeychange:
-// 
-//     // lda #128
-//     lda lastPressedKey
-//     jsr debugDumpByte
-
 	// Switch for the current program mode
 	lda currentMode
 	cmp #MODE.MAIN
@@ -110,19 +101,16 @@ subModeMainSelectInput:
     // check for pressed keys, play notes or move the focus of the currently selected module/input
     jsr updateCurrentKeyboardPianoOctave
     jsr updateCurrentNote
-    jsr mainModeHandleKeyboardInputForSubModeInputSelect
+    jsr mainModeHandleKeyboardInputForSubModeSelectInput
     jmp waitLoop
 
 subModeMainInputEditor:
-    //** @TODO: Implement input editor */
+    jsr inputHandleKeyboardInputForEditor
     jmp waitLoop
 
 modeMenu:
     //** @TODO: Implement menu */
     jmp waitLoop
-
-// lastPressedKey:
-//     .byte(0)
 }
 
 
@@ -435,18 +423,20 @@ exit:
  * ----------
  *
  * Handles the keyboard input while the program is in main mode,
- * submode input selection
+ * submode select input.
  * 
  * Checks if the currently selected module/input element
  * should be updated and if so updates the corresponding global
- * variables accordingly, then updates the user interface
+ * variables accordingly, then updates the user interface.
  *
- * Reads global variables:  currentPressedKey
+ * Reads global variables:  currentModuleIndex, currentInputIndex,
+ *                          modules, moduleNum
+ *
  * Writes global variables: currentModuleIndex, currentInputIndex
  *
  * ---------------------------------------------------------------- */ 
 
-mainModeHandleKeyboardInputForSubModeInputSelect:
+mainModeHandleKeyboardInputForSubModeSelectInput:
 {
     // Read pressed keycode, if no key pressed, exit
     jsr KERNAL.GETIN
@@ -562,7 +552,6 @@ returnKeyPressed:
     // for boolean inputs: toggle
     jsr inputLoadAddressOfCurrentInputToZPR7
     jsr inputHandleReturnKeyPressed
-    jsr userInterfaceUpdateInput
     rts
 
 spaceKeyPressed:
@@ -570,7 +559,6 @@ spaceKeyPressed:
     // for boolean inputs: toggle
     jsr inputLoadAddressOfCurrentInputToZPR7
     jsr inputHandleSpaceKeyPressed
-    jsr userInterfaceUpdateInput
     rts
 
 plusKeyPressed:
@@ -578,7 +566,6 @@ plusKeyPressed:
     // for waveform inputs: switch to next waveform
     jsr inputLoadAddressOfCurrentInputToZPR7
     jsr inputHandlePlusKeyPressed
-    jsr userInterfaceUpdateInput
     rts
 
 minusKeyPressed:
@@ -586,7 +573,6 @@ minusKeyPressed:
     // for waveform inputs: switch to previous waveform
     jsr inputLoadAddressOfCurrentInputToZPR7
     jsr inputHandleMinusKeyPressed
-    jsr userInterfaceUpdateInput
     rts
 
 currentModuleInputNum:

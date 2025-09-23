@@ -432,7 +432,7 @@ userInterfaceDrawInputLeftRight:
 	lda #$BC
 	sta (ZPR_2), y
 
-	// Draw ">" at the right (load Y with width, add 38 land at the correct position)
+	// Draw ">" at the right (load Y with width, add 38 to land at the correct position)
 	structLoadByteToAccu(ZPR_7, STRUCT_INPUT.WIDTH)
 	adc #$026
 	tay
@@ -1024,4 +1024,79 @@ typeInteger12Bits:
 typeBoolean:
 	jsr userinterfaceDrawBoolean
 	rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Draws the input editor for the currently selected integer input field.
+ *
+ * Parameters: ZPR_7: Address of the input struct 
+ *
+ * ---------------------------------------------------------------- */ 
+
+userInterfaceDrawInputEditor:
+{
+	// load width of current input and save it in "inputCharsLeft"
+	structLoadByteToAccu(ZPR_7, STRUCT_INPUT.WIDTH)
+	sta inputCharsLeft
+
+	// Load start of upper left corner of input into ZPR_2
+	structLoadWordToZPR(ZPR_7, STRUCT_INPUT.SCREEN_MEMORY, ZPR_2)
+
+	// load the color memory address of the top left corner of the input element into ZPR_3
+	structLoadWordToZPR(ZPR_7, STRUCT_INPUT.COLOR_MEMORY, ZPR_3)
+	lda #YELLOW
+	jsr userInterfaceColorizeInputField
+	
+	// Draw ">" at the left (load Y with 40 to go to the next line)
+	ldy #$028
+	lda #$BE
+	sta (ZPR_2), y
+	dec inputCharsLeft
+
+	// load the address of the buffer for the current editor text into ZPR_1
+	loadPointerToZPR(currentInputEditorText, ZPR_1)
+
+	// The actual text starts one line below, so add 41 to the destination address to land
+	// correctly at the actual first position of the editor input.
+	// No we can use Y for indirect-indexed addressing both the source and destination during the string copy .
+	addByteValueToZPRAddress(ZPR_2, $29)
+	ldy #0
+
+editorTextLoop:
+    // output the null-terminated string in "currentInputEditorText",
+	// adding 128 to change it to the inverted charset
+	lda (ZPR_1), y
+    beq printBlankChars
+	clc
+	adc #$80
+    sta (ZPR_2), y
+    iny
+	dec inputCharsLeft
+    jmp editorTextLoop
+
+printBlankChars:
+	// check if there are blank characters left to draw, exit of not
+	lda inputCharsLeft
+	beq exit
+
+	// lda inputCharsLeft
+	// jsr debugDumpByte
+
+blankCharsLoop:
+	// draw the blank characters until the end of the input field is reached
+	lda #$A0
+	sta (ZPR_2), y
+	iny
+	dec inputCharsLeft
+	bne blankCharsLoop
+
+exit:	
+	rts
+
+inputCharsLeft:
+	.byte(0)
 }

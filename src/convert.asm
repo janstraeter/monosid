@@ -9,6 +9,8 @@
  *
  * Convert an (16 bit) integer to a null-terminated string
  *
+ * DEFINITLY NOT optimized for speed!
+ *
  * Parameters:   ZPR_0: offset into PETSCII-table (to be able to differentiate 
  *                      between normal and inverted numerals)
  *               ZPR_1: (16 bit) integer, set ZPR_1_HI to zero if not needed
@@ -90,4 +92,101 @@ writeNullByte:
     sta (ZPR_2), y
 
     rts
+}
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Converts a null-terminated string to (unsigned) 16-bit value
+ * Expects a string containing only characters 0-9, no sanity checks are done
+ *
+ * DEFINITLY NOT optimized for speed!
+ *
+ * Parameters:   ZPR_0: offset into PETSCII-table (to be able to differentiate 
+ *                      between normal and inverted numerals)
+ *               ZPR_1: address of null-terminated string to be converted
+ *
+ * Return value: ZPR_2: result of conversion
+ *
+ * ---------------------------------------------------------------- */ 
+
+convertStringToInteger:
+{
+    // initialize result with zero
+    lda #0
+    sta result
+    sta result+1
+
+    // start with first character from the left of the string
+    ldy #0
+
+loop:
+    // read next character from string and check if null byte reached, if so exit
+    lda (ZPR_1), y
+    beq lastCharacterReached
+
+    // multiply current result by 10
+    // multiply by 10 can be done with multiple register shifts and additions
+    // adapted from here: https://llx.com/Neil/a2/mult.html
+    lda result       // start with resultBy10 = result
+    sta resultBy10
+    lda result+1
+    sta resultBy10+1
+    asl resultBy10
+    rol resultBy10+1  // resultBy10 = 2*result
+    asl resultBy10
+    rol resultBy10+1  // resultBy10 = 4*result
+    clc
+    lda result
+    adc resultBy10
+    sta resultBy10
+    lda result+1
+    adc resultBy10+1
+    sta resultBy10+1  // resultBy10 = 5*result
+    asl resultBy10
+    rol resultBy10+1  // resultBy10 = 10*result
+
+    // save the result of the multiplaction by 10 back to the result
+    lda resultBy10
+    sta result
+    lda resultBy10+1
+    sta result+1
+
+    // subtract the PETSCII table offset
+    // from the character code to get the numerical value, save result in "numberToAdd"
+    lda (ZPR_1), y
+    sec
+    sbc ZPR_0
+    sta numberToAdd
+
+    // add the numerical value of the current character to the result (16-bit addition)
+    clc
+    lda result
+    adc numberToAdd
+    sta result
+    lda result+1
+    adc #0
+    sta result+1
+
+    // increase character index by one and loop
+    iny
+    jmp loop
+
+lastCharacterReached:
+    // write the result to ZPR_2 and exit
+    lda result
+    sta ZPR_2_LO
+    lda result+1
+    sta ZPR_2_HI
+    rts
+
+numberToAdd:
+    .byte(0)
+result:
+    .byte(0)
+    .byte(0)
+resultBy10:
+    .byte(0)
+    .byte(0)
 }

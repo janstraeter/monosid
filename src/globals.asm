@@ -610,3 +610,18 @@ currentModuleIndex:
 currentInputIndex:
     .byte($00)
 
+
+/* -------------------------------------------------------------------
+ *
+ * The content of the input editor
+ *
+ * Type: Null-terminated string (max. 4 characters)
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentInputEditorText:
+    .byte(0)
+    .byte(0)
+    .byte(0)
+    .byte(0)
+    .byte(0)

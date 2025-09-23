@@ -8,6 +8,9 @@
 .namespace ZP {
     .label LAST_PRESSED_KEY         = $C5
     .label CURRENT_PRESSED_KEY      = $CB
+    .label CURSOR_FLASH             = $CC
+    .label CURSOR_CURRENT_COLUMN    = $D3
+    .label CURSOR_CURRENT_LINE      = $D6
 }
 
 .namespace CIA {
@@ -28,6 +31,7 @@
     .label CLS                      = $e544
     .label INTERRUPT_ROUTINE        = $ea31
     .label GETIN                    = $ffe4
+    .label PLOT                     = $FFF0
 }
 
 .namespace SID {
@@ -106,4 +110,6 @@
     .label SPACE                    = $20;
     .label PLUS                     = $2B;
     .label MINUS                    = $2D;
+
+    .label DELETE                   = $14;
 }
