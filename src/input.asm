@@ -727,19 +727,18 @@ inputHandleKeyboardInputForEditor:
     bcc exit1
     cmp #$40
     bcs exit1
-
     jmp numberKeyPressed
 
 exit1:
     rts
 
-numberKeyPressed:
+numberKeyPressed:    
     // pressed key corresponds to a number character, first save the keycode for later
     sta pressedKeyCode
 
     // determine the max. length (2 characters for 4-bit fields, 4 characters for the others)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.TYPE)
-    cmp INPUT_TYPE.INTEGER_4_BITS
+    cmp #INPUT_TYPE.INTEGER_4_BITS
     beq isShortInputField
     lda #4
     jmp checkIfMaxLengthIsReached
@@ -748,7 +747,6 @@ isShortInputField:
     lda #2
 
 checkIfMaxLengthIsReached:
-    
     // save the max. length into ZPR_0
     sta ZPR_0
     

@@ -646,7 +646,20 @@ inputNum:
 
 debugDumpByte:
 {
-    // lda #0
+    sta byteValue
+
+    lda ZPR_0
+    pha
+    lda ZPR_1_LO
+    pha
+    lda ZPR_1_HI
+    pha
+    lda ZPR_2_LO
+    pha
+    lda ZPR_2_HI
+    pha
+
+    lda byteValue
     sta ZPR_1_LO
     lda #$00
     sta ZPR_1_HI
@@ -664,6 +677,17 @@ debugDumpByte:
 
     screenPutString(0, 0, stringBuffer)
 
+    pla
+    sta ZPR_2_HI
+    pla
+    sta ZPR_2_LO
+    pla
+    sta ZPR_1_HI
+    pla
+    sta ZPR_1_LO
+    pla
+    sta ZPR_0
+
     rts
 
 stringBuffer:
@@ -672,5 +696,7 @@ stringBuffer:
     .byte(0)
     .byte(0)
     .byte(0)
+    .byte(0)
+byteValue:
     .byte(0)
 }
