@@ -198,6 +198,9 @@
 
     // current value of input
     .label VALUE = $11
+
+    // pointer to SID update subroutine
+    .label UPDATE_SUBROUTINE = $13
 }
 
 
@@ -209,7 +212,7 @@
  *
  * ---------------------------------------------------------------- */ 
 
-.macro createStructInput(type, left, top, width, label, valueLo, valueHi) {    
+.macro createStructInput(type, left, top, width, labelAddress, valueLo, valueHi, updateSubroutineAddress) {    
     
     // For the boolean inputs the label starts 1 character right to the input
     // for all other inputs the label starts 1 line above
@@ -227,29 +230,31 @@
     // to avoid the costly multiplications during run-time because
     // the position on the screen will never change
 
-    .var inputMemoryAddress = screenCalculateMemoryAddress(left, top)
+    .var inputScreenMemoryAddress = screenCalculateMemoryAddress(left, top)
     .var inputColorMemoryAddress = screenCalculateColorMemoryAddress(left, top)
 
-    .var labelMemoryAddress = screenCalculateMemoryAddress(labelLeft, labelTop)
+    .var labelScreenMemoryAddress = screenCalculateMemoryAddress(labelLeft, labelTop)
     .var labelColorMemoryAddress = screenCalculateColorMemoryAddress(labelLeft, labelTop)
 
     .byte(type)                         // $00 TYPE
     .byte(left)                         // $01 LEFT
     .byte(top)                          // $02 TOP
     .byte(width)                        // $03 WIDTH
-    .byte(<inputMemoryAddress)          // $04 SCREEN_MEMORY
-    .byte(>inputMemoryAddress)          // $05
+    .byte(<inputScreenMemoryAddress)    // $04 SCREEN_MEMORY
+    .byte(>inputScreenMemoryAddress)    // $05
     .byte(<inputColorMemoryAddress)     // $06 COLOR_MEMORY
     .byte(>inputColorMemoryAddress)     // $07
-    .byte(<label)                       // $08 LABEL
-    .byte(>label)                       // $09
+    .byte(<labelAddress)                // $08 LABEL
+    .byte(>labelAddress)                // $09
     .byte(labelLeft)                    // $0a LABEL_LEFT
     .byte(labelTop)                     // $0b LABEL_TOP
     .byte(labelWidth)                   // $0c LABEL_WIDTH
-    .byte(<labelMemoryAddress)          // $0d LABEL_SCREEN_MEMORY
-    .byte(>labelMemoryAddress)          // $0e
+    .byte(<labelScreenMemoryAddress)    // $0d LABEL_SCREEN_MEMORY
+    .byte(>labelScreenMemoryAddress)    // $0e
     .byte(<labelColorMemoryAddress)     // $0f LABEL_COLOR_MEMORY
     .byte(>labelColorMemoryAddress)     // $10
     .byte(valueLo)                      // $11 VALUE
     .byte(valueHi)                      // $12
+    .byte(<updateSubroutineAddress)     // $13 UPDATE_SUBROUTINE
+    .byte(>updateSubroutineAddress)     // $14
 }

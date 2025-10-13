@@ -53,6 +53,8 @@
 #import "src/screen.asm"
 #import "src/userinterface.asm"
 #import "src/input.asm"
+#import "src/sid.asm"
+#import "src/midi.asm"
 
 // *******************************************************************
 .segment MainProgram [startAfter="Subroutines"]
@@ -71,7 +73,13 @@ mainProgram:
     jsr userinterfaceDrawMain
     jsr userinterfaceAddModuleFocus
     jsr userinterfaceAddInputFocus
-    
+
+    // initialize the SID chip with the initial state of the UI
+    jsr sidUpdateAllRegisters
+
+    // initialize the MIDI interface (if any is present)
+    jsr midiInit
+
     // setup the raster interrup which plays the sounds
     jsr setupRasterInterrupt
 
@@ -329,68 +337,6 @@ noteHasNotChanged:
  * Subroutine
  * ----------
  *
- * Updates the control registers of the SID chip according to the 
- * settings
- *
- * Reads global variables:  currentNote, FreqTablePalLo, FreqTablePalHi
- *
- * ---------------------------------------------------------------- */ 
-
-updateSid:
-{
-    // Volume volle Pulle
-    lda #$0F
-    sta SID.FILTER_MODE_MAIN_VOLUME
-
-    // Aktuelle Note laden und testen, ob überhaupt etwas gespielt werde soll
-    lda currentNote
-    cmp #$FF
-    bne playNote
-    
-    // Keine Note soll gespielt werden: Gate für Stimme 1 auf FALSE setzen
-    lda #$10
-    sta SID.VOICE_1_CONTROL_REGISTER
-    jmp return
-
-playNote:
-    // Eine Note soll gespielt werden
-
-    // lda #$10
-    // sta SID.VOICE_1_CONTROL_REGISTER
-
-    lda #$00
-    sta SID.VOICE_1_ATTACK_DECAY
-
-    lda #$FA
-    sta SID.VOICE_1_SUSTAIN_RELEASE
-
-    // Aktuelle Note laden und im Y-Register ablegen
-    lda currentNote
-    tay
-
-    // LO Byte der Frequenz der aktuellen Note laden und für Stimme 1 setzen
-    loadPointerToZPR(freqTablePalLo, ZPR_1)
-    lda (ZPR_1), y
-    sta SID.VOICE_1_FREQUENCY_LO
-
-    // HI Byte der Frequenz der aktuellen Note laden und für Stimme 1 setzen
-    loadPointerToZPR(freqTablePalHi, ZPR_1)
-    lda (ZPR_1), y
-    sta SID.VOICE_1_FREQUENCY_HI
-
-    // Gate für Stimme 1 auf TRUE setzen und Waveform auf TRIANGLE
-    lda #$11
-    sta SID.VOICE_1_CONTROL_REGISTER
-
-return:
-    rts
-}
-
-
-/* -------------------------------------------------------------------
- * Subroutine
- * ----------
- *
  * Plays the current note via the SID chip
  *
  * Parameters:   None
@@ -407,7 +353,7 @@ playCurrentNote:
     cmp #$01
     bne exit
 
-    jsr updateSid
+    jsr sidUpdateVoicesForCurrentNote
     jsr userinterfaceOutputCurrentNote
 
     lda #$00

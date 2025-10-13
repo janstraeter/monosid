@@ -271,31 +271,31 @@ freqTablePalHi:
  * ---------------------------------------------------------------- */ 
 
 voice1InputWaveform:
-    createStructInput(INPUT_TYPE.WAVEFORM, 1, 4, 5, strInputNameVoiceWaveform, WAVEFORM.TRIANGULAR, $00)
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 4, 5, strInputNameVoiceWaveform, WAVEFORM.TRIANGULAR, $00, sidUpdateVoice1WaveFormControl)
 
 voice1InputPulseWidth:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 4, 6, strInputNameVoicePulseWidth, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 4, 6, strInputNameVoicePulseWidth, $00, $00, sidUpdateVoice1PulseWidth)
 
 voice1InputAttack:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 4, 4, strInputNameVoiceAttack, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 4, 4, strInputNameVoiceAttack, $00, $00, sidUpdateVoice1AttackDecay)
 
 voice1InputDecay:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 4, 4, strInputNameVoiceDecay, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 4, 4, strInputNameVoiceDecay, $00, $00, sidUpdateVoice1AttackDecay)
 
 voice1InputSustain:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 4, 4, strInputNameVoiceSustain, $0F, $00)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 4, 4, strInputNameVoiceSustain, $0F, $00, sidUpdateVoice1SustainRelease)
 
 voice1InputRelease:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 4, 4, strInputNameVoiceRelease, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 4, 4, strInputNameVoiceRelease, $00, $00, sidUpdateVoice1SustainRelease)
 
 voice1InputUse:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 3, 4, strInputNameVoiceUse, $01, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 3, 4, strInputNameVoiceUse, $01, $00, sidUpdateVoice1WaveFormControl)
 
 voice1InputSync:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 4, 4, strInputNameVoiceSync, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 4, 4, strInputNameVoiceSync, $00, $00, sidUpdateVoice1WaveFormControl)
 
 voice1InputRingMod:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 5, 4, strInputNameVoiceRingMod, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 5, 4, strInputNameVoiceRingMod, $00, $00, sidUpdateVoice1WaveFormControl)
 
 voice1InputArray:
     .byte(<voice1InputWaveform)
@@ -326,31 +326,31 @@ voice1InputArray:
  * ---------------------------------------------------------------- */ 
 
 voice2InputWaveform:
-    createStructInput(INPUT_TYPE.WAVEFORM, 1, 10, 5, strInputNameVoiceWaveform, WAVEFORM.SAWTOOTH, $00)
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 10, 5, strInputNameVoiceWaveform, WAVEFORM.SAWTOOTH, $00, sidUpdateVoice2WaveFormControl)
 
 voice2InputPulseWidth:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 10, 6, strInputNameVoicePulseWidth, $FF, $00)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 10, 6, strInputNameVoicePulseWidth, $FF, $00, sidUpdateVoice2PulseWidth)
 
 voice2InputAttack:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 10, 4, strInputNameVoiceAttack, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 10, 4, strInputNameVoiceAttack, $00, $00, sidUpdateVoice2AttackDecay)
 
 voice2InputDecay:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 10, 4, strInputNameVoiceDecay, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 10, 4, strInputNameVoiceDecay, $00, $00, sidUpdateVoice2AttackDecay)
 
 voice2InputSustain:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 10, 4, strInputNameVoiceSustain, $0F, $00)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 10, 4, strInputNameVoiceSustain, $0F, $00, sidUpdateVoice2SustainRelease)
 
 voice2InputRelease:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 10, 4, strInputNameVoiceRelease, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 10, 4, strInputNameVoiceRelease, $00, $00, sidUpdateVoice2SustainRelease)
 
 voice2InputUse:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 9, 4, strInputNameVoiceUse, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 9, 4, strInputNameVoiceUse, $00, $00, sidUpdateVoice2WaveFormControl)
 
 voice2InputSync:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 10, 4, strInputNameVoiceSync, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 10, 4, strInputNameVoiceSync, $00, $00, sidUpdateVoice2WaveFormControl)
 
 voice2InputRingMod:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 11, 4, strInputNameVoiceRingMod, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 11, 4, strInputNameVoiceRingMod, $00, $00, sidUpdateVoice2WaveFormControl)
 
 voice2InputArray:
     .byte(<voice2InputWaveform)
@@ -381,31 +381,31 @@ voice2InputArray:
  * ---------------------------------------------------------------- */ 
 
 voice3InputWaveform:
-    createStructInput(INPUT_TYPE.WAVEFORM, 1, 16, 5, strInputNameVoiceWaveform, WAVEFORM.SQUARE, $00)
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 16, 5, strInputNameVoiceWaveform, WAVEFORM.SQUARE, $00, sidUpdateVoice3WaveFormControl)
 
 voice3InputPulseWidth:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 16, 6, strInputNameVoicePulseWidth, $F0, $0F)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 16, 6, strInputNameVoicePulseWidth, $F0, $0F, sidUpdateVoice3PulseWidth)
 
 voice3InputAttack:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 16, 4, strInputNameVoiceAttack, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 16, 4, strInputNameVoiceAttack, $00, $00, sidUpdateVoice3AttackDecay)
 
 voice3InputDecay:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 16, 4, strInputNameVoiceDecay, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 16, 4, strInputNameVoiceDecay, $00, $00, sidUpdateVoice3AttackDecay)
 
 voice3InputSustain:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 16, 4, strInputNameVoiceSustain, $0F, $00)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 16, 4, strInputNameVoiceSustain, $0F, $00, sidUpdateVoice3SustainRelease)
 
 voice3InputRelease:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 16, 4, strInputNameVoiceRelease, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 16, 4, strInputNameVoiceRelease, $00, $00, sidUpdateVoice3SustainRelease)
 
 voice3InputUse:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 15, 4, strInputNameVoiceUse, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 15, 4, strInputNameVoiceUse, $00, $00, sidUpdateVoice3WaveFormControl)
 
 voice3InputSync:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 16, 4, strInputNameVoiceSync, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 16, 4, strInputNameVoiceSync, $00, $00, sidUpdateVoice3WaveFormControl)
 
 voice3InputRingMod:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 17, 4, strInputNameVoiceRingMod, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 17, 4, strInputNameVoiceRingMod, $00, $00, sidUpdateVoice3WaveFormControl)
 
 voice3InputArray:
     .byte(<voice3InputWaveform)
@@ -436,28 +436,28 @@ voice3InputArray:
  * ---------------------------------------------------------------- */ 
 
 filterInputCutoff:
-    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 1, 22, 6, strInputNameFilterCutoff, $F0, $07)
+    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 1, 22, 6, strInputNameFilterCutoff, $F0, $07, sidUpdateFilterCutoffFrequency)
 
 filterInputResonance:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 8, 22, 4, strInputNameFilterResonance, $00, $00)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 8, 22, 4, strInputNameFilterResonance, $00, $00, sidUpdateFilterSwitchesAndResonance)
 
 filterInputVoice1:
-    createStructInput(INPUT_TYPE.BOOLEAN, 13, 21, 7, strInputNameFilterVoice1, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 13, 21, 7, strInputNameFilterVoice1, $00, $00, sidUpdateFilterSwitchesAndResonance)
 
 filterInputVoice2:
-    createStructInput(INPUT_TYPE.BOOLEAN, 13, 22, 7, strInputNameFilterVoice2, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 13, 22, 7, strInputNameFilterVoice2, $00, $00, sidUpdateFilterSwitchesAndResonance)
 
 filterInputVoice3:
-    createStructInput(INPUT_TYPE.BOOLEAN, 13, 23, 7, strInputNameFilterVoice3, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 13, 23, 7, strInputNameFilterVoice3, $00, $00, sidUpdateFilterSwitchesAndResonance)
 
 filterInputLowpass:
-    createStructInput(INPUT_TYPE.BOOLEAN, 21, 21, 7, strInputNameFilterLowpass, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 21, 21, 7, strInputNameFilterLowpass, $00, $00, sidUpdateFilterModesAndVolume)
 
 filterInputHighpass:
-    createStructInput(INPUT_TYPE.BOOLEAN, 21, 22, 7, strInputNameFilterHighpass, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 21, 22, 7, strInputNameFilterHighpass, $00, $00, sidUpdateFilterModesAndVolume)
 
 filterInputBandwidth:
-    createStructInput(INPUT_TYPE.BOOLEAN, 21, 23, 7, strInputNameFilterBandwidth, $00, $00)
+    createStructInput(INPUT_TYPE.BOOLEAN, 21, 23, 7, strInputNameFilterBandwidth, $00, $00, sidUpdateFilterModesAndVolume)
 
 filterInputArray:
     .byte(<filterInputCutoff)
@@ -486,7 +486,7 @@ filterInputArray:
  * ---------------------------------------------------------------- */ 
 
 mainInputVol:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 35, 22, 4, strInputNameMainVol, $0F, $00)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 35, 22, 4, strInputNameMainVol, $0F, $00, sidUpdateFilterModesAndVolume)
 
 mainInputArray:
     .byte(<mainInputVol)
@@ -624,4 +624,49 @@ currentInputEditorText:
     .byte(0)
     .byte(0)
     .byte(0)
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * The current values of the SID waveform control registers
+ * (voice 1 through 3)
+ *
+ * Because we need to change the gate bit (bit 0  of the waveform
+ * register) on every note-change - but the control registers of 
+ * the SID chip are write-only - we have to store it here globally.
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentSidWaveFormControlRegisterVoice1:
+    .byte(0)
+
+currentSidWaveFormControlRegisterVoice2:
+    .byte(0)
+
+currentSidWaveFormControlRegisterVoice3:
+    .byte(0)
+
+
+
+/* -------------------------------------------------------------------
+ *
+ * The current values of the "Use voice" inputs (voices 1 through 3)
+ *
+ * Saved here globally so the values are easier (and computational faster)
+ * to access, because we need to check these values often
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentSidActiveVoice1:
+    .byte(0)
+
+currentSidActiveVoice2:
+    .byte(0)
+
+currentSidActiveVoice3:
     .byte(0)

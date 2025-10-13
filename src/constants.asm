@@ -113,3 +113,12 @@
 
     .label DELETE                   = $14;
 }
+
+.namespace MIDI_INTERFACE_DATEL {
+    .label CONTROL                  = $de04
+    .label STATUS                   = $de06
+    .label TRANSMIT                 = $de05
+    .label RECIEVE                  = $de07
+    .label MASTER_RESET_VALUE       = $03
+    .label SETUP_VALUE              = $92
+}

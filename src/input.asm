@@ -8,6 +8,7 @@
 #import "convert.asm"
 #import "globals.asm"
 #import "userinterface.asm"
+#import "sid.asm"
 
 
 /* -------------------------------------------------------------------
@@ -37,6 +38,34 @@ inputLoadAddressOfCurrentInputToZPR7:
 	stuctLoadPointerArrayItemToZPR(ZPR_6, currentInputIndex, ZPR_7)
 
     rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * calls the update subroutine to transfer the current value
+ * of an input struct to the corresponding control register
+ * of the SID chip.
+ *
+ * Because the JSR instruction of the 6502/6510 cannot use indirect
+ * addressing, we have to use a combination of JSR and JMP
+ * (JMP can use indirect addressing)
+ *
+ * See here: https://www.nesdev.org/wiki/Jump_table
+ *
+ * Parameters: ZPR_7: Address of the input struct
+ *
+ * ---------------------------------------------------------------- */ 
+
+inputCallSidUpdateSubroutine:
+{
+    structLoadWordToZPR(ZPR_7, STRUCT_INPUT.UPDATE_SUBROUTINE, ZPR_1)
+    jsr callSubroutine
+    rts
+callSubroutine:
+    jmp (ZPR_1)
 }
 
 
@@ -446,6 +475,7 @@ inputHandleReturnKeyPressed:
 typeWaveform:
     jsr inputWaveformSelectNext
     jsr userInterfaceUpdateInput
+    jsr inputCallSidUpdateSubroutine
 	rts
 
 typeInteger4Bits:
@@ -457,6 +487,7 @@ typeInteger12Bits:
 typeBoolean:
     jsr inputBooleanToggle
     jsr userInterfaceUpdateInput
+    jsr inputCallSidUpdateSubroutine
     rts
 }
 
@@ -488,11 +519,13 @@ inputHandleSpaceKeyPressed:
 typeWaveform:
     jsr inputWaveformSelectNext
     jsr userInterfaceUpdateInput
+    jsr inputCallSidUpdateSubroutine
 	rts
 
 typeBoolean:
     jsr inputBooleanToggle
     jsr userInterfaceUpdateInput
+    jsr inputCallSidUpdateSubroutine
     rts
 }
 
@@ -528,6 +561,7 @@ inputHandlePlusKeyPressed:
 typeWaveform:
     jsr inputWaveformSelectNext
     jsr userInterfaceUpdateInput
+    jsr inputCallSidUpdateSubroutine
 	rts
 
 typeInteger4Bits:
@@ -535,6 +569,7 @@ typeInteger11Bits:
 typeInteger12Bits:
     jsr inputIntegerIncreaseValue
     jsr userInterfaceUpdateInput
+    jsr inputCallSidUpdateSubroutine
 	rts
 }
 
@@ -570,6 +605,7 @@ inputHandleMinusKeyPressed:
 typeWaveform:
     jsr inputWaveformSelectPrevious
     jsr userInterfaceUpdateInput
+    jsr inputCallSidUpdateSubroutine
 	rts
 
 typeInteger4Bits:
@@ -577,6 +613,7 @@ typeInteger11Bits:
 typeInteger12Bits:
     jsr inputIntegerDecreaseValue
     jsr userInterfaceUpdateInput
+    jsr inputCallSidUpdateSubroutine
 	rts
 }
 
@@ -816,6 +853,10 @@ returnKeyPressed:
     
     // deactivate the editor
     jsr inputDeactivateEditor
+
+    // update SID chip
+    jsr inputCallSidUpdateSubroutine
+
 
 exit:
     rts
