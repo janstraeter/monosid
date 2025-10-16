@@ -1,9 +1,5 @@
 #importonce
 
-#import "constants.asm"
-#import "screenmemoryfunctions.asm"
-
-
 /* -------------------------------------------------------------------
  * Macro
  * -----

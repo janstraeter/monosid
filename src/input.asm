@@ -1,16 +1,5 @@
 #importonce
 
-#import "constants.asm"
-#import "zpregisters.asm"
-#import "structs.asm"
-#import "string.asm"
-#import "math.asm"
-#import "convert.asm"
-#import "globals.asm"
-#import "userinterface.asm"
-#import "sid.asm"
-
-
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------

@@ -1,11 +1,5 @@
 #importonce
 
-#import "constants.asm"
-#import "zpregisters.asm"
-#import "screenmemoryfunctions.asm"
-#import "math.asm"
-
-
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------

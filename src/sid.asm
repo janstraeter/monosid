@@ -1,10 +1,5 @@
 #importonce
 
-#import "constants.asm"
-#import "globals.asm"
-#import "zpregisters.asm"
-
-
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------

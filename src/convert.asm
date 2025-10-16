@@ -1,8 +1,5 @@
 #importonce 
 
-#import "zpregisters.asm"
-#import "math.asm"
-
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------

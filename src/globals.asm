@@ -1,10 +1,5 @@
 #importonce
 
-#import "constants.asm"
-#import "strings.asm"
-#import "structs.asm"
-
-
 /* -------------------------------------------------------------------
  *
  * Currently selected program mode
@@ -669,4 +664,55 @@ currentSidActiveVoice2:
     .byte(0)
 
 currentSidActiveVoice3:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Indiactes if an MIDI interface is present and should be used
+ *
+ * Type: Boolean
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiInterfacePresent:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Address of the control register of the MIDI interface
+ *
+ * Type: 16 bit address
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiInterfaceControlRegister:
+    .byte(0)
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Address of the status register of the MIDI interface
+ *
+ * Type: 16 bit address
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiInterfaceStatusRegister:
+    .byte(0)
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Address of the recieve register of the MIDI interface
+ *
+ * Type: 16 bit address
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiInterfaceRecieveRegister:
+    .byte(0)
     .byte(0)
