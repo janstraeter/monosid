@@ -48,14 +48,21 @@
 .label ZPR_8_LO  = $6D
 .label ZPR_8_HI  = $6E
 
-// ZPR_9 and ZPR_10 are safe to use (unsed memory locations)
-// and can be used for indirect-indexed addressing
-.label ZPR_9     = $FB
-.label ZPR_9_LO  = $FB
-.label ZPR_9_HI  = $FC
-.label ZPR_10    = $FD
-.label ZPR_10_LO = $FD
-.label ZPR_10_HI = $FE
+// because the addresses for the MIDI interface registers differ between the interfaces,
+// we need to store the addresses and while beeing able to  access them in a convenient
+// and computationally fast way.
+// Therefor I decided to use zero page registers.
+// $6F and $70 are used by the KERNAL as registers for the floating point functions,
+// the others are unused.
+.label ZPR_MIDI_CONTROL_REGISTER_ADDRESS    = $6F
+.label ZPR_MIDI_CONTROL_REGISTER_ADDRESS_LO = $6F
+.label ZPR_MIDI_CONTROL_REGISTER_ADDRESS_HI = $70
+.label ZPR_MIDI_STATUS_REGISTER_ADDRESS     = $FB
+.label ZPR_MIDI_STATUS_REGISTER_ADDRESS_LO  = $FB
+.label ZPR_MIDI_STATUS_REGISTER_ADDRESS_HI  = $FC
+.label ZPR_MIDI_RECIEVE_REGISTER_ADDRESS    = $FD
+.label ZPR_MIDI_RECIEVE_REGISTER_ADDRESS_LO = $FD
+.label ZPR_MIDI_RECIEVE_REGISTER_ADDRESS_HI = $FE
 
 
 /* -------------------------------------------------------------------

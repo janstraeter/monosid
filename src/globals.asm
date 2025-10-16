@@ -26,6 +26,20 @@ currentSubMode:
 
 /* -------------------------------------------------------------------
  *
+ * If set to one, the Kernal ISR emulation should be called in the main loop
+ *
+ * Type: Boolean
+ *
+ * ---------------------------------------------------------------- */ 
+
+callEmulationOfKernalISR:
+{
+    .byte(0)
+}
+
+
+/* -------------------------------------------------------------------
+ *
  * Currently pressed key (read from zero page addr. 203)
  * 64 = no key
  *

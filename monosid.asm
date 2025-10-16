@@ -77,16 +77,29 @@ mainProgram:
     // initialize the SID chip with the initial state of the UI
     jsr sidUpdateAllRegisters
 
-    // initialize the MIDI interface (if any is present)
-    jsr midiInit
-
     // setup the raster interrup which plays the sounds
-    jsr setupRasterInterrupt
+    // jsr setupRasterInterrupt
+
+    jsr setupCustomInterruptServiceRoutine
+
+    // initialize the MIDI interface (if any is present)
+    // jsr midiInit
 
 waitLoop:
+    lda callEmulationOfKernalISR
+    cmp #0
+    beq doNotCallEmulationOfKernalISR
+    lda #0
+    sta callEmulationOfKernalISR
+    jsr emulateStandardKernalISR
+
+doNotCallEmulationOfKernalISR:
     // read the current pressed key and save it in a global variable
     lda ZP.CURRENT_PRESSED_KEY
     sta currentPressedKey
+
+    // Update the SID chip
+    jsr playCurrentNote
 
 	// Switch for the current program mode
 	lda currentMode
@@ -126,11 +139,137 @@ modeMenu:
  * Subroutine
  * ----------
  *
+ * Sets up the custom ISR. Because the C64 is so slow, we need
+ * a very, very fast interrupt routine. Almost everything must be
+ * done in the main loop, only reading the MIDI input can be
+ * done via interrupt. But we need a machanism to get the timing
+ * for the jiffy clock, cursor blinking and keyboard reading right.
+ * So we setup a custom RSI - this RSI is called 60 times per second,
+ * as setup by the Kernal. This custom RSI only indicates to the
+ * main loop, that the usual Kernal stuff is due - but does not do the
+ * actual updating in the ISR itself. 
+ *
+ * ---------------------------------------------------------------- */ 
+
+setupCustomInterruptServiceRoutine:
+{
+    // if an interrup would occur while we are not finished
+    // changing the vector (4 instructions)
+    // the computer would freeze, not likely but possible
+    sei
+
+    // set the interrupt vector to our custom ISR
+    lda #<customInterruptServiceRoutine
+    sta INTERRUPT_VECTOR_LO
+    lda #>customInterruptServiceRoutine
+    sta INTERRUPT_VECTOR_HI
+
+    // now interrupts are allowed again
+    cli
+
+    rts
+}
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * The actual RSI, for explaination see above.
+ *
+ * ---------------------------------------------------------------- */ 
+
+customInterruptServiceRoutine:
+{
+    // acknowledge the interrupt
+    lda CIA.INTERRUPT_CONTROL_STATE
+    
+    // set the variable to 1, to indicate the main loop
+    // to call the Kernal ISR emulation
+    lda #1
+    sta callEmulationOfKernalISR
+    
+    // load the registers from the stack and return
+    pla
+    tay
+    pla
+    tax
+    pla
+    rti
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * This routine is an adaption of the disassembly of the
+ * original ISR of the C64 Kernal.
+ *
+ * See: http://www.unusedino.de/ec64/technical/misc/c64/romlisting.html#kernal
+ *
+ * It is called from the main loop, whenever the custom ISR indicates
+ * that it is time (60 times per second).
+ *
+ * It returns via RTS, not RTI as in the original, of course.
+ *
+ * ---------------------------------------------------------------- */ 
+
+emulateStandardKernalISR:
+{
+    jsr $FFEA           // do clock
+    lda $CC             // flash cursor
+    bne Kernal_EA61
+    dec $CD
+    bne Kernal_EA61
+    lda #$14
+    sta $CD
+    ldy $D3
+    lsr $CF
+    ldx $0287
+    lda ($D1),Y
+    bcs Kernal_EA5C
+    inc $CF
+    sta $CE
+    jsr $EA24
+    lda ($F3),Y
+    sta $0287
+    ldx $0286
+    lda $CE
+Kernal_EA5C:
+    eor #$80
+    jsr $EA1C           // display cursor
+Kernal_EA61:
+    lda $01             // checl cassette sense
+    and #$10
+    beq Kernal_EA71
+    ldy #$00
+    sty $C0
+    lda $01
+    ora #$20
+    bne Kernal_EA79
+Kernal_EA71:
+    lda $C0
+    bne Kernal_EA7B
+    lda $01
+    and #$1F
+Kernal_EA79:    
+    sta $01
+Kernal_EA7B:
+    jsr $EA87           // scan keyboard
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
  * Sets up the raster interrupt
  *
  * ---------------------------------------------------------------- */ 
 
-setupRasterInterrupt:
+/*setupRasterInterrupt:
 {
     sei
 
@@ -152,7 +291,7 @@ setupRasterInterrupt:
 
     cli
     rts
-}
+}*/
 
 
 /* -------------------------------------------------------------------
@@ -167,7 +306,7 @@ setupRasterInterrupt:
  *
  * ---------------------------------------------------------------- */ 
 
-rasterInterrupRoutine:
+/*rasterInterrupRoutine:
 {    
     lda VIC.INTERRUPT_REGISTER
     bmi doRasterIrq
@@ -206,7 +345,7 @@ exit:
     tax
     pla
     rti
-}
+}*/
 
 
 /* -------------------------------------------------------------------
