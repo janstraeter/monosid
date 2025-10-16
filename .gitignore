@@ -4,3 +4,4 @@ monosid.sublime-workspace
 Thumbs.db
 bin/
 .source.txt
+*.code-workspace
