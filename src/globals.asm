@@ -33,22 +33,7 @@ currentSubMode:
  * ---------------------------------------------------------------- */ 
 
 callEmulationOfKernalISR:
-{
     .byte(0)
-}
-
-
-/* -------------------------------------------------------------------
- *
- * Currently pressed key (read from zero page addr. 203)
- * 64 = no key
- *
- * Type: Integer
- *
- * ---------------------------------------------------------------- */ 
-
-currentPressedKey:
-    .byte($40)
 
 
 /* -------------------------------------------------------------------
@@ -79,6 +64,18 @@ currentNote:
 
 /* -------------------------------------------------------------------
  *
+ * Last note that is currently/or was played (index into the frequency-table)
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+lastPlayedNote:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
  * Previously played note (index into the frequency-table)
  * 255 = no note
  *
@@ -88,6 +85,19 @@ currentNote:
 
 previousNote:
     .byte($FF)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Currently pressed key (read from zero page addr. 203)
+ * 64 = no key
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentPressedKey:
+    .byte($40)
 
 
 /* -------------------------------------------------------------------
@@ -131,149 +141,6 @@ currentKeyboardPianoNoteOffset:
 
 /* -------------------------------------------------------------------
  *
- * Key codes used by the keyboard piano (1 octcave C to C)
- *  w e   t y u
- * a s d f g h j k
- *
- * Type: Array of integers
- *
- * ---------------------------------------------------------------- */ 
-
-keyboardPianoKeyCodes:
-    .byte(10) // A
-    .byte(9)  // W
-    .byte(13) // S
-    .byte(14) // E
-    .byte(18) // D
-    .byte(21) // F
-    .byte(22) // T
-    .byte(26) // G
-    .byte(25) // Y
-    .byte(29) // H
-    .byte(30) // U
-    .byte(34) // J
-    .byte(37) // K
-
-
-/* -------------------------------------------------------------------
- *
- * Key codes used by the keyboard piano to switch the octave 0-7
- *
- * Type: Array of integers
- *
- * ---------------------------------------------------------------- */ 
-
-keyboardPianoOctaveKeyCodes:
-    .byte(56) // key 1 -> octave 0
-    .byte(59) // key 2 -> octave 1
-    .byte(8)  // key 3 -> octave 2
-    .byte(11) // key 4 -> octave 3
-    .byte(16) // key 5 -> octave 4
-    .byte(19) // key 6 -> octave 5
-    .byte(24) // key 7 -> octave 6
-    .byte(27) // key 8 -> octave 7
-
-
-/* -------------------------------------------------------------------
- *
- * Offset for the index into the frequency tables
- * (to avoid the costly multiplications for current octave * 12)
- *
- * Type: Array of integers
- *
- * ---------------------------------------------------------------- */ 
-
-keyboardPianoOctaveOffsets:
-    .byte(0)  // octave 0
-    .byte(12) // octave 1
-    .byte(24) // octave 2 
-    .byte(36) // octave 3 
-    .byte(48) // octave 4
-    .byte(60) // octave 5
-    .byte(72) // octave 6
-    .byte(84) // octave 7
-
-
-/* -------------------------------------------------------------------
- *
- * Names of the 7 notes and 5 half-notes
- *
- * Type: Array of text (2 chars each)
- *
- * ---------------------------------------------------------------- */ 
-
-noteNames:
-    .text "C "
-    .text "C#"
-    .text "D "
-    .text "D#"
-    .text "E "
-    .text "F "
-    .text "F#"
-    .text "G "
-    .text "G#"
-    .text "A "
-    .text "A#"
-    .text "B "
-    .text "C "
-
-
-/* -------------------------------------------------------------------
- *
- * Number of entries in the frequency table (number of available notes)
- *
- * Type: Integer
- *
- * ---------------------------------------------------------------- */ 
-
-maxFreqTableNum:
-    .byte($60)
-
-
-/* -------------------------------------------------------------------
- *
- * Frequencies of the notes (PAL version)
- * Lo bytes
- *
- * Type: Array of integers
- *
- * ---------------------------------------------------------------- */ 
-
-freqTablePalLo:
-//         C    C#   D    D#   E    F    F#   G    G#   A    A#   B
-    .byte $16, $27, $39, $4b, $5f, $74, $8a, $a1, $ba, $d4, $f0, $0e  // 0
-    .byte $2d, $4e, $71, $96, $be, $e7, $14, $42, $74, $a9, $e0, $1b  // 1
-    .byte $5a, $9c, $e2, $2d, $7b, $cf, $27, $85, $e8, $51, $c1, $37  // 2
-    .byte $b4, $38, $c4, $59, $f7, $9d, $4e, $0a, $d0, $a2, $81, $6d  // 3
-    .byte $67, $70, $89, $b2, $ed, $3b, $9c, $13, $a0, $45, $02, $da  // 4
-    .byte $ce, $e0, $11, $64, $da, $76, $39, $26, $40, $89, $04, $b4  // 5
-    .byte $9c, $c0, $23, $c8, $b4, $eb, $72, $4c, $80, $12, $08, $68  // 6
-    .byte $39, $80, $45, $90, $68, $d6, $e3, $99, $00, $24, $10, $ff  // 7
-
-
-/* -------------------------------------------------------------------
- *
- * Frequencies of the notes (PAL version)
- * Hi bytes
- *
- * Type: Array of integers
- *
- * ---------------------------------------------------------------- */ 
-
-freqTablePalHi:
-//         C    C#   D    D#   E    F    F#   G    G#   A    A#   B
-    .byte $01, $01, $01, $01, $01, $01, $01, $01, $01, $01, $01, $02  // 0
-    .byte $02, $02, $02, $02, $02, $02, $03, $03, $03, $03, $03, $04  // 1
-    .byte $04, $04, $04, $05, $05, $05, $06, $06, $06, $07, $07, $08  // 2
-    .byte $08, $09, $09, $0a, $0a, $0b, $0c, $0d, $0d, $0e, $0f, $10  // 3
-    .byte $11, $12, $13, $14, $15, $17, $18, $1a, $1b, $1d, $1f, $20  // 4
-    .byte $22, $24, $27, $29, $2b, $2e, $31, $34, $37, $3a, $3e, $41  // 5
-    .byte $45, $49, $4e, $52, $57, $5c, $62, $68, $6e, $75, $7c, $83  // 6
-    .byte $8b, $93, $9c, $a5, $af, $b9, $c4, $d0, $dd, $ea, $f8, $ff  // 7
-
-
-/* -------------------------------------------------------------------
- *
  * Definition of the structs for the input elements
  * for the module "VOICE 1"
  *
@@ -295,7 +162,7 @@ voice1InputSustain:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 4, 4, strInputNameVoiceSustain, $0F, $00, sidUpdateVoice1SustainRelease)
 
 voice1InputRelease:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 4, 4, strInputNameVoiceRelease, $00, $00, sidUpdateVoice1SustainRelease)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 4, 4, strInputNameVoiceRelease, $0A, $00, sidUpdateVoice1SustainRelease)
 
 voice1InputUse:
     createStructInput(INPUT_TYPE.BOOLEAN, 34, 3, 4, strInputNameVoiceUse, $01, $00, sidUpdateVoice1WaveFormControl)
@@ -335,7 +202,7 @@ voice1InputArray:
  * ---------------------------------------------------------------- */ 
 
 voice2InputWaveform:
-    createStructInput(INPUT_TYPE.WAVEFORM, 1, 10, 5, strInputNameVoiceWaveform, WAVEFORM.SAWTOOTH, $00, sidUpdateVoice2WaveFormControl)
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 10, 5, strInputNameVoiceWaveform, WAVEFORM.TRIANGULAR, $00, sidUpdateVoice2WaveFormControl)
 
 voice2InputPulseWidth:
     createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 10, 6, strInputNameVoicePulseWidth, $FF, $00, sidUpdateVoice2PulseWidth)
@@ -350,10 +217,10 @@ voice2InputSustain:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 10, 4, strInputNameVoiceSustain, $0F, $00, sidUpdateVoice2SustainRelease)
 
 voice2InputRelease:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 10, 4, strInputNameVoiceRelease, $00, $00, sidUpdateVoice2SustainRelease)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 10, 4, strInputNameVoiceRelease, $0A, $00, sidUpdateVoice2SustainRelease)
 
 voice2InputUse:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 9, 4, strInputNameVoiceUse, $00, $00, sidUpdateVoice2WaveFormControl)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 9, 4, strInputNameVoiceUse, $01, $00, sidUpdateVoice2WaveFormControl)
 
 voice2InputSync:
     createStructInput(INPUT_TYPE.BOOLEAN, 34, 10, 4, strInputNameVoiceSync, $00, $00, sidUpdateVoice2WaveFormControl)
@@ -390,7 +257,7 @@ voice2InputArray:
  * ---------------------------------------------------------------- */ 
 
 voice3InputWaveform:
-    createStructInput(INPUT_TYPE.WAVEFORM, 1, 16, 5, strInputNameVoiceWaveform, WAVEFORM.SQUARE, $00, sidUpdateVoice3WaveFormControl)
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 16, 5, strInputNameVoiceWaveform, WAVEFORM.TRIANGULAR, $00, sidUpdateVoice3WaveFormControl)
 
 voice3InputPulseWidth:
     createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 16, 6, strInputNameVoicePulseWidth, $F0, $0F, sidUpdateVoice3PulseWidth)
@@ -405,10 +272,10 @@ voice3InputSustain:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 16, 4, strInputNameVoiceSustain, $0F, $00, sidUpdateVoice3SustainRelease)
 
 voice3InputRelease:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 16, 4, strInputNameVoiceRelease, $00, $00, sidUpdateVoice3SustainRelease)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 16, 4, strInputNameVoiceRelease, $0A, $00, sidUpdateVoice3SustainRelease)
 
 voice3InputUse:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 15, 4, strInputNameVoiceUse, $00, $00, sidUpdateVoice3WaveFormControl)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 15, 4, strInputNameVoiceUse, $01, $00, sidUpdateVoice3WaveFormControl)
 
 voice3InputSync:
     createStructInput(INPUT_TYPE.BOOLEAN, 34, 16, 4, strInputNameVoiceSync, $00, $00, sidUpdateVoice3WaveFormControl)
@@ -730,3 +597,205 @@ midiInterfaceStatusRegister:
 midiInterfaceRecieveRegister:
     .byte(0)
     .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Value of the last recieved byte
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiLastRecievedByte:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Value of the status of the current MIDI message
+ * (also used as running status)
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiCurrentStatus:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Buffer to hold the data bytes of the current MIDI message (max. 2)
+ *
+ * Type: Array of bytes
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiDataBuffer:
+midiDataBufferFirstByte:
+    .byte(0)
+midiDataBufferSecondByte:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Current number of bytes in the MIDI data byte buffer
+ *
+ * Type: Integer (zero means buffer is empty)
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiDataBufferCount:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Number of expected data bytes for the current MIDI message (0-2)
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiExpectedDataBytes:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Flag to indicate that the current MIDI message should be ignored
+ *
+ * Type: Boolean
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiIgnoreDataBytesUntilNewStatus:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Contains the number of the current MIDI message (see constants.asm)
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiCurrentMessage:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Buffer to remember the last played notes (currently played/to play last,
+ * oldest note first)
+ *
+ * Type: Array of bytes
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiActiveNotesBuffer:
+    .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+
+/* -------------------------------------------------------------------
+ *
+ * Number of notes in buffer 
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiActiveNotesNum:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * current value of MIDI the pitch bend controller (converted to cent) 
+ *
+ * Type: 16-bit signed integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiPitchBendValue:
+midiPitchBendValueLo:
+    .byte(0)
+midiPitchBendValueHi:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Flag to keep track if the MIDI pitch bend value has changed
+ *
+ * Type: Boolean
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiPitchBendValueChangedFlag:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * current values of the frequencies voice 1 trough 3
+ *
+ * Type: array of 16-bit integers
+ *
+ * ---------------------------------------------------------------- */ 
+
+voiceFrequencies:
+voice1Frequeny:
+voice1FrequenyLo:
+    .byte(0)
+voice1FrequenyHi:
+    .byte(0)
+voice2Frequeny:
+voice2FrequenyLo:
+    .byte(0)
+voice2FrequenyHi:
+    .byte(0)
+voice3Frequeny:
+voice3FrequenyLo:
+    .byte(0)
+voice3FrequenyHi:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * current values of the detuning for voice 1 trough 3 in cent
+ *
+ * Type: array of 16-bit signed integers
+ *
+ * ---------------------------------------------------------------- */ 
+
+/*voiceDetunings:
+voice1Detuning:
+voice1DetuningLo:
+    .byte(0)
+voice1DetuningHi:
+    .byte(0)
+voice2Detuning:
+voice2DetuningLo:
+    .byte(0)
+voice2DetuningHi:
+    .byte(0)
+voice3Detuning:
+voice3DetuningLo:
+    .byte(0)
+voice3DetuningHi:
+    .byte(0)
+*/
+
+voiceDetunings:
+voice1Detuning:
+    .word(-15)
+voice2Detuning:
+    .word(0)
+voice3Detuning:
+    .word(-7)
+

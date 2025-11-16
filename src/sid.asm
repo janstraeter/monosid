@@ -4,12 +4,12 @@
  * Subroutine
  * ----------
  *
- * Updates the control registers of the SID chip concerning 
- * note frequency and gate for all 3 voices according to the
- * current value in the global variable "currentNote"
+ * Updates the voice control registers of the SID chip.
+ * Sets for each voice the the gate bit to 1 if a note is actually played
+ * and the voice is active.
  *
  * Reads global variables:
- * currentNote, FreqTablePalLo, FreqTablePalHi, currentSidWaveFormControlRegisterVoice1,
+ * currentNote, currentSidWaveFormControlRegisterVoice1,
  * currentSidWaveFormControlRegisterVoice2, currentSidWaveFormControlRegisterVoice3,
  * currentSidActiveVoice1, currentSidActiveVoice2, currentSidActiveVoice3
  *
@@ -20,7 +20,7 @@
  *
  * ---------------------------------------------------------------- */ 
 
-sidUpdateVoicesForCurrentNote:
+sidUpdateGateBitsForAllVoices:
 {
     // check the current note to determine if any voice should be active
     lda currentNote
@@ -50,24 +50,7 @@ playNote:
     // Note frequency for all voices
     // -------------------------------------
 
-    // load current note and use it as index in Y
-    lda currentNote
-    tay
-
-    // load the low byte of the frequency for the note to play
-    // and save it into the voice frequency register of the SID chip vor all 3 voices
-    loadPointerToZPR(freqTablePalLo, ZPR_1)
-    lda (ZPR_1), y
-    sta SID.VOICE_1_FREQUENCY_LO
-    sta SID.VOICE_2_FREQUENCY_LO
-    sta SID.VOICE_3_FREQUENCY_LO
-
-    // now the high byte
-    loadPointerToZPR(freqTablePalHi, ZPR_1)
-    lda (ZPR_1), y
-    sta SID.VOICE_1_FREQUENCY_HI
-    sta SID.VOICE_2_FREQUENCY_HI
-    sta SID.VOICE_3_FREQUENCY_HI
+    jsr sidUpdateVoiceFrequencies
 
     // -------------------------------------
     // Gate bit for Voice 1
@@ -827,9 +810,6 @@ useVoice:
 
     // finally save it into the control register of the SID chip
     sta SID.VOICE_3_CONTROL_REGISTER
-//    pha
-//    jsr debugDumpByte
-//    pla
 
     rts
 
@@ -1182,3 +1162,35 @@ controlByte:
     .byte(0)
 }
 
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Updates the SID registers regarding the voice frequencies
+ *
+ * Reads global variables: voice1FrequenyLo, voice1FrequenyHi,
+ *                         voice2FrequenyLo, voice2FrequenyHi,
+ *                         voice3FrequenyLo, voice3FrequenyHi
+ *
+ * ---------------------------------------------------------------- */ 
+ 
+sidUpdateVoiceFrequencies:
+{
+    lda voice1FrequenyLo
+    sta SID.VOICE_1_FREQUENCY_LO
+    lda voice1FrequenyHi
+    sta SID.VOICE_1_FREQUENCY_HI
+
+    lda voice2FrequenyLo
+    sta SID.VOICE_2_FREQUENCY_LO
+    lda voice2FrequenyHi
+    sta SID.VOICE_2_FREQUENCY_HI
+
+    lda voice3FrequenyLo
+    sta SID.VOICE_3_FREQUENCY_LO
+    lda voice3FrequenyHi
+    sta SID.VOICE_3_FREQUENCY_HI
+
+    rts
+}

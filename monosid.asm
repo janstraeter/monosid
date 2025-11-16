@@ -36,6 +36,7 @@
 
 #import "src/strings.asm"
 #import "src/globals.asm"
+#import "src/lookuptables.asm"
 
 // *******************************************************************
 .segment Subroutines [start=$80d]
@@ -55,6 +56,7 @@
 #import "src/input.asm"
 #import "src/sid.asm"
 #import "src/midi.asm"
+#import "src/pitch.asm"
 
 // *******************************************************************
 .segment MainProgram [startAfter="Subroutines"]
@@ -83,9 +85,12 @@ mainProgram:
     jsr setupCustomInterruptServiceRoutine
 
     // initialize the MIDI interface (if any is present)
-    // jsr midiInit
+    jsr midiInit
 
 waitLoop:
+    // check if the CIA interrupt called our custom ISR,
+    // if so, call the emulation of the default Kernal ISR
+    // so the Kernal routines can work properly
     lda callEmulationOfKernalISR
     cmp #0
     beq doNotCallEmulationOfKernalISR
@@ -98,7 +103,46 @@ doNotCallEmulationOfKernalISR:
     lda ZP.CURRENT_PRESSED_KEY
     sta currentPressedKey
 
+    // update the current note according to the currently active MIDI notes
+    jsr midiUpdateCurrentNote
+
+    //lda midiActiveNotesNum
+    //jsr debugDumpByte
+    //jsr debugDumpNoteBuffer
+
+    //lda midiPitchBendValueLo
+    //jsr debugDumpByte
+    
+    //lda #0
+    //sta ZPR_1_LO
+    //sta ZPR_1_HI
+    //sta ZPR_3_LO
+    //sta ZPR_3_HI
+
+    //lda #10
+    //sta ZPR_1_LO
+    //sta ZPR_3_LO
+
+    // lda #%00010000
+    // sta ZPR_1_LO
+    // lda #%00100111
+    // sta ZPR_1_HI
+    // lda #%00010000
+    // sta ZPR_3_LO
+    // lda #%00100111
+    // sta ZPR_3_HI
+// 
+    // jsr mathMultiply16Bit
+// 
+    // lda ZPR_3_LO
+    // tax
+    // lda ZPR_3_HI
+    // tay
+    // 
+    // jsr debugDumpWord
+
     // Update the SID chip
+    jsr updateVoiceFrequenciesIfNecessary
     jsr playCurrentNote
 
 	// Switch for the current program mode
@@ -119,13 +163,16 @@ modeMain:
     jmp waitLoop
 
 subModeMainSelectInput:
-    // check for pressed keys, play notes or move the focus of the currently selected module/input
+    // check for pressed keys,
+    // play notes or move the focus of the currently selected module/input
     jsr updateCurrentKeyboardPianoOctave
-    jsr updateCurrentNote
+    // jsr updateCurrentNote
     jsr mainModeHandleKeyboardInputForSubModeSelectInput
     jmp waitLoop
 
 subModeMainInputEditor:
+    // check for pressed keys, update content of editor,
+    // remove editor and update value if return key pressed
     jsr inputHandleKeyboardInputForEditor
     jmp waitLoop
 
@@ -170,9 +217,10 @@ setupCustomInterruptServiceRoutine:
     rts
 }
 
+
 /* -------------------------------------------------------------------
- * Subroutine
- * ----------
+ * Interrupt Service Routine
+ * -------------------------
  *
  * The actual RSI, for explaination see above.
  *
@@ -265,93 +313,6 @@ Kernal_EA7B:
  * Subroutine
  * ----------
  *
- * Sets up the raster interrupt
- *
- * ---------------------------------------------------------------- */ 
-
-/*setupRasterInterrupt:
-{
-    sei
-
-    lda #<rasterInterrupRoutine
-    sta INTERRUPT_VECTOR_LO
-    lda #>rasterInterrupRoutine
-    sta INTERRUPT_VECTOR_HI
-
-    lda #$00
-    sta VIC.RASTER_COUNTER             
-
-    lda VIC.CONTROL_REGISTER_1
-    and #%01111111
-    sta VIC.CONTROL_REGISTER_1
-
-    lda VIC.INTERRUPT_ENABLED
-    ora #%00000001
-    sta VIC.INTERRUPT_ENABLED
-
-    cli
-    rts
-}*/
-
-
-/* -------------------------------------------------------------------
- * Interrupt routine
- * -----------------
- *
- * Raster interrupt routine to play the currently selected note
- *
- * Reads global variables:  currentNote, noteChange
- *
- * Writes global variables: currentNote, noteChange
- *
- * ---------------------------------------------------------------- */ 
-
-/*rasterInterrupRoutine:
-{    
-    lda VIC.INTERRUPT_REGISTER
-    bmi doRasterIrq
-    // and #%10000001
-    // cmp #%10000001
-    // beq doRasterIrq
-
-    lda CIA.INTERRUPT_CONTROL_STATE
-    cli
-    jmp KERNAL.INTERRUPT_ROUTINE
-
-doRasterIrq:
-
-    // lda VIC.INTERRUPT_REGISTER
-    sta VIC.INTERRUPT_REGISTER
-
-    // Save ZPR_1 on stack, because the interrupt subroutines use it
-    lda ZPR_1_LO
-    pha
-    lda ZPR_1_HI
-    pha
-    
-    // Call the subroutines
-    jsr playCurrentNote
-
-    // Restore ZPR_1 from stack
-    pla
-    sta ZPR_1_HI
-    pla
-    sta ZPR_1_LO
- 
-exit:
-    pla
-    tay
-    pla
-    tax
-    pla
-    rti
-}*/
-
-
-/* -------------------------------------------------------------------
- * Subroutine
- * ----------
- *
  * Checks if the current pressed key is one of the keys 1-8.
  * If it is, sets the current keyboard piano octave accordingly.
  *
@@ -433,7 +394,7 @@ found:
     adc currentKeyboardPianoNoteOffset
     sta tempCurrentNote
 
-    cmp maxFreqTableNum
+    cmp #$60
     bcs notFound
 
     jmp checkForNoteChange
@@ -451,6 +412,7 @@ checkForNoteChange:
     sta previousNote
     lda tempCurrentNote
     sta currentNote
+    sta lastPlayedNote
 
     cmp #$FF
     beq doNotSubstractNoteOffset
@@ -476,10 +438,62 @@ noteHasNotChanged:
  * Subroutine
  * ----------
  *
- * Plays the current note via the SID chip
+ * Checks if the voice frequencies need to be calculated and
+ * the frequency registers of the SID chip have to be updated.
  *
- * Parameters:   None
- * Return value: None
+ * Reads global variables:  currentNote, noteHasChangedFlag,
+ *                          midiPitchBendValueChangedFlag
+
+ * Writes global variables: midiPitchBendValueChangedFlag
+ *
+ * ---------------------------------------------------------------- */ 
+
+updateVoiceFrequenciesIfNecessary:
+{
+    // first check if the pitch bend wheel was moved,
+    // if yes, update frequencies and set the pitch bend value change flag to zero
+    lda midiPitchBendValueChangedFlag
+    bne pitchBendValueHasChanged
+
+    // if the pitch bend wheel was not moved check if the currently played note has changed
+    // and the new note is a playable note (and not 255 indicating "no note")
+    // if either of this checks is false, not frequency update is neccessary
+    lda noteHasChangedFlag
+    beq frequenciesHaveNotChanged
+    lda currentNote
+    cmp #$FF
+    beq frequenciesHaveNotChanged
+
+    // note has changed and is not a playable note, update the voice frequencies
+    jmp updateFrequencies
+
+pitchBendValueHasChanged:
+    // set the MIDI pitch bend value has changed flag to zero again
+    lda #0
+    sta midiPitchBendValueChangedFlag
+
+updateFrequencies:
+    // calculate the (possibly detuned) frequencies for all voices and update the SID chip
+    jsr pitchCalculateAllVoiceFrequencies
+
+    // lda voice1FrequenyLo
+    // tax
+    // lda voice1FrequenyHi
+    // tay
+    // jsr debugDumpWord
+
+    jsr sidUpdateVoiceFrequencies
+
+frequenciesHaveNotChanged:
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Plays the current note via the SID chip
  *
  * Reads global variables:  currentNote, noteHasChangedFlag
  * Writes global variables: noteHasChangedFlag
@@ -492,7 +506,7 @@ playCurrentNote:
     cmp #$01
     bne exit
 
-    jsr sidUpdateVoicesForCurrentNote
+    jsr sidUpdateGateBitsForAllVoices
     jsr userinterfaceOutputCurrentNote
 
     lda #$00
@@ -733,6 +747,7 @@ debugDumpByte:
 {
     sta byteValue
 
+    pha
     lda ZPR_0
     pha
     lda ZPR_1_LO
@@ -742,6 +757,18 @@ debugDumpByte:
     lda ZPR_2_LO
     pha
     lda ZPR_2_HI
+    pha
+    lda ZPR_3_LO
+    pha
+    lda ZPR_3_HI
+    pha
+    lda ZPR_4_LO
+    pha
+    lda ZPR_4_HI
+    pha
+    lda ZPR_5_LO
+    pha
+    lda ZPR_5_HI
     pha
 
     lda byteValue
@@ -763,6 +790,18 @@ debugDumpByte:
     screenPutString(0, 0, stringBuffer)
 
     pla
+    sta ZPR_5_HI
+    pla
+    sta ZPR_5_LO
+    pla
+    sta ZPR_4_HI
+    pla
+    sta ZPR_4_LO
+    pla
+    sta ZPR_3_HI
+    pla
+    sta ZPR_3_LO
+    pla
     sta ZPR_2_HI
     pla
     sta ZPR_2_LO
@@ -772,6 +811,222 @@ debugDumpByte:
     sta ZPR_1_LO
     pla
     sta ZPR_0
+    pla
+
+    rts
+
+stringBuffer:
+    .byte(0)
+    .byte(0)
+    .byte(0)
+    .byte(0)
+    .byte(0)
+    .byte(0)
+byteValue:
+    .byte(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * prints the value of the X/Y register at the top left corner of
+ * the screen
+ *
+ * ---------------------------------------------------------------- */ 
+
+debugDumpWord:
+{
+    pha
+    
+    txa
+    sta wordValue
+    tya
+    sta wordValue+1
+
+    lda ZPR_0
+    pha
+    lda ZPR_1_LO
+    pha
+    lda ZPR_1_HI
+    pha
+    lda ZPR_2_LO
+    pha
+    lda ZPR_2_HI
+    pha
+    lda ZPR_3_LO
+    pha
+    lda ZPR_3_HI
+    pha
+    lda ZPR_4_LO
+    pha
+    lda ZPR_4_HI
+    pha
+    lda ZPR_5_LO
+    pha
+    lda ZPR_5_HI
+    pha
+
+    lda wordValue
+    sta ZPR_1_LO
+    lda wordValue+1
+    sta ZPR_1_HI
+
+    loadPointerToZPR(stringBuffer, ZPR_2)
+    
+    lda #$30
+    sta ZPR_0
+    
+    jsr convertIntegerToString
+
+    screenPutCharColor(0, 0, $20, WHITE)
+    screenPutCharColor(1, 0, $20, WHITE)
+    screenPutCharColor(2, 0, $20, WHITE)
+    screenPutCharColor(3, 0, $20, WHITE)
+    screenPutCharColor(4, 0, $20, WHITE)
+
+    screenPutString(0, 0, stringBuffer)
+
+    pla
+    sta ZPR_5_HI
+    pla
+    sta ZPR_5_LO
+    pla
+    sta ZPR_4_HI
+    pla
+    sta ZPR_4_LO
+    pla
+    sta ZPR_3_HI
+    pla
+    sta ZPR_3_LO
+    pla
+    sta ZPR_2_HI
+    pla
+    sta ZPR_2_LO
+    pla
+    sta ZPR_1_HI
+    pla
+    sta ZPR_1_LO
+    pla
+    sta ZPR_0
+    pla
+
+    rts
+
+stringBuffer:
+    .byte(0)
+    .byte(0)
+    .byte(0)
+    .byte(0)
+    .byte(0)
+    .byte(0)
+wordValue:
+    .byte(0)
+    .byte(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * prints the value of the accu register at the top left corner of
+ * the screen
+ *
+ * ---------------------------------------------------------------- */ 
+
+debugDumpNoteBuffer:
+{
+    pha
+    lda ZPR_0
+    pha
+    lda ZPR_1_LO
+    pha
+    lda ZPR_1_HI
+    pha
+    lda ZPR_2_LO
+    pha
+    lda ZPR_2_HI
+    pha
+    
+    lda #$30
+    sta ZPR_0
+    lda midiActiveNotesBuffer
+    sta ZPR_1_LO
+    lda #$00
+    sta ZPR_1_HI
+    loadPointerToZPR(stringBuffer, ZPR_2)
+    jsr convertIntegerToString
+    screenPutCharColor(0, 1, $20, WHITE)
+    screenPutCharColor(1, 1, $20, WHITE)
+    screenPutCharColor(2, 1, $20, WHITE)
+    screenPutString(0, 1, stringBuffer)
+
+    lda #$30
+    sta ZPR_0    
+    lda midiActiveNotesBuffer+1
+    sta ZPR_1_LO
+    lda #$00
+    sta ZPR_1_HI
+    loadPointerToZPR(stringBuffer, ZPR_2)
+    jsr convertIntegerToString
+    screenPutCharColor(3, 1, $20, WHITE)
+    screenPutCharColor(4, 1, $20, WHITE)
+    screenPutCharColor(5, 1, $20, WHITE)
+    screenPutString(3, 1, stringBuffer)
+
+    lda #$30
+    sta ZPR_0    
+    lda midiActiveNotesBuffer+2
+    sta ZPR_1_LO
+    lda #$00
+    sta ZPR_1_HI
+    loadPointerToZPR(stringBuffer, ZPR_2)
+    jsr convertIntegerToString
+    screenPutCharColor(6, 1, $20, WHITE)
+    screenPutCharColor(7, 1, $20, WHITE)
+    screenPutCharColor(8, 1, $20, WHITE)
+    screenPutString(6, 1, stringBuffer)
+
+    lda #$30
+    sta ZPR_0    
+    lda midiActiveNotesBuffer+3
+    sta ZPR_1_LO
+    lda #$00
+    sta ZPR_1_HI
+    loadPointerToZPR(stringBuffer, ZPR_2)
+    jsr convertIntegerToString
+    screenPutCharColor(9, 1, $20, WHITE)
+    screenPutCharColor(10, 1, $20, WHITE)
+    screenPutCharColor(11, 1, $20, WHITE)
+    screenPutString(9, 1, stringBuffer)
+
+    lda #$30
+    sta ZPR_0    
+    lda midiActiveNotesBuffer+4
+    sta ZPR_1_LO
+    lda #$00
+    sta ZPR_1_HI
+    loadPointerToZPR(stringBuffer, ZPR_2)
+    jsr convertIntegerToString
+    screenPutCharColor(12, 1, $20, WHITE)
+    screenPutCharColor(13, 1, $20, WHITE)
+    screenPutCharColor(14, 1, $20, WHITE)
+    screenPutString(12, 1, stringBuffer)
+
+
+    pla
+    sta ZPR_2_HI
+    pla
+    sta ZPR_2_LO
+    pla
+    sta ZPR_1_HI
+    pla
+    sta ZPR_1_LO
+    pla
+    sta ZPR_0
+    pla
 
     rts
 

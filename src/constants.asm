@@ -122,3 +122,14 @@
     .label MASTER_RESET_VALUE       = $03
     .label SETUP_VALUE              = $92
 }
+
+.namespace MIDI_MESSAGE {
+    .label NONE                     = $00
+    .label NOTE_ON                  = $01
+    .label NOTE_OFF                 = $02
+    .label PITCH_BEND_CHANGE        = $03
+}
+
+.label MIDI_MAX_ACTIVE_NOTES        = 5
+
+.label MAX_NOTE_INDEX               = 95; // 8 octaves, highest index number is 95
