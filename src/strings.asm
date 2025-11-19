@@ -15,10 +15,6 @@ strOctave:
 	.text "OCT:"
 	.byte $00
 
-strNote:
-	.text "NOTE:"
-	.byte $00
-
 strMonosid:
     .text "MONOSID"
     .byte $00

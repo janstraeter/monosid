@@ -141,6 +141,19 @@ currentKeyboardPianoNoteOffset:
 
 /* -------------------------------------------------------------------
  *
+ * Flag to keep track if the current note was played via the C64
+ * keyboard and not by MIDI.
+ *
+ * Type: Boolean
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentNoteWasPlayedByKeyboardFlag:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
  * Definition of the structs for the input elements
  * for the module "VOICE 1"
  *
@@ -793,9 +806,9 @@ voice3DetuningHi:
 
 voiceDetunings:
 voice1Detuning:
-    .word(-15)
+    .word(-1200)
 voice2Detuning:
     .word(0)
 voice3Detuning:
-    .word(-7)
+    .word(1200)
 

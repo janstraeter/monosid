@@ -65,30 +65,6 @@ keyboardPianoOctaveOffsets:
 
 /* -------------------------------------------------------------------
  *
- * Names of the 7 notes and 5 half-notes
- *
- * Type: Array of text (2 chars each)
- *
- * ---------------------------------------------------------------- */ 
-
-noteNames:
-    .text "C "
-    .text "C#"
-    .text "D "
-    .text "D#"
-    .text "E "
-    .text "F "
-    .text "F#"
-    .text "G "
-    .text "G#"
-    .text "A "
-    .text "A#"
-    .text "B "
-    .text "C "
-
-
-/* -------------------------------------------------------------------
- *
  * Frequencies of the notes (PAL version)
  * Lo bytes
  *

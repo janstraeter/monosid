@@ -79,9 +79,7 @@ mainProgram:
     // initialize the SID chip with the initial state of the UI
     jsr sidUpdateAllRegisters
 
-    // setup the raster interrup which plays the sounds
-    // jsr setupRasterInterrupt
-
+    // initialize a custom ISR for the Kernal functionality
     jsr setupCustomInterruptServiceRoutine
 
     // initialize the MIDI interface (if any is present)
@@ -103,43 +101,18 @@ doNotCallEmulationOfKernalISR:
     lda ZP.CURRENT_PRESSED_KEY
     sta currentPressedKey
 
+    // check if the last note was played not by MIDI but the C64 keyboard
+    // instead. If so ignore the MIDI notes in this loop iteration
+    lda currentNoteWasPlayedByKeyboardFlag
+    bne ignoreMidiNote
+    
     // update the current note according to the currently active MIDI notes
     jsr midiUpdateCurrentNote
 
-    //lda midiActiveNotesNum
-    //jsr debugDumpByte
-    //jsr debugDumpNoteBuffer
-
-    //lda midiPitchBendValueLo
-    //jsr debugDumpByte
-    
-    //lda #0
-    //sta ZPR_1_LO
-    //sta ZPR_1_HI
-    //sta ZPR_3_LO
-    //sta ZPR_3_HI
-
-    //lda #10
-    //sta ZPR_1_LO
-    //sta ZPR_3_LO
-
-    // lda #%00010000
-    // sta ZPR_1_LO
-    // lda #%00100111
-    // sta ZPR_1_HI
-    // lda #%00010000
-    // sta ZPR_3_LO
-    // lda #%00100111
-    // sta ZPR_3_HI
-// 
-    // jsr mathMultiply16Bit
-// 
-    // lda ZPR_3_LO
-    // tax
-    // lda ZPR_3_HI
-    // tay
-    // 
-    // jsr debugDumpWord
+ignoreMidiNote:
+    // reset the flag
+    lda #0
+    sta currentNoteWasPlayedByKeyboardFlag
 
     // Update the SID chip
     jsr updateVoiceFrequenciesIfNecessary
@@ -166,7 +139,7 @@ subModeMainSelectInput:
     // check for pressed keys,
     // play notes or move the focus of the currently selected module/input
     jsr updateCurrentKeyboardPianoOctave
-    // jsr updateCurrentNote
+    jsr updateCurrentKeyboardNote
     jsr mainModeHandleKeyboardInputForSubModeSelectInput
     jmp waitLoop
 
@@ -222,7 +195,7 @@ setupCustomInterruptServiceRoutine:
  * Interrupt Service Routine
  * -------------------------
  *
- * The actual RSI, for explaination see above.
+ * The actual ISR, for explaination see above.
  *
  * ---------------------------------------------------------------- */ 
 
@@ -236,7 +209,7 @@ customInterruptServiceRoutine:
     lda #1
     sta callEmulationOfKernalISR
     
-    // load the registers from the stack and return
+    // restore the registers from the stack and return
     pla
     tay
     pla
@@ -369,59 +342,75 @@ notFound:
  *
  * ---------------------------------------------------------------- */ 
 
-updateCurrentNote:
+updateCurrentKeyboardNote:
 {
+    // load the current pressed key and check if the value is not 64 (which means no key pressed)
     lda currentPressedKey
     cmp #64
     beq notFound
 
+    // load the pointer to the key codes which are used as a piano octave
     loadPointerToZPR(keyboardPianoKeyCodes, ZPR_1)
     ldy #$00
 
 arrayLoop:
+    // check if current array item corresponds to the value of the pressed key
+    // if yes, jump to to the found label
     lda (ZPR_1), y
     cmp currentPressedKey
     beq found
+    
+    // goto next key code in array,
     iny
+
+    // Check if last item in array is reached.
+    // If no, loop again. If yes, jump to not found label
     cpy #$0D
     bne arrayLoop
     jmp notFound
 
 found:
+    // store the index of the found key code in tempCurrentNote
     sty tempCurrentNote
+    
+    // add the value in currentKeyboardPianoNoteOffset to tempCurrentNote
     tya
     clc
     adc currentKeyboardPianoNoteOffset
     sta tempCurrentNote
 
+    // check if resulting note value is greater than highest playable note
     cmp #$60
     bcs notFound
 
+    // set the flag to indicate the main loop that the note was
+    // played on the C64 keyboard and should override any note from MIDI
+    lda #1
+    sta currentNoteWasPlayedByKeyboardFlag
+
+    // now check if note as changed
     jmp checkForNoteChange
 
 notFound:
+    // note was not found, save 255 into tempCurrentNote
     lda #$FF
     sta tempCurrentNote
 
 checkForNoteChange:
+    // load current note and compare it with the new note
     lda currentNote
     cmp tempCurrentNote
     beq noteHasNotChanged
 
+    // note has changed, store the new note as the current
+    // (and last played) and the current as the previous
     lda currentNote
     sta previousNote
     lda tempCurrentNote
     sta currentNote
     sta lastPlayedNote
 
-    cmp #$FF
-    beq doNotSubstractNoteOffset
-    sec
-    sbc currentKeyboardPianoNoteOffset
-
-doNotSubstractNoteOffset:
-    sta currentNoteOfOctave
-
+    // set the flag to indicate that the note has changed
     lda #$01
     sta noteHasChangedFlag
     rts
@@ -475,13 +464,6 @@ pitchBendValueHasChanged:
 updateFrequencies:
     // calculate the (possibly detuned) frequencies for all voices and update the SID chip
     jsr pitchCalculateAllVoiceFrequencies
-
-    // lda voice1FrequenyLo
-    // tax
-    // lda voice1FrequenyHi
-    // tay
-    // jsr debugDumpWord
-
     jsr sidUpdateVoiceFrequencies
 
 frequenciesHaveNotChanged:
@@ -507,7 +489,6 @@ playCurrentNote:
     bne exit
 
     jsr sidUpdateGateBitsForAllVoices
-    jsr userinterfaceOutputCurrentNote
 
     lda #$00
     sta noteHasChangedFlag

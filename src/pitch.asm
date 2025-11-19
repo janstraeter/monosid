@@ -1,5 +1,21 @@
 #importonce
 
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Calculates the (possibly detuned) frequency for a voice
+ *
+ * Parameters:              Accu - index of voice (0-2)
+ * 
+ * Reads global variables:  voiceDetunings, midiPitchBendValueLo
+ *                          midiPitchBendValueHi, freqTablePalLo
+ *                          freqTablePalHi
+ *
+ * Writes global variables: voiceFrequencies
+ *
+ * ---------------------------------------------------------------- */ 
+
 pitchCalculateVoiceFrequency:
 {
     // index for voice is in A, shift left to multiply by 2
@@ -295,6 +311,15 @@ detunedBaseNote:
 detuningOfBaseNoteInCent:
     .byte(0)
 }
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Calculates the detuned frequencies for all voices
+ *
+ * ---------------------------------------------------------------- */ 
 
 pitchCalculateAllVoiceFrequencies:
 {

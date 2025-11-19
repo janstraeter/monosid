@@ -41,10 +41,8 @@ userinterfaceDrawMain:
 {
 	screenPutString(9, 0, strMenu)
 	screenPutString(18, 0, strOctave)
-	screenPutString(24, 0, strNote)
 	screenPutString(33, 0, strMonosid)
     jsr userInterfaceOutputCurrentKeyboardPianoOctave
-    jsr userinterfaceOutputCurrentNote
 
 	lda modulesNum
 	sta moduleLoopCounter
@@ -91,58 +89,6 @@ modulesLoop:
 	// "Local" variables (not really local, they of course keep the last value between calls to the subroutine)
 	moduleIndex:       .byte($00)
 	moduleLoopCounter: .byte($00)
-}
-
-
-/* -------------------------------------------------------------------
- * Subroutine
- * ----------
- *
- * Prints the current note (if any) in the first line of the screen
- *
- * Parameters: None
- *
- * Reads global variables: currentNoteOfOctave, noteNames
- *               
- * ---------------------------------------------------------------- */ 
-
-userinterfaceOutputCurrentNote:
-{
-	// Check if a note is to be played
-	lda currentNoteOfOctave
-    cmp #$FF
-    beq noNoteToPlay
-
-    // Yes, a note. Multiply the note number with 2 (the size of the
-    // note-name array elements) and transfer it to the Y-register
-    clc
-    asl
-    tay
-
-    // Load the address of the note-name array
-    lda #<noteNames
-    sta ZPR_1_LO
-    lda #>noteNames
-    sta ZPR_1_HI
-
-    // Output the note name at line 0, char 29
-    lda (ZPR_1), y
-    sta SCREENMEM+29
-    iny
-    lda (ZPR_1), y
-    sta SCREENMEM+30
-    jmp exit
-
-noNoteToPlay:
-    
-    // No note to play.
-    // Output "--" at line 0, char 29
-    lda #$2D
-    sta SCREENMEM+29
-    sta SCREENMEM+30
-
-exit:
-    rts
 }
 
 
