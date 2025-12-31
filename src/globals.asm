@@ -26,6 +26,18 @@ currentSubMode:
 
 /* -------------------------------------------------------------------
  *
+ * Currently visible page with modules (for the program mode MODE.MAIN)
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentPage:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
  * If set to one, the Kernal ISR emulation should be called in the main loop
  *
  * Type: Boolean
@@ -384,6 +396,46 @@ mainInputArray:
 
 /* -------------------------------------------------------------------
  *
+ * Definition of the structs for the input elements
+ * for the module "DETUNING"
+ *
+ * ---------------------------------------------------------------- */ 
+
+detuningInputVoice1:
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 1, 4, 6, strInputNameDetuningInputVoice1, $00, $00, pitchUpdateDetuningInputVoice1)
+
+detuningInputDetuneDownVoice1:
+    createStructInput(INPUT_TYPE.BOOLEAN, 8, 5, 5, strInputNameDetuningInputDetuneDownVoice, $00, $00, pitchUpdateDetuningInputVoice1)
+
+detuningInputVoice2:
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 13, 4, 6, strInputNameDetuningInputVoice2, $00, $00, pitchUpdateDetuningInputVoice2)
+
+detuningInputDetuneDownVoice2:
+    createStructInput(INPUT_TYPE.BOOLEAN, 20, 5, 5, strInputNameDetuningInputDetuneDownVoice, $00, $00, pitchUpdateDetuningInputVoice2)
+
+detuningInputVoice3:
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 26, 4, 6, strInputNameDetuningInputVoice3, $00, $00, pitchUpdateDetuningInputVoice3)
+
+detuningInputDetuneDownVoice3:
+    createStructInput(INPUT_TYPE.BOOLEAN, 33, 5, 5, strInputNameDetuningInputDetuneDownVoice, $00, $00, pitchUpdateDetuningInputVoice3)
+
+detuningInputArray:
+    .byte(<detuningInputVoice1)
+    .byte(>detuningInputVoice1)
+    .byte(<detuningInputDetuneDownVoice1)
+    .byte(>detuningInputDetuneDownVoice1)
+    .byte(<detuningInputVoice2)
+    .byte(>detuningInputVoice2)
+    .byte(<detuningInputDetuneDownVoice2)
+    .byte(>detuningInputDetuneDownVoice2)
+    .byte(<detuningInputVoice3)
+    .byte(>detuningInputVoice3)
+    .byte(<detuningInputDetuneDownVoice3)
+    .byte(>detuningInputDetuneDownVoice3)
+
+
+/* -------------------------------------------------------------------
+ *
  * Definition of module "VOICE1"
  *
  * Type: STRUCT_MODULE
@@ -391,7 +443,7 @@ mainInputArray:
  * ---------------------------------------------------------------- */ 
 
 moduleVoice1:
-    createStructModule(strModuleNameVoice1, 0,  2, 38, 3, GRAY, 9, voice1InputArray)
+    createStructModule(strModuleNameVoice1, 0,  2, 38, 3, GRAY, 9, voice1InputArray, 0)
 
 
 /* -------------------------------------------------------------------
@@ -403,7 +455,7 @@ moduleVoice1:
  * ---------------------------------------------------------------- */ 
 
 moduleVoice2:
-    createStructModule(strModuleNameVoice2, 0,  8, 38, 3, GRAY, 9, voice2InputArray)
+    createStructModule(strModuleNameVoice2, 0,  8, 38, 3, GRAY, 9, voice2InputArray, 0)
 
 
 /* -------------------------------------------------------------------
@@ -415,7 +467,7 @@ moduleVoice2:
  * ---------------------------------------------------------------- */ 
 
 moduleVoice3:
-    createStructModule(strModuleNameVoice3, 0, 14, 38, 3, GRAY, 9, voice3InputArray)
+    createStructModule(strModuleNameVoice3, 0, 14, 38, 3, GRAY, 9, voice3InputArray, 0)
 
 
 /* -------------------------------------------------------------------
@@ -427,7 +479,7 @@ moduleVoice3:
  * ---------------------------------------------------------------- */ 
 
 moduleFilter:
-    createStructModule(strModuleNameFilter, 0, 20, 31, 3, LIGHT_RED, 8, filterInputArray)
+    createStructModule(strModuleNameFilter, 0, 20, 31, 3, LIGHT_RED, 8, filterInputArray, 0)
 
 
 /* -------------------------------------------------------------------
@@ -439,7 +491,19 @@ moduleFilter:
  * ---------------------------------------------------------------- */ 
 
 moduleMain:
-    createStructModule(strModuleNameMain,  34, 20,  4, 3, PURPLE, 1, mainInputArray)
+    createStructModule(strModuleNameMain,  34, 20,  4, 3, PURPLE, 1, mainInputArray, 0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Definition of module "DETUNING"
+ *
+ * Type: STRUCT_MODULE
+ *
+ * ---------------------------------------------------------------- */ 
+
+moduleDetuning:
+    createStructModule(strModuleNameDetuning, 0,  2, 38, 3, GRAY, 6, detuningInputArray, 1)
 
 
 /* -------------------------------------------------------------------
@@ -461,6 +525,8 @@ modules:
     .byte(>moduleFilter)
     .byte(<moduleMain)
     .byte(>moduleMain)
+    .byte(<moduleDetuning)
+    .byte(>moduleDetuning)
 
 
 /* -------------------------------------------------------------------
@@ -472,7 +538,7 @@ modules:
  * ---------------------------------------------------------------- */ 
 
 modulesNum:
-    .byte($05)
+    .byte($06)
 
 
 /* -------------------------------------------------------------------
@@ -786,7 +852,7 @@ voice3FrequenyHi:
  *
  * ---------------------------------------------------------------- */ 
 
-/*voiceDetunings:
+voiceDetunings:
 voice1Detuning:
 voice1DetuningLo:
     .byte(0)
@@ -802,13 +868,12 @@ voice3DetuningLo:
     .byte(0)
 voice3DetuningHi:
     .byte(0)
-*/
 
-voiceDetunings:
-voice1Detuning:
-    .word(-1200)
-voice2Detuning:
-    .word(0)
-voice3Detuning:
-    .word(1200)
+// voiceDetunings:
+// voice1Detuning:
+//     .word(0)
+// voice2Detuning:
+//     .word(0)
+// voice3Detuning:
+//     .word(0)
 

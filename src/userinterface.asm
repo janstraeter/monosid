@@ -126,6 +126,13 @@ userInterfaceOutputCurrentKeyboardPianoOctave:
 
 userInterfaceDrawModule:
 {
+	// check if module should be displayed on current page
+	structLoadByteToAccu(ZPR_7, STRUCT_MODULE.PAGE)
+	cmp currentPage
+	beq drawModule
+	rts
+
+drawModule:
 	// Load color of module	and store it in ZPR_0
 	structLoadByteToAccu(ZPR_7, STRUCT_MODULE.COLOR)
 	sta ZPR_0
@@ -187,6 +194,7 @@ inputsLoop:
 	dec inputLoopCounter
 	bne inputsLoop
 
+exit:
 	rts
 
 	// "Local" variables (not really local, they of course keep the last value between calls to the subroutine)

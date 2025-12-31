@@ -110,9 +110,6 @@ doNotCallEmulationOfKernalISR:
     jsr midiUpdateCurrentNote
 
 ignoreMidiNote:
-    // reset the flag
-    lda #0
-    sta currentNoteWasPlayedByKeyboardFlag
 
     // Update the SID chip
     jsr updateVoiceFrequenciesIfNecessary
@@ -392,7 +389,19 @@ found:
     jmp checkForNoteChange
 
 notFound:
-    // note was not found, save 255 into tempCurrentNote
+    
+    // check if the last note was played by the C64 keyboard
+    // if no, then ignore the fact that no note was found.
+    // Otherwise we would falsly assume that the currently played note should be ended
+    lda currentNoteWasPlayedByKeyboardFlag
+    cmp #0
+    beq noteHasNotChanged
+
+    // reset the flag, the C64 keyboard now does not play a note anymore
+    lda #0
+    sta currentNoteWasPlayedByKeyboardFlag
+
+    // note was not found, so save 255 into tempCurrentNote
     lda #$FF
     sta tempCurrentNote
 
@@ -408,8 +417,13 @@ checkForNoteChange:
     sta previousNote
     lda tempCurrentNote
     sta currentNote
+
+    // update lastPlayedNote, but only if there is an actual note to play
+    cmp #$FF
+    beq doNotUpdateLastPlayedNote
     sta lastPlayedNote
 
+doNotUpdateLastPlayedNote:
     // set the flag to indicate that the note has changed
     lda #$01
     sta noteHasChangedFlag
@@ -446,7 +460,7 @@ updateVoiceFrequenciesIfNecessary:
 
     // if the pitch bend wheel was not moved check if the currently played note has changed
     // and the new note is a playable note (and not 255 indicating "no note")
-    // if either of this checks is false, not frequency update is neccessary
+    // if either of this checks is false, note frequency update is neccessary
     lda noteHasChangedFlag
     beq frequenciesHaveNotChanged
     lda currentNote
@@ -570,6 +584,7 @@ cursorDownKeyPressed:
 
 cursorDownNoWrap:
     jsr correctCurrentInputIndex
+    jsr switchPageIfNeccessary
     jsr userinterfaceAddModuleFocus
     jsr userinterfaceAddInputFocus
     rts
@@ -605,6 +620,7 @@ cursorUpKeyPressed:
 
 cursorUpNoWrap:
     jsr correctCurrentInputIndex
+    jsr switchPageIfNeccessary
     jsr userinterfaceAddModuleFocus
     jsr userinterfaceAddInputFocus
     rts
@@ -712,6 +728,39 @@ exit:
 
 inputNum:
     .byte(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Checks if the newly selected input should be displayed on a different
+ * page and switches to this page if neccessary.
+ *
+ * Reads global variables:  modules, currentModuleIndex
+ * Writes global variables: currentPage
+ * 
+ * ---------------------------------------------------------------- */ 
+
+switchPageIfNeccessary:
+{
+	// load the designated page for the current module
+    loadPointerToZPR(modules, ZPR_6)
+    stuctLoadPointerArrayItemToZPR(ZPR_6, currentModuleIndex, ZPR_7);
+	structLoadByteToAccu(ZPR_7, STRUCT_MODULE.PAGE)
+    
+    // check if it matches the current page
+    cmp currentPage
+    beq exit
+
+    // no, set the new page and redraw the UI
+    sta currentPage
+    jsr userinterfaceInitScreen
+    jsr userinterfaceDrawMain
+
+exit:
+    rts
 }
 
 

@@ -39,6 +39,10 @@ strModuleNameMain:
     .text "MAIN"
     .byte $00
 
+strModuleNameDetuning:  
+    .text "DETUNING"
+    .byte $00
+
 strInputNameVoiceWaveform:   
     .text "WAVE"
     .byte $00
@@ -109,6 +113,22 @@ strInputNameFilterBandwidth:
 
 strInputNameMainVol:         
     .text "VOL"
+    .byte $00
+
+strInputNameDetuningInputVoice1:         
+    .text "VOICE 1"
+    .byte $00
+
+strInputNameDetuningInputVoice2:         
+    .text "VOICE 2"
+    .byte $00
+
+strInputNameDetuningInputVoice3:         
+    .text "VOICE 3"
+    .byte $00
+
+strInputNameDetuningInputDetuneDownVoice:
+    .text "NEG"
     .byte $00
 
 strWaveformTriangular:

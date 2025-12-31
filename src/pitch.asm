@@ -331,3 +331,159 @@ pitchCalculateAllVoiceFrequencies:
     jsr pitchCalculateVoiceFrequency
     rts
 }
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Updates the detuning value for voice 1, recalculates the frequency
+ * and updates the SID chip accordingly.
+ *
+ * ---------------------------------------------------------------- */ 
+
+pitchUpdateDetuningInputVoice1:
+{
+    // load the current value of the detuning value for voice 1
+    loadPointerToZPR(detuningInputVoice1, ZPR_7)
+    structLoadWordToAddress(ZPR_7, STRUCT_INPUT.VALUE, detuningValue)
+
+    // check if the detuning value should be negative
+    loadPointerToZPR(detuningInputDetuneDownVoice1, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+    cmp #0
+    beq saveDetuningValue
+
+    // Invert the sign of the detuning value by substracting
+    // first the low- then high byte from zero
+    sec
+    lda #0
+    sbc detuningValue
+    sta detuningValue
+    lda #0
+    sbc detuningValue+1
+    sta detuningValue+1
+
+saveDetuningValue:
+    // save the new detuning value to the global detuning variable for voice 1
+    lda detuningValue
+    sta voice1Detuning
+    lda detuningValue+1
+    sta voice1Detuning+1
+
+    // re-calculate the frequency for voice 1
+    lda #0
+    jsr pitchCalculateVoiceFrequency
+
+    // update the SID chip
+    jsr sidUpdateVoiceFrequencies
+
+    rts
+
+detuningValue:
+    .word(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Updates the detuning value for voice 2, recalculates the frequency
+ * and updates the SID chip accordingly.
+ *
+ * ---------------------------------------------------------------- */ 
+
+pitchUpdateDetuningInputVoice2:
+{
+    // load the current value of the detuning value for voice 2
+    loadPointerToZPR(detuningInputVoice2, ZPR_7)
+    structLoadWordToAddress(ZPR_7, STRUCT_INPUT.VALUE, detuningValue)
+
+    // check if the detuning value should be negative
+    loadPointerToZPR(detuningInputDetuneDownVoice2, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+    cmp #0
+    beq saveDetuningValue
+
+    // Invert the sign of the detuning value by substracting
+    // first the low- then high byte from zero
+    sec
+    lda #0
+    sbc detuningValue
+    sta detuningValue
+    lda #0
+    sbc detuningValue+1
+    sta detuningValue+1
+
+saveDetuningValue:
+    // save the new detuning value to the global detuning variable for voice 1
+    lda detuningValue
+    sta voice2Detuning
+    lda detuningValue+1
+    sta voice2Detuning+1
+
+    // re-calculate the frequency for voice 1
+    lda #1
+    jsr pitchCalculateVoiceFrequency
+
+    // update the SID chip
+    jsr sidUpdateVoiceFrequencies
+
+    rts
+
+detuningValue:
+    .word(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Updates the detuning value for voice 3, recalculates the frequency
+ * and updates the SID chip accordingly.
+ *
+ * ---------------------------------------------------------------- */ 
+
+pitchUpdateDetuningInputVoice3:
+{
+    // load the current value of the detuning value for voice 3
+    loadPointerToZPR(detuningInputVoice3, ZPR_7)
+    structLoadWordToAddress(ZPR_7, STRUCT_INPUT.VALUE, detuningValue)
+
+    // check if the detuning value should be negative
+    loadPointerToZPR(detuningInputDetuneDownVoice3, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+    cmp #0
+    beq saveDetuningValue
+
+    // Invert the sign of the detuning value by substracting
+    // first the low- then high byte from zero
+    sec
+    lda #0
+    sbc detuningValue
+    sta detuningValue
+    lda #0
+    sbc detuningValue+1
+    sta detuningValue+1
+
+saveDetuningValue:
+    // save the new detuning value to the global detuning variable for voice 3
+    lda detuningValue
+    sta voice3Detuning
+    lda detuningValue+1
+    sta voice3Detuning+1
+
+    // re-calculate the frequency for voice 3
+    lda #2
+    jsr pitchCalculateVoiceFrequency
+
+    // update the SID chip
+    jsr sidUpdateVoiceFrequencies
+
+    rts
+
+detuningValue:
+    .word(0)
+}

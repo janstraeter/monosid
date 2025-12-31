@@ -66,6 +66,29 @@
  * Macro
  * -----
  *
+ * Uses indirect-indexed addressing to load 2 bytes from a struct
+ * and saves it at the provied address
+ *
+ * Parameters:   srcZPR:      address of zeropage register (the struct)
+ *               structIndex: index to load into the X register
+ *               address      address of the destination
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro structLoadWordToAddress(srcZPR, structIndex, address) {
+    ldy #structIndex
+    lda (srcZPR), y
+    sta address
+    iny
+    lda (srcZPR), y
+    sta address+1
+}
+
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
  * Uses indirect-indexed addressing to load 2 bytes from an array of
  * pointers and saves the hi-byte into the accu and the lo-byte into the X-register
  * 
@@ -118,6 +141,9 @@
     // array with input elements
     .label INPUT_ARRAY_NUM = $0F
     .label INPUT_ARRAY = $10
+
+    // page
+    .label PAGE = $12;
 }
 
 
@@ -129,7 +155,7 @@
  *
  * ---------------------------------------------------------------- */ 
 
-.macro createStructModule(name, left, top, innerWidth, innerHeight, color, inputArrayNum, inputArray) {
+.macro createStructModule(name, left, top, innerWidth, innerHeight, color, inputArrayNum, inputArray, page) {
     
     // We can pre-calculate the screen- and color-memory adresses
     // to avoid the costly multiplications during run-time because
@@ -162,6 +188,7 @@
     .byte(inputArrayNum)           // $0F INPUT_ARRAY_NUM
     .byte(<inputArray)             // $10 INPUT_ARRAY
     .byte(>inputArray)             // $11
+    .byte(page)                    // $12
 }
 
 
