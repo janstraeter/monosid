@@ -18,12 +18,62 @@
 }
 
 .namespace VIC {
+    .label SPRITE_0_BLOCK_REGISTER  = SCREENMEM + $03f8;
+    .label SPRITE_1_BLOCK_REGISTER  = SCREENMEM + $03f9;
+    .label SPRITE_2_BLOCK_REGISTER  = SCREENMEM + $03fa;
+    .label SPRITE_3_BLOCK_REGISTER  = SCREENMEM + $03fb;
+    .label SPRITE_4_BLOCK_REGISTER  = SCREENMEM + $03fc;
+    .label SPRITE_5_BLOCK_REGISTER  = SCREENMEM + $03fd;
+    .label SPRITE_6_BLOCK_REGISTER  = SCREENMEM + $03fe;
+    .label SPRITE_7_BLOCK_REGISTER  = SCREENMEM + $03ff;
+
+    .label SPRITE_0_X               = $d000
+    .label SPRITE_0_Y               = $d001
+    .label SPRITE_1_X               = $d002
+    .label SPRITE_1_Y               = $d003
+    .label SPRITE_2_X               = $d004
+    .label SPRITE_2_Y               = $d005
+    .label SPRITE_3_X               = $d006
+    .label SPRITE_3_Y               = $d007
+    .label SPRITE_4_X               = $d008
+    .label SPRITE_4_Y               = $d009
+    .label SPRITE_5_X               = $d00a
+    .label SPRITE_5_Y               = $d00b
+    .label SPRITE_6_X               = $d00c
+    .label SPRITE_6_Y               = $d00d
+    .label SPRITE_7_X               = $d00e
+    .label SPRITE_7_Y               = $d00f
+    .label SPRITES_X_MSB            = $d010
+
     .label CONTROL_REGISTER_1       = $d011
     .label RASTER_COUNTER           = $d012
+
+    .label SPRITE_ACTIVE            = $d015
+    .label SPRITE_DOUBLE_HEIGHT     = $d017
+
     .label INTERRUPT_REGISTER       = $d019
     .label INTERRUPT_ENABLED        = $d01a
+
+    .label SPRITE_DEEP              = $d01b
+    .label SPRITE_MULTICOLOR        = $d01c
+    .label SPRITE_DOUBLE_WIDTH      = $d01d
+    .label SPRITE_SPRITE_COLLISION  = $d01e
+    .label SPRITE_BG_COLLISION      = $d01f
+
     .label BORDERCOLOR              = $d020
     .label BACKGROUND_COLOR_0       = $d021
+
+    .label SPRITE_MULTICOLOR_0      = $d025
+    .label SPRITE_MULTICOLOR_1      = $d026
+
+    .label SPRITE_0_COLOR           = $d027
+    .label SPRITE_1_COLOR           = $d028
+    .label SPRITE_2_COLOR           = $d029
+    .label SPRITE_3_COLOR           = $d02a
+    .label SPRITE_4_COLOR           = $d02b
+    .label SPRITE_5_COLOR           = $d02c
+    .label SPRITE_6_COLOR           = $d02d
+    .label SPRITE_7_COLOR           = $d02e
 }
 
 .namespace KERNAL {
@@ -101,17 +151,17 @@
 }
 
 .namespace PETSCII {
-    .label CURSOR_DOWN              = $11;
-    .label CURSOR_RIGHT             = $1D;
-    .label CURSOR_UP                = $91;
-    .label CURSOR_LEFT              = $9D;
+    .label CURSOR_DOWN              = $11
+    .label CURSOR_RIGHT             = $1D
+    .label CURSOR_UP                = $91
+    .label CURSOR_LEFT              = $9D
 
-    .label RETURN                   = $0D;
-    .label SPACE                    = $20;
-    .label PLUS                     = $2B;
-    .label MINUS                    = $2D;
+    .label RETURN                   = $0D
+    .label SPACE                    = $20
+    .label PLUS                     = $2B
+    .label MINUS                    = $2D
 
-    .label DELETE                   = $14;
+    .label DELETE                   = $14
 }
 
 .namespace MIDI_INTERFACE_DATEL {
@@ -132,4 +182,4 @@
 
 .label MIDI_MAX_ACTIVE_NOTES        = 5
 
-.label MAX_NOTE_INDEX               = 95; // 8 octaves, highest index number is 95
+.label MAX_NOTE_INDEX               = 95 // 8 octaves, highest index number is 95
