@@ -9,13 +9,16 @@
 
 .file [name="monosid.prg", segments="Start, Data, Subroutines, MainProgram"]
 
+
 // *******************************************************************
 .segment Start [start=$801, modify="BasicUpstart", _start=mainProgram]
 // *******************************************************************
 
+
 // *******************************************************************
-.segment Data [startAfter="MainProgram"]
+.segment Data [start=$80e]
 // *******************************************************************
+
 
 /* -------------------------------------------------------------------
  *
@@ -28,19 +31,23 @@
 #import "src/screenmemoryfunctions.asm"
 #import "src/structs.asm"
 
+
 /* -------------------------------------------------------------------
  *
  * Strings and global variables
  *
  * ---------------------------------------------------------------- */ 
 
+#import "src/spritedata.asm"
 #import "src/strings.asm"
-#import "src/globals.asm"
 #import "src/lookuptables.asm"
+#import "src/globals.asm"
+
 
 // *******************************************************************
-.segment Subroutines [start=$80d]
+.segment Subroutines [startAfter="Data"]
 // *******************************************************************
+
 
 /* -------------------------------------------------------------------
  *
@@ -52,11 +59,14 @@
 #import "src/math.asm"
 #import "src/convert.asm"
 #import "src/screen.asm"
+#import "src/sprites.asm"
+#import "src/logo.asm"
 #import "src/userinterface.asm"
 #import "src/input.asm"
 #import "src/sid.asm"
 #import "src/midi.asm"
 #import "src/pitch.asm"
+
 
 // *******************************************************************
 .segment MainProgram [startAfter="Subroutines"]
@@ -70,6 +80,9 @@
 
 mainProgram:
 {
+    // Setup logo sprites, but do not show yet
+    jsr logoSetupSprites
+
     // Draw the UI in it's inital state
     jsr userinterfaceInitScreen
     jsr userinterfaceDrawMain
@@ -758,6 +771,16 @@ switchPageIfNeccessary:
     sta currentPage
     jsr userinterfaceInitScreen
     jsr userinterfaceDrawMain
+
+    // if second page, show the logo, otherwise hide the logo
+    lda #1
+    cmp currentPage
+    bne hideLogo
+    jsr logoShow
+    rts
+
+hideLogo:
+    jsr logoHide
 
 exit:
     rts
