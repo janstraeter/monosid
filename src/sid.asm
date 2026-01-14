@@ -61,7 +61,27 @@ playNote:
     cmp #0
     beq doNotUseVoice1
 
+    // check if test bit for voice 1 should be set
+    lda currentSidResetOscillatorVoice1
+    cmp #0
+    beq setGateBitVoice1
+    
+    // yes, the test bit should be set (and cleared again) before opening the gate
+    // first check if the gate is currently closed, because we want to reset the oscillator only
+    // before opening the gate, not on every note change
+    lda currentSidWaveFormControlRegisterVoice1
+    bit gateBitSet
+    bne setGateBitVoice1
+
+    // gate is currently closed, set the test bit to reset the oscillator
+    // and then clear it again, immediatly
+    ora #%00001000
+    sta SID.VOICE_1_CONTROL_REGISTER
+    lda currentSidWaveFormControlRegisterVoice1
+    sta SID.VOICE_1_CONTROL_REGISTER
+
     // yes, use voice 1 -> set the gate bit
+setGateBitVoice1:    
     lda currentSidWaveFormControlRegisterVoice1
     ora #%00000001
     jmp saveVoice1
@@ -85,7 +105,27 @@ saveVoice1:
     cmp #0
     beq doNotUseVoice2
 
+    // check if test bit for voice 2 should be set
+    lda currentSidResetOscillatorVoice2
+    cmp #0
+    beq setGateBitVoice2
+    
+    // yes, the test bit should be set (and cleared again) before opening the gate
+    // first check if the gate is currently closed, because we want to reset the oscillator only
+    // before opening the gate, not on every note change
+    lda currentSidWaveFormControlRegisterVoice2
+    bit gateBitSet
+    bne setGateBitVoice2
+
+    // gate is currently closed, set the test bit to reset the oscillator
+    // and then clear it again, immediatly
+    ora #%00001000
+    sta SID.VOICE_2_CONTROL_REGISTER
+    lda currentSidWaveFormControlRegisterVoice2
+    sta SID.VOICE_2_CONTROL_REGISTER
+
     // yes, use voice 2 -> set the gate bit
+setGateBitVoice2:
     lda currentSidWaveFormControlRegisterVoice2
     ora #%00000001
     jmp saveVoice2
@@ -109,7 +149,27 @@ saveVoice2:
     cmp #0
     beq doNotUseVoice3
 
+    // check if test bit for voice 3 should be set
+    lda currentSidResetOscillatorVoice3
+    cmp #0
+    beq setGateBitVoice3
+    
+    // yes, the test bit should be set (and cleared again) before opening the gate
+    // first check if the gate is currently closed, because we want to reset the oscillator only
+    // before opening the gate, not on every note change
+    lda currentSidWaveFormControlRegisterVoice3
+    bit gateBitSet
+    bne setGateBitVoice3
+
+    // gate is currently closed, set the test bit to reset the oscillator
+    // and then clear it again, immediatly
+    ora #%00001000
+    sta SID.VOICE_3_CONTROL_REGISTER
+    lda currentSidWaveFormControlRegisterVoice3
+    sta SID.VOICE_3_CONTROL_REGISTER
+
     // yes, use voice 3 -> set the gate bit
+setGateBitVoice3:
     lda currentSidWaveFormControlRegisterVoice3
     ora #%00000001
     jmp saveVoice3
@@ -125,6 +185,10 @@ saveVoice3:
     sta currentSidWaveFormControlRegisterVoice3
 
     rts
+
+gateBitSet:
+    // gate bit is the LSB
+    .byte(%00000001)
 }
 
 
@@ -1191,6 +1255,84 @@ sidUpdateVoiceFrequencies:
     sta SID.VOICE_3_FREQUENCY_LO
     lda voice3FrequenyHi
     sta SID.VOICE_3_FREQUENCY_HI
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Updates the global variable "resetOscillatorVoice1" which the
+ * current value of the input field for voice 1 in the module "Reset oscillators"
+ *
+ * Reads global variable:  resetOscillatorVoice1
+ *
+ * Writes global variable: currentSidResetOscillatorVoice1
+ *
+ * ---------------------------------------------------------------- */ 
+ 
+sidUpdateResetOscillatorVoice1:
+{
+    // load the current value of the reset oscillator for voice 1 input
+    loadPointerToZPR(resetOscillatorVoice1, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+
+    // save it into the global variable for easier access
+    sta currentSidResetOscillatorVoice1
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Updates the global variable "resetOscillatorVoice2" which the
+ * current value of the input field for voice 2 in the module "Reset oscillators"
+ *
+ * Reads global variable:  resetOscillatorVoice2
+ *
+ * Writes global variable: currentSidResetOscillatorVoice2
+ *
+ * ---------------------------------------------------------------- */ 
+ 
+sidUpdateResetOscillatorVoice2:
+{
+    // load the current value of the reset oscillator for voice 2 input
+    loadPointerToZPR(resetOscillatorVoice2, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+
+    // save it into the global variable for easier access
+    sta currentSidResetOscillatorVoice2
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Updates the global variable "resetOscillatorVoice3" which the
+ * current value of the input field for voice 3 in the module "Reset oscillators"
+ *
+ * Reads global variable:  resetOscillatorVoice3
+ *
+ * Writes global variable: currentSidResetOscillatorVoice3
+ *
+ * ---------------------------------------------------------------- */ 
+ 
+sidUpdateResetOscillatorVoice3:
+{
+    // load the current value of the reset oscillator for voice 3 input
+    loadPointerToZPR(resetOscillatorVoice3, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+
+    // save it into the global variable for easier access
+    sta currentSidResetOscillatorVoice3
 
     rts
 }

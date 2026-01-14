@@ -43,6 +43,10 @@ strModuleNameDetuning:
     .text "DETUNING"
     .byte $00
 
+strModuleNameResetOscillators:  
+    .text "RESET OSCILLATORS"
+    .byte $00
+
 strInputNameVoiceWaveform:   
     .text "WAVE"
     .byte $00
@@ -129,6 +133,18 @@ strInputNameDetuningInputVoice3:
 
 strInputNameDetuningInputDetuneDownVoice:
     .text "NEG"
+    .byte $00
+
+strInputNameResetOscillatorVoice1:         
+    .text "VOICE 1"
+    .byte $00
+
+strInputNameResetOscillatorVoice2:         
+    .text "VOICE 2"
+    .byte $00
+
+strInputNameResetOscillatorVoice3:         
+    .text "VOICE 3"
     .byte $00
 
 strWaveformTriangular:

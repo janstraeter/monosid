@@ -436,6 +436,31 @@ detuningInputArray:
 
 /* -------------------------------------------------------------------
  *
+ * Definition of the structs for the input elements
+ * for the module "RESET OSCILLATORS"
+ *
+ * ---------------------------------------------------------------- */ 
+
+resetOscillatorVoice1:
+    createStructInput(INPUT_TYPE.BOOLEAN, 1, 9, 8, strInputNameResetOscillatorVoice1, $00, $00, sidUpdateResetOscillatorVoice1)
+
+resetOscillatorVoice2:
+    createStructInput(INPUT_TYPE.BOOLEAN, 10, 9, 8, strInputNameResetOscillatorVoice2, $00, $00, sidUpdateResetOscillatorVoice2)
+
+resetOscillatorVoice3:
+    createStructInput(INPUT_TYPE.BOOLEAN, 19, 9, 8, strInputNameResetOscillatorVoice3, $00, $00, sidUpdateResetOscillatorVoice3)
+
+resetOscillatorsInputArray:
+    .byte(<resetOscillatorVoice1)
+    .byte(>resetOscillatorVoice1)
+    .byte(<resetOscillatorVoice2)
+    .byte(>resetOscillatorVoice2)
+    .byte(<resetOscillatorVoice3)
+    .byte(>resetOscillatorVoice3)
+
+
+/* -------------------------------------------------------------------
+ *
  * Definition of module "VOICE1"
  *
  * Type: STRUCT_MODULE
@@ -508,6 +533,18 @@ moduleDetuning:
 
 /* -------------------------------------------------------------------
  *
+ * Definition of module "RESET OSCILLATORS"
+ *
+ * Type: STRUCT_MODULE
+ *
+ * ---------------------------------------------------------------- */ 
+
+moduleResetOscillators:
+    createStructModule(strModuleNameResetOscillators, 0,  8, 38, 1, GRAY, 3, resetOscillatorsInputArray, 1)
+
+
+/* -------------------------------------------------------------------
+ *
  * List of all the modules
  *
  * Type: Array of 16-bit pointers
@@ -527,6 +564,8 @@ modules:
     .byte(>moduleMain)
     .byte(<moduleDetuning)
     .byte(>moduleDetuning)
+    .byte(<moduleResetOscillators)
+    .byte(>moduleResetOscillators)
 
 
 /* -------------------------------------------------------------------
@@ -538,7 +577,7 @@ modules:
  * ---------------------------------------------------------------- */ 
 
 modulesNum:
-    .byte($06)
+    .byte($07)
 
 
 /* -------------------------------------------------------------------
@@ -624,6 +663,27 @@ currentSidActiveVoice2:
     .byte(0)
 
 currentSidActiveVoice3:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * The current values of the "Reset oscillator" inputs (voices 1 through 3)
+ *
+ * Saved here globally so the values are easier (and computational faster)
+ * to access, because we need to check these values often
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentSidResetOscillatorVoice1:
+    .byte(0)
+
+currentSidResetOscillatorVoice2:
+    .byte(0)
+
+currentSidResetOscillatorVoice3:
     .byte(0)
 
 
