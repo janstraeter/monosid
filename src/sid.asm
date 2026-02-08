@@ -228,6 +228,24 @@ sidUpdateAllRegisters:
     jsr sidUpdateFilterSwitchesAndResonance
     jsr sidUpdateFilterModesAndVolume
 
+    // update detunings for all voices
+    jsr pitchUpdateDetuningInputVoice1
+    jsr pitchUpdateDetuningInputVoice2
+    jsr pitchUpdateDetuningInputVoice3
+
+    // update reset oscillator for all voices
+    jsr sidUpdateResetOscillatorVoice1
+    jsr sidUpdateResetOscillatorVoice2
+    jsr sidUpdateResetOscillatorVoice3
+
+    // update voice 3 special features
+    jsr pulseWidthUpdateVoice3EnvelopeModulatePulseWidthValue
+    jsr filterUpdateVoice3EnvelopeModulateFilterValue
+    jsr pulseWidthUpdateVoice3PulseWidthValue
+    jsr pulseWidthUpdateVoice3PulseWidthNegativeValue
+    jsr filterUpdateVoice3FilterCutoffValue
+    jsr filterUpdateVoice3FilterCutoffNegativeValue
+
     rts
 }
 
@@ -248,6 +266,8 @@ sidUpdateVoice1PulseWidth:
     structLoadWordToXAccu(ZPR_7, STRUCT_INPUT.VALUE)
     stx SID.VOICE_1_PULSE_WAVE_LO
     sta SID.VOICE_1_PULSE_WAVE_HI
+    stx currentSidVoice1PulseWidth
+    sta currentSidVoice1PulseWidth+1
     rts
 }
 
@@ -492,6 +512,8 @@ sidUpdateVoice2PulseWidth:
     structLoadWordToXAccu(ZPR_7, STRUCT_INPUT.VALUE)
     stx SID.VOICE_2_PULSE_WAVE_LO
     sta SID.VOICE_2_PULSE_WAVE_HI
+    stx currentSidVoice2PulseWidth
+    sta currentSidVoice2PulseWidth+1
     rts
 }
 
@@ -734,6 +756,8 @@ sidUpdateVoice3PulseWidth:
     structLoadWordToXAccu(ZPR_7, STRUCT_INPUT.VALUE)
     stx SID.VOICE_3_PULSE_WAVE_LO
     sta SID.VOICE_3_PULSE_WAVE_HI
+    stx currentSidVoice3PulseWidth
+    sta currentSidVoice3PulseWidth+1
     rts
 }
 
@@ -978,6 +1002,8 @@ sidUpdateFilterCutoffFrequency:
     structLoadWordToXAccu(ZPR_7, STRUCT_INPUT.VALUE)
     stx SID.FILTER_CUTOFF_LO
     sta SID.FILTER_CUTOFF_HI
+    stx sidCurrentFilterCutoffFrequency
+    sta sidCurrentFilterCutoffFrequency+1
     
     /*stx loByte
     sta hiByte
@@ -1004,10 +1030,10 @@ sidUpdateFilterCutoffFrequency:
 
     rts
 
-loByte:
-    .byte(0)
-hiByte:
-    .byte(0)
+// loByte:
+//     .byte(0)
+// hiByte:
+//     .byte(0)
 }
 
 
@@ -1198,6 +1224,28 @@ doNotUseLowpassFilter:
     lda #0
 
 saveUseLowpassFilter:
+    ora controlByte
+    sta controlByte
+
+    // -----------------------------------------
+    // Mute voice 3
+    // -----------------------------------------
+
+    // load the current value of the mute voice 3 input
+    loadPointerToZPR(voice3FeaturesInputMuteVoice3, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+
+    // check if the lowpass filter sould be used
+    // if yes, set the MSB to 1, of no set it to 0
+    cmp #0
+    beq doNotMuteVoice3
+    lda #%10000000
+    jmp saveMuteVoice3
+
+doNotMuteVoice3:
+    lda #0
+
+saveMuteVoice3:
     ora controlByte
     sta controlByte
 

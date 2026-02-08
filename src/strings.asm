@@ -47,6 +47,10 @@ strModuleNameResetOscillators:
     .text "RESET OSCILLATORS"
     .byte $00
 
+strModuleNameVoice3Features:
+    .text "VOICE 3 SPECIAL FEATURES"
+    .byte $00
+
 strInputNameVoiceWaveform:   
     .text "WAVE"
     .byte $00
@@ -145,6 +149,34 @@ strInputNameResetOscillatorVoice2:
 
 strInputNameResetOscillatorVoice3:         
     .text "VOICE 3"
+    .byte $00
+
+strInputNameVoice3FeaturesInputMuteVoice3:
+    .text "MUTE VOC 3"
+    .byte $00
+
+strInputNameVoice3FeaturesModulatePulseWidth:
+    .text "MOD PULSE"
+    .byte $00
+
+strInputNameVoice3FeaturesModulateFilter:
+    .text "MOD FILTER"
+    .byte $00
+
+strInputNameVoice3FeaturesPulseWidth:
+    .text "PULSE"
+    .byte $00
+
+strInputNameVoice3FeaturesPulseWidthNegative:
+    .text "NEG"
+    .byte $00
+
+strInputNameVoice3FeaturesFilterCutoff:
+    .text "CUTOFF"
+    .byte $00
+
+strInputNameVoice3FeaturesFilterCutoffNegative:
+    .text "NEG"
     .byte $00
 
 strWaveformTriangular:

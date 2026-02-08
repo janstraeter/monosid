@@ -66,6 +66,8 @@
 #import "src/sid.asm"
 #import "src/midi.asm"
 #import "src/pitch.asm"
+#import "src/pulsewidth.asm"
+#import "src/filter.asm"
 
 
 // *******************************************************************
@@ -126,6 +128,7 @@ ignoreMidiNote:
 
     // Update the SID chip
     jsr updateVoiceFrequenciesIfNecessary
+    jsr pulseWidthUpdateModulatedValuesIfNeccessary
     jsr playCurrentNote
 
 	// Switch for the current program mode
@@ -137,6 +140,8 @@ ignoreMidiNote:
     jmp waitLoop
 
 modeMain:
+    //lda SID.ENVELOPE_VOICE_3
+    // jsr debugDumpByte
 	// Switch for the current program mode sub mode
 	lda currentSubMode
 	cmp #MODE_MAIN_SUBMODE.SELECT_INPUT
@@ -799,7 +804,10 @@ exit:
 debugDumpByte:
 {
     sta byteValue
-
+    pha
+    txa
+    pha
+    tya
     pha
     lda ZPR_0
     pha
@@ -864,6 +872,10 @@ debugDumpByte:
     sta ZPR_1_LO
     pla
     sta ZPR_0
+    pla
+    tay
+    pla
+    tax
     pla
 
     rts

@@ -172,7 +172,7 @@ currentNoteWasPlayedByKeyboardFlag:
  * ---------------------------------------------------------------- */ 
 
 voice1InputWaveform:
-    createStructInput(INPUT_TYPE.WAVEFORM, 1, 4, 5, strInputNameVoiceWaveform, WAVEFORM.TRIANGULAR, $00, sidUpdateVoice1WaveFormControl)
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 4, 5, strInputNameVoiceWaveform, WAVEFORM.SQUARE, $00, sidUpdateVoice1WaveFormControl)
 
 voice1InputPulseWidth:
     createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 4, 6, strInputNameVoicePulseWidth, $00, $00, sidUpdateVoice1PulseWidth)
@@ -288,7 +288,7 @@ voice3InputPulseWidth:
     createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 16, 6, strInputNameVoicePulseWidth, $F0, $0F, sidUpdateVoice3PulseWidth)
 
 voice3InputAttack:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 16, 4, strInputNameVoiceAttack, $00, $00, sidUpdateVoice3AttackDecay)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 16, 4, strInputNameVoiceAttack, $0C, $00, sidUpdateVoice3AttackDecay)
 
 voice3InputDecay:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 16, 4, strInputNameVoiceDecay, $00, $00, sidUpdateVoice3AttackDecay)
@@ -442,13 +442,13 @@ detuningInputArray:
  * ---------------------------------------------------------------- */ 
 
 resetOscillatorVoice1:
-    createStructInput(INPUT_TYPE.BOOLEAN, 1, 9, 8, strInputNameResetOscillatorVoice1, $00, $00, sidUpdateResetOscillatorVoice1)
+    createStructInput(INPUT_TYPE.BOOLEAN, 1, 10, 8, strInputNameResetOscillatorVoice1, $00, $00, sidUpdateResetOscillatorVoice1)
 
 resetOscillatorVoice2:
-    createStructInput(INPUT_TYPE.BOOLEAN, 10, 9, 8, strInputNameResetOscillatorVoice2, $00, $00, sidUpdateResetOscillatorVoice2)
+    createStructInput(INPUT_TYPE.BOOLEAN, 10, 10, 8, strInputNameResetOscillatorVoice2, $00, $00, sidUpdateResetOscillatorVoice2)
 
 resetOscillatorVoice3:
-    createStructInput(INPUT_TYPE.BOOLEAN, 19, 9, 8, strInputNameResetOscillatorVoice3, $00, $00, sidUpdateResetOscillatorVoice3)
+    createStructInput(INPUT_TYPE.BOOLEAN, 19, 10, 8, strInputNameResetOscillatorVoice3, $00, $00, sidUpdateResetOscillatorVoice3)
 
 resetOscillatorsInputArray:
     .byte(<resetOscillatorVoice1)
@@ -457,6 +457,51 @@ resetOscillatorsInputArray:
     .byte(>resetOscillatorVoice2)
     .byte(<resetOscillatorVoice3)
     .byte(>resetOscillatorVoice3)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Definition of the structs for the input elements
+ * for the module "VOICE 3 SPECIAL FEATURES"
+ *
+ * ---------------------------------------------------------------- */ 
+
+voice3FeaturesInputMuteVoice3:
+    createStructInput(INPUT_TYPE.BOOLEAN, 1, 15, 13, strInputNameVoice3FeaturesInputMuteVoice3, $01, $00, sidUpdateFilterModesAndVolume)
+
+voice3FeaturesModulatePulseWidth:
+    createStructInput(INPUT_TYPE.BOOLEAN, 1, 16, 14, strInputNameVoice3FeaturesModulatePulseWidth, $01, $00, pulseWidthUpdateVoice3EnvelopeModulatePulseWidthValue)
+
+voice3FeaturesModulateFilter:
+    createStructInput(INPUT_TYPE.BOOLEAN, 1, 17, 15, strInputNameVoice3FeaturesModulateFilter, $00, $00, filterUpdateVoice3EnvelopeModulateFilterValue)
+
+voice3FeaturesPulseWidth:
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 15, 16, 6, strInputNameVoice3FeaturesPulseWidth, $FF, $0F, pulseWidthUpdateVoice3PulseWidthValue)
+
+voice3FeaturesPulseWidthNegative:
+    createStructInput(INPUT_TYPE.BOOLEAN, 22, 17, 5, strInputNameVoice3FeaturesPulseWidthNegative, $00, $00, pulseWidthUpdateVoice3PulseWidthNegativeValue)
+
+voice3FeaturesFilterCutoff:
+    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 28, 16, 6, strInputNameVoice3FeaturesFilterCutoff, $00, $00, filterUpdateVoice3FilterCutoffValue)
+
+voice3FeaturesFilterCutoffNegative:
+    createStructInput(INPUT_TYPE.BOOLEAN, 35, 17, 5, strInputNameVoice3FeaturesFilterCutoffNegative, $00, $00, filterUpdateVoice3FilterCutoffNegativeValue)
+
+voice3FeaturesInputArray:
+    .byte(<voice3FeaturesInputMuteVoice3)
+    .byte(>voice3FeaturesInputMuteVoice3)
+    .byte(<voice3FeaturesModulatePulseWidth)
+    .byte(>voice3FeaturesModulatePulseWidth)
+    .byte(<voice3FeaturesModulateFilter)
+    .byte(>voice3FeaturesModulateFilter)
+    .byte(<voice3FeaturesPulseWidth)
+    .byte(>voice3FeaturesPulseWidth)
+    .byte(<voice3FeaturesPulseWidthNegative)
+    .byte(>voice3FeaturesPulseWidthNegative)
+    .byte(<voice3FeaturesFilterCutoff)
+    .byte(>voice3FeaturesFilterCutoff)
+    .byte(<voice3FeaturesFilterCutoffNegative)
+    .byte(>voice3FeaturesFilterCutoffNegative)
 
 
 /* -------------------------------------------------------------------
@@ -540,7 +585,19 @@ moduleDetuning:
  * ---------------------------------------------------------------- */ 
 
 moduleResetOscillators:
-    createStructModule(strModuleNameResetOscillators, 0,  8, 38, 1, GRAY, 3, resetOscillatorsInputArray, 1)
+    createStructModule(strModuleNameResetOscillators, 0,  9, 38, 1, GRAY, 3, resetOscillatorsInputArray, 1)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Definition of module "VOICE 3 SPECIAL FEATURES"
+ *
+ * Type: STRUCT_MODULE
+ *
+ * ---------------------------------------------------------------- */ 
+
+moduleVoice3Features:
+    createStructModule(strModuleNameVoice3Features, 0,  14, 38, 3, LIGHT_RED, 7, voice3FeaturesInputArray, 1)
 
 
 /* -------------------------------------------------------------------
@@ -566,6 +623,8 @@ modules:
     .byte(>moduleDetuning)
     .byte(<moduleResetOscillators)
     .byte(>moduleResetOscillators)
+    .byte(<moduleVoice3Features)
+    .byte(>moduleVoice3Features)
 
 
 /* -------------------------------------------------------------------
@@ -577,7 +636,7 @@ modules:
  * ---------------------------------------------------------------- */ 
 
 modulesNum:
-    .byte($07)
+    .byte($08)
 
 
 /* -------------------------------------------------------------------
@@ -929,11 +988,134 @@ voice3DetuningLo:
 voice3DetuningHi:
     .byte(0)
 
-// voiceDetunings:
-// voice1Detuning:
-//     .word(0)
-// voice2Detuning:
-//     .word(0)
-// voice3Detuning:
-//     .word(0)
 
+/* -------------------------------------------------------------------
+ *
+ * current value of the "voice 3 special features" input "mod pulse"
+ *
+ * Type: boolean
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentVoice3EnvelopeModulatePulseWidth:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * current value of the "voice 3 special features" input "pulse"
+ *
+ * Type: 16 bit unsigned integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentVoice3PulseWidth:
+    .word(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * current value of the "voice 3 special features" input (pulse) "neg"
+ *
+ * Type: boolean
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentVoice3PulseWidthNegative:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * current value of the "voice 3 special features" input "mod filter"
+ *
+ * Type: boolean
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentVoice3EnvelopeModulateFilter:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * current value of the "voice 3 special features" input "cutoff"
+ *
+ * Type: 16 bit unsigned integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentVoice3FilterCutoff:
+    .word(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * current value of the "voice 3 special features" input (cutoff) "neg"
+ *
+ * Type: boolean
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentVoice3FilterCutoffNegative:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * current values of the pulse width for voice 1 trough 3
+ *
+ * Types: 16-bit signed integers
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentSidVoice1PulseWidth:
+    .word(0)
+
+currentSidVoice2PulseWidth:
+    .word(0)
+
+currentSidVoice3PulseWidth:
+    .word(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * current values of the calculated modulated pulse width for voice 1 trough 3
+ *
+ * Types: 16-bit signed integers
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentSidVoice1ModulatedPulseWidth:
+    .word(0)
+
+currentSidVoice2ModulatedPulseWidth:
+    .word(0)
+
+currentSidVoice3ModulatedPulseWidth:
+    .word(0)   
+
+
+/* -------------------------------------------------------------------
+ *
+ * current value of the filter cutoff frequency
+ *
+ * Type: 16-bit signed integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+sidCurrentFilterCutoffFrequency:
+    .word(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * current value of the calculated modulated filter cutoff frequency
+ *
+ * Type: 16-bit signed integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+sidCurrentModulatedFilterCutoffFrequency:
+    .word(0)    
