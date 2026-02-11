@@ -1,27 +1,27 @@
 /* -------------------------------------------------------------------
  *
  * Key codes used by the keyboard piano (1 octcave C to C)
- *  w e   t y u
- * a s d f g h j k
+ *  t y   i o p
+ * f g h j k l [ ]
  *
  * Type: Array of integers
  *
  * ---------------------------------------------------------------- */ 
 
 keyboardPianoKeyCodes:
-    .byte(10) // A
-    .byte(9)  // W
-    .byte(13) // S
-    .byte(14) // E
-    .byte(18) // D
     .byte(21) // F
     .byte(22) // T
     .byte(26) // G
     .byte(25) // Y
     .byte(29) // H
-    .byte(30) // U
     .byte(34) // J
+    .byte(33) // I
     .byte(37) // K
+    .byte(38) // O
+    .byte(42) // L
+    .byte(41) // P
+    .byte(45) // [
+    .byte(50) // ]
 
 
 /* -------------------------------------------------------------------

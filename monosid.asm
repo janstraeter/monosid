@@ -82,6 +82,10 @@
 
 mainProgram:
 {
+    // let all keys repeat
+    lda $80
+    sta REPEAT_FLAG
+
     // Setup logo sprites, but do not show yet
     jsr logoSetupSprites
 
@@ -560,6 +564,22 @@ mainModeHandleKeyboardInputForSubModeSelectInput:
     // Because the subroutine is rather long, use a little trick to avoid the
     // problems with branching instructions on the 6502, which only can jump -127/+127 bytes.
     // see here: https://www.lemon64.com/forum/viewtopic.php?t=81358
+    
+    // WASD
+    cmp #PETSCII.S
+	bne *+5
+    jmp cursorDownKeyPressed
+	cmp #PETSCII.D
+	bne *+5
+    jmp cursorRightKeyPressed
+	cmp #PETSCII.W
+	bne *+5
+    jmp cursorUpKeyPressed
+	cmp #PETSCII.A
+	bne *+5
+    jmp cursorLeftKeyPressed
+
+    // cursor keys
     cmp #PETSCII.CURSOR_DOWN
 	bne *+5
     jmp cursorDownKeyPressed
@@ -572,13 +592,17 @@ mainModeHandleKeyboardInputForSubModeSelectInput:
 	cmp #PETSCII.CURSOR_LEFT
 	bne *+5
     jmp cursorLeftKeyPressed
-	cmp #PETSCII.RETURN
+	
+    // return and space
+    cmp #PETSCII.RETURN
 	bne *+5
     jmp returnKeyPressed
 	cmp #PETSCII.SPACE
 	bne *+5
     jmp spaceKeyPressed
-	cmp #PETSCII.PLUS
+	
+    // +/-
+    cmp #PETSCII.PLUS
 	bne *+5
     jmp plusKeyPressed
 	cmp #PETSCII.MINUS

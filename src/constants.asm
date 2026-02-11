@@ -1,5 +1,6 @@
 #importonce
 
+.label REPEAT_FLAG                  = $028A
 .label INTERRUPT_VECTOR_LO          = $0314
 .label INTERRUPT_VECTOR_HI          = $0315
 .label SCREENMEM                    = $0400
@@ -156,6 +157,11 @@
     .label CURSOR_UP                = $91
     .label CURSOR_LEFT              = $9D
 
+    .label W                        = $57
+    .label A                        = $41
+    .label S                        = $53
+    .label D                        = $44
+
     .label RETURN                   = $0D
     .label SPACE                    = $20
     .label PLUS                     = $2B
@@ -180,6 +186,6 @@
     .label PITCH_BEND_CHANGE        = $03
 }
 
-.label MIDI_MAX_ACTIVE_NOTES        = 5
+.label MIDI_MAX_ACTIVE_NOTES        = 10
 
 .label MAX_NOTE_INDEX               = 95 // 8 octaves, highest index number is 95
