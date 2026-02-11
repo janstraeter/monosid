@@ -175,7 +175,7 @@ voice1InputWaveform:
     createStructInput(INPUT_TYPE.WAVEFORM, 1, 4, 5, strInputNameVoiceWaveform, WAVEFORM.SQUARE, $00, sidUpdateVoice1WaveFormControl)
 
 voice1InputPulseWidth:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 4, 6, strInputNameVoicePulseWidth, $00, $00, sidUpdateVoice1PulseWidth)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 4, 6, strInputNameVoicePulseWidth, $FF, $07, sidUpdateVoice1PulseWidth)
 
 voice1InputAttack:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 4, 4, strInputNameVoiceAttack, $00, $00, sidUpdateVoice1AttackDecay)
@@ -227,7 +227,7 @@ voice1InputArray:
  * ---------------------------------------------------------------- */ 
 
 voice2InputWaveform:
-    createStructInput(INPUT_TYPE.WAVEFORM, 1, 10, 5, strInputNameVoiceWaveform, WAVEFORM.TRIANGULAR, $00, sidUpdateVoice2WaveFormControl)
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 10, 5, strInputNameVoiceWaveform, WAVEFORM.SAWTOOTH, $00, sidUpdateVoice2WaveFormControl)
 
 voice2InputPulseWidth:
     createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 10, 6, strInputNameVoicePulseWidth, $FF, $00, sidUpdateVoice2PulseWidth)
@@ -288,7 +288,7 @@ voice3InputPulseWidth:
     createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 16, 6, strInputNameVoicePulseWidth, $F0, $0F, sidUpdateVoice3PulseWidth)
 
 voice3InputAttack:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 16, 4, strInputNameVoiceAttack, $0C, $00, sidUpdateVoice3AttackDecay)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 16, 4, strInputNameVoiceAttack, $0F, $00, sidUpdateVoice3AttackDecay)
 
 voice3InputDecay:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 16, 4, strInputNameVoiceDecay, $00, $00, sidUpdateVoice3AttackDecay)
@@ -337,22 +337,22 @@ voice3InputArray:
  * ---------------------------------------------------------------- */ 
 
 filterInputCutoff:
-    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 1, 22, 6, strInputNameFilterCutoff, $F0, $07, sidUpdateFilterCutoffFrequency)
+    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 1, 22, 6, strInputNameFilterCutoff, $00, $00, sidUpdateFilterCutoffFrequency)
 
 filterInputResonance:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 8, 22, 4, strInputNameFilterResonance, $00, $00, sidUpdateFilterSwitchesAndResonance)
 
 filterInputVoice1:
-    createStructInput(INPUT_TYPE.BOOLEAN, 13, 21, 7, strInputNameFilterVoice1, $00, $00, sidUpdateFilterSwitchesAndResonance)
+    createStructInput(INPUT_TYPE.BOOLEAN, 13, 21, 7, strInputNameFilterVoice1, $01, $00, sidUpdateFilterSwitchesAndResonance)
 
 filterInputVoice2:
-    createStructInput(INPUT_TYPE.BOOLEAN, 13, 22, 7, strInputNameFilterVoice2, $00, $00, sidUpdateFilterSwitchesAndResonance)
+    createStructInput(INPUT_TYPE.BOOLEAN, 13, 22, 7, strInputNameFilterVoice2, $01, $00, sidUpdateFilterSwitchesAndResonance)
 
 filterInputVoice3:
-    createStructInput(INPUT_TYPE.BOOLEAN, 13, 23, 7, strInputNameFilterVoice3, $00, $00, sidUpdateFilterSwitchesAndResonance)
+    createStructInput(INPUT_TYPE.BOOLEAN, 13, 23, 7, strInputNameFilterVoice3, $01, $00, sidUpdateFilterSwitchesAndResonance)
 
 filterInputLowpass:
-    createStructInput(INPUT_TYPE.BOOLEAN, 21, 21, 7, strInputNameFilterLowpass, $00, $00, sidUpdateFilterModesAndVolume)
+    createStructInput(INPUT_TYPE.BOOLEAN, 21, 21, 7, strInputNameFilterLowpass, $01, $00, sidUpdateFilterModesAndVolume)
 
 filterInputHighpass:
     createStructInput(INPUT_TYPE.BOOLEAN, 21, 22, 7, strInputNameFilterHighpass, $00, $00, sidUpdateFilterModesAndVolume)
@@ -470,10 +470,10 @@ voice3FeaturesInputMuteVoice3:
     createStructInput(INPUT_TYPE.BOOLEAN, 1, 15, 13, strInputNameVoice3FeaturesInputMuteVoice3, $01, $00, sidUpdateFilterModesAndVolume)
 
 voice3FeaturesModulatePulseWidth:
-    createStructInput(INPUT_TYPE.BOOLEAN, 1, 16, 14, strInputNameVoice3FeaturesModulatePulseWidth, $01, $00, pulseWidthUpdateVoice3EnvelopeModulatePulseWidthValue)
+    createStructInput(INPUT_TYPE.BOOLEAN, 1, 16, 14, strInputNameVoice3FeaturesModulatePulseWidth, $00, $00, pulseWidthUpdateVoice3EnvelopeModulatePulseWidthValue)
 
 voice3FeaturesModulateFilter:
-    createStructInput(INPUT_TYPE.BOOLEAN, 1, 17, 15, strInputNameVoice3FeaturesModulateFilter, $00, $00, filterUpdateVoice3EnvelopeModulateFilterValue)
+    createStructInput(INPUT_TYPE.BOOLEAN, 1, 17, 15, strInputNameVoice3FeaturesModulateFilter, $01, $00, filterUpdateVoice3EnvelopeModulateFilterValue)
 
 voice3FeaturesPulseWidth:
     createStructInput(INPUT_TYPE.INTEGER_12_BITS, 15, 16, 6, strInputNameVoice3FeaturesPulseWidth, $FF, $0F, pulseWidthUpdateVoice3PulseWidthValue)
@@ -482,7 +482,7 @@ voice3FeaturesPulseWidthNegative:
     createStructInput(INPUT_TYPE.BOOLEAN, 22, 17, 5, strInputNameVoice3FeaturesPulseWidthNegative, $00, $00, pulseWidthUpdateVoice3PulseWidthNegativeValue)
 
 voice3FeaturesFilterCutoff:
-    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 28, 16, 6, strInputNameVoice3FeaturesFilterCutoff, $00, $00, filterUpdateVoice3FilterCutoffValue)
+    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 28, 16, 6, strInputNameVoice3FeaturesFilterCutoff, $FF, $07, filterUpdateVoice3FilterCutoffValue)
 
 voice3FeaturesFilterCutoffNegative:
     createStructInput(INPUT_TYPE.BOOLEAN, 35, 17, 5, strInputNameVoice3FeaturesFilterCutoffNegative, $00, $00, filterUpdateVoice3FilterCutoffNegativeValue)

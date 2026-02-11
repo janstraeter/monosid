@@ -990,6 +990,54 @@ controlByte:
  * Subroutine
  * ----------
  *
+ * Sets the SID filter cutoff register to the value of ZPR_1
+ * Because this register works differently than the registers for
+ * e.g. the pulse widths this subroutine is a helper function
+ * to set the filter cutoff value.
+ *
+ * The low byte of the register contains the 3 least significant bits
+ * while the high register contains the 8 most significant bits.
+ * Therefore it is not possible to just write low and high byte
+ * of the filter cutoff value into the register, it needs preparation.
+ *
+ * @link https://www.oxyron.de/html/registers_sid.html
+ *
+ * Parameter: ZPR_1 - 11 bit cutoff value
+ *
+ * ---------------------------------------------------------------- */ 
+ 
+sidSetFilterCutoffFrequency:
+{
+    // save low byte
+    lda ZPR_1_LO
+    tax
+
+    // shift high and low byte 3 bits to the right
+    lsr ZPR_1_HI
+    ror ZPR_1_LO
+    lsr ZPR_1_HI
+    ror ZPR_1_LO
+    lsr ZPR_1_HI
+    ror ZPR_1_LO
+
+    // the low byte now contains the upper 8 bit of the 11 bit value
+    // so write it into the high byte of filter cutoff register
+    lda ZPR_1_LO
+    sta SID.FILTER_CUTOFF_HI
+
+    // write the beforehand saved low byte of the 11 bit value (which contains
+    // the least significant 3 bits) into the the low byte of the filter cutoff register
+    txa
+    sta SID.FILTER_CUTOFF_LO
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
  * Updates the SID registers regarding the filter cutoff frequency
  *
  * Reads global variables: filterInputCutoff
@@ -998,42 +1046,20 @@ controlByte:
  
 sidUpdateFilterCutoffFrequency:
 {
+    // load the value from the input element
     loadPointerToZPR(filterInputCutoff, ZPR_7)
     structLoadWordToXAccu(ZPR_7, STRUCT_INPUT.VALUE)
-    stx SID.FILTER_CUTOFF_LO
-    sta SID.FILTER_CUTOFF_HI
+    
+    // save the value into sidCurrentFilterCutoffFrequency
     stx sidCurrentFilterCutoffFrequency
     sta sidCurrentFilterCutoffFrequency+1
     
-    /*stx loByte
-    sta hiByte
-
-    lsr loByte
-    rol hiByte
-    lsr loByte
-    rol hiByte
-    lsr loByte
-    rol hiByte
-    lsr loByte
-    rol hiByte
-    lsr loByte
-    rol hiByte
-
-    lda loByte
-    sta SID.FILTER_CUTOFF_LO
-    pha
-    jsr debugDumpByte
-    pla
-    lda hiByte
-    sta SID.FILTER_CUTOFF_HI*/
-
+    // write the value into the SID filter cutoff registers
+    stx ZPR_1_LO
+    sta ZPR_1_HI
+    jsr sidSetFilterCutoffFrequency
 
     rts
-
-// loByte:
-//     .byte(0)
-// hiByte:
-//     .byte(0)
 }
 
 

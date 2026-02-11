@@ -163,7 +163,8 @@ pulseWidthCalculateModulationValue:
  * Reads global variables:  currentSidVoice1PulseWidth, currentSidVoice2PulseWidth,
  *                          currentSidVoice3PulseWidth, currentVoice3PulseWidthNegative
  *
- * Parameter: accu - zero based index of the voice (0 through 2)
+ * Parameters: accu - zero based index of the voice (0 through 2)
+ *             ZPR_1 - filter cutoff modulation value
  *
  * Writes global variable:  currentSidVoice1ModulatedPulseWidth,
  *                          currentSidVoice2ModulatedPulseWidth,

@@ -129,6 +129,7 @@ ignoreMidiNote:
     // Update the SID chip
     jsr updateVoiceFrequenciesIfNecessary
     jsr pulseWidthUpdateModulatedValuesIfNeccessary
+    jsr filterUpdateModulatedCutoffValueIfNeccessary
     jsr playCurrentNote
 
 	// Switch for the current program mode
