@@ -678,19 +678,18 @@ userinterfaceAddModuleFocus:
  * Subroutine
  * ----------
  *
- * Removes the optical focus of the currently selected module
+ * Removes the optical focus of the specified module
  *
- * Parameters:              none
+ * Parameters:              accu - module index
  *
- * Reads global variables:  modules, currentModuleIndex
+ * Reads global variables:  modules
  *               
  * ---------------------------------------------------------------- */ 
 
 userinterfaceRemoveModuleFocus:
 {
-    lda #0
-    sta ZPR_0
-    lda currentModuleIndex
+    ldx #0
+    stx ZPR_0
     jsr userinterfaceChangeModuleFocus
     rts
 }
@@ -792,22 +791,20 @@ userinterfaceAddInputFocus:
  * Subroutine
  * ----------
  *
- * Removes the optical focus of the currently selected input,
- * in the currently selected module
+ * Removes the optical focus of the the specified input element
  *
- * Parameters:              none
+ * Parameters:              accu - input index
+ *							x - module index
  *
- * Reads global variables:  modules, currentModuleIndex, currentInputIndex
+ * Reads global variables:  modules
  *               
  * ---------------------------------------------------------------- */ 
 
 userinterfaceRemoveInputFocus:
 {
-    lda #0
-    sta ZPR_0
-	lda currentModuleIndex
-	sta ZPR_1_LO
-    lda currentInputIndex
+    ldy #0
+    sty ZPR_0
+	stx ZPR_1_LO
     jsr userinterfaceChangeInputFocus
     rts
 }

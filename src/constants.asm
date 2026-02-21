@@ -189,3 +189,66 @@
 .label MIDI_MAX_ACTIVE_NOTES        = 10
 
 .label MAX_NOTE_INDEX               = 95 // 8 octaves, highest index number is 95
+
+
+.namespace IID {
+    .label V1_WAVE                  = 1
+    .label V1_PULSE                 = 2
+    .label V1_ATC                   = 3
+    .label V1_DCY                   = 4 
+    .label V1_SUS                   = 5 
+    .label V1_RLS                   = 6
+    .label V1_USE                   = 7 
+    .label V1_SYNC                  = 8
+    .label V1_RING                  = 9
+
+    .label V2_WAVE                  = 10
+    .label V2_PULSE                 = 11
+    .label V2_ATC                   = 12 
+    .label V2_DCY                   = 13
+    .label V2_SUS                   = 14
+    .label V2_RLS                   = 15
+    .label V2_USE                   = 16
+    .label V2_SYNC                  = 17
+    .label V2_RING                  = 18
+
+    .label V3_WAVE                  = 19
+    .label V3_PULSE                 = 20
+    .label V3_ATC                   = 21
+    .label V3_DCY                   = 22
+    .label V3_SUS                   = 23
+    .label V3_RLS                   = 24
+    .label V3_USE                   = 25
+    .label V3_SYNC                  = 26
+    .label V3_RING                  = 27
+
+    .label FILTER_CUTOFF            = 28
+    .label FILTER_RES               = 29
+    .label FILTER_V1                = 30
+    .label FILTER_V2                = 31
+    .label FILTER_V3                = 32
+    .label FILTER_LOWPASS           = 33
+    .label FILTER_HIGHPASS          = 34
+    .label FILTER_BANDWIDTH         = 35
+
+    .label MAIN_VOL                 = 36
+
+    .label DETUNING_V1              = 37
+    .label DETUNING_V1_NEG          = 38
+    .label DETUNING_V2              = 39
+    .label DETUNING_V2_NEG          = 40
+    .label DETUNING_V3              = 41
+    .label DETUNING_V3_NEG          = 42
+
+    .label RESOSC_V1                = 43
+    .label RESOSC_V2                = 44
+    .label RESOSC_V3                = 45
+
+    .label V3SPECIAL_MUTE           = 46
+    .label V3SPECIAL_MOD_PULSE      = 47
+    .label V3SPECIAL_MOD_FILTER     = 48
+    .label V3SPECIAL_PULSE          = 49
+    .label V3SPECIAL_PULSE_NEG      = 50
+    .label V3SPECIAL_CUTOFF         = 51
+    .label V3SPECIAL_CUTOFF_NEG     = 52
+}

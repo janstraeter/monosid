@@ -224,6 +224,15 @@
 
     // pointer to SID update subroutine
     .label UPDATE_SUBROUTINE = $13
+
+    // unique input ID (IID)
+    .label IID = $15
+
+    // IIDs of input elements to focus when cursor keys are pressed
+    .label LEFT_NEIGHBOR_IID = $16
+    .label RIGHT_NEIGHBOR_IID = $17
+    .label TOP_NEIGHBOR_IID = $18
+    .label BOTTOM_NEIGHBOR_IID = $19
 }
 
 
@@ -235,7 +244,8 @@
  *
  * ---------------------------------------------------------------- */ 
 
-.macro createStructInput(type, left, top, width, labelAddress, valueLo, valueHi, updateSubroutineAddress) {    
+.macro createStructInput(type, left, top, width, labelAddress, valueLo, valueHi, updateSubroutineAddress,
+                         IID, leftNeighborIID, rightNeighborIID, topNeighborIID, bottomNeighborIID) {    
     
     // For the boolean inputs the label starts 1 character right to the input
     // for all other inputs the label starts 1 line above
@@ -280,4 +290,9 @@
     .byte(valueHi)                      // $12
     .byte(<updateSubroutineAddress)     // $13 UPDATE_SUBROUTINE
     .byte(>updateSubroutineAddress)     // $14
+    .byte(IID)                          // $15
+    .byte(leftNeighborIID)              // $16
+    .byte(rightNeighborIID)             // $17
+    .byte(topNeighborIID)               // $18
+    .byte(bottomNeighborIID)            // $19
 }

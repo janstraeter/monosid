@@ -172,31 +172,40 @@ currentNoteWasPlayedByKeyboardFlag:
  * ---------------------------------------------------------------- */ 
 
 voice1InputWaveform:
-    createStructInput(INPUT_TYPE.WAVEFORM, 1, 4, 5, strInputNameVoiceWaveform, WAVEFORM.SQUARE, $00, sidUpdateVoice1WaveFormControl)
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 4, 5, strInputNameVoiceWaveform, WAVEFORM.SQUARE, $00, sidUpdateVoice1WaveFormControl,
+                      IID.V1_WAVE, IID.V1_RING, IID.V1_PULSE, IID.V3SPECIAL_MOD_FILTER, IID.V2_WAVE)
 
 voice1InputPulseWidth:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 4, 6, strInputNameVoicePulseWidth, $FF, $07, sidUpdateVoice1PulseWidth)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 4, 6, strInputNameVoicePulseWidth, $FF, $07, sidUpdateVoice1PulseWidth,
+                      IID.V1_PULSE, IID.V1_WAVE, IID.V1_ATC, IID.V3SPECIAL_MOD_FILTER, IID.V2_PULSE)
 
 voice1InputAttack:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 4, 4, strInputNameVoiceAttack, $00, $00, sidUpdateVoice1AttackDecay)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 4, 4, strInputNameVoiceAttack, $00, $00, sidUpdateVoice1AttackDecay,
+                      IID.V1_ATC, IID.V1_PULSE, IID.V1_DCY, IID.V3SPECIAL_PULSE, IID.V2_ATC)
 
 voice1InputDecay:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 4, 4, strInputNameVoiceDecay, $00, $00, sidUpdateVoice1AttackDecay)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 4, 4, strInputNameVoiceDecay, $00, $00, sidUpdateVoice1AttackDecay,
+                      IID.V1_DCY, IID.V1_ATC, IID.V1_SUS, IID.V3SPECIAL_PULSE, IID.V2_DCY)
 
 voice1InputSustain:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 4, 4, strInputNameVoiceSustain, $0F, $00, sidUpdateVoice1SustainRelease)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 4, 4, strInputNameVoiceSustain, $0F, $00, sidUpdateVoice1SustainRelease,
+                      IID.V1_SUS, IID.V1_DCY, IID.V1_RLS, IID.V3SPECIAL_PULSE_NEG, IID.V2_SUS)
 
 voice1InputRelease:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 4, 4, strInputNameVoiceRelease, $0A, $00, sidUpdateVoice1SustainRelease)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 4, 4, strInputNameVoiceRelease, $0A, $00, sidUpdateVoice1SustainRelease,
+                      IID.V1_RLS, IID.V1_SUS, IID.V1_RING, IID.V3SPECIAL_CUTOFF, IID.V2_RLS)
 
 voice1InputUse:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 3, 4, strInputNameVoiceUse, $01, $00, sidUpdateVoice1WaveFormControl)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 3, 4, strInputNameVoiceUse, $01, $00, sidUpdateVoice1WaveFormControl,
+                      IID.V1_USE, IID.V1_RLS, IID.V1_WAVE, IID.V3SPECIAL_CUTOFF_NEG, IID.V1_SYNC)
 
 voice1InputSync:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 4, 4, strInputNameVoiceSync, $00, $00, sidUpdateVoice1WaveFormControl)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 4, 4, strInputNameVoiceSync, $00, $00, sidUpdateVoice1WaveFormControl,
+                      IID.V1_SYNC, IID.V1_RLS, IID.V1_WAVE, IID.V1_USE, IID.V1_RING)
 
 voice1InputRingMod:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 5, 4, strInputNameVoiceRingMod, $00, $00, sidUpdateVoice1WaveFormControl)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 5, 4, strInputNameVoiceRingMod, $00, $00, sidUpdateVoice1WaveFormControl,
+                      IID.V1_RING, IID.V1_RLS, IID.V1_WAVE, IID.V1_SYNC, IID.V2_USE)
 
 voice1InputArray:
     .byte(<voice1InputWaveform)
@@ -227,31 +236,40 @@ voice1InputArray:
  * ---------------------------------------------------------------- */ 
 
 voice2InputWaveform:
-    createStructInput(INPUT_TYPE.WAVEFORM, 1, 10, 5, strInputNameVoiceWaveform, WAVEFORM.SAWTOOTH, $00, sidUpdateVoice2WaveFormControl)
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 10, 5, strInputNameVoiceWaveform, WAVEFORM.SAWTOOTH, $00, sidUpdateVoice2WaveFormControl,
+                      IID.V2_WAVE, IID.V2_RING, IID.V2_PULSE, IID.V1_WAVE, IID.V3_WAVE)
 
 voice2InputPulseWidth:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 10, 6, strInputNameVoicePulseWidth, $FF, $00, sidUpdateVoice2PulseWidth)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 10, 6, strInputNameVoicePulseWidth, $FF, $00, sidUpdateVoice2PulseWidth,
+                      IID.V2_PULSE, IID.V2_WAVE, IID.V2_ATC, IID.V1_PULSE, IID.V3_PULSE)
 
 voice2InputAttack:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 10, 4, strInputNameVoiceAttack, $00, $00, sidUpdateVoice2AttackDecay)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 10, 4, strInputNameVoiceAttack, $00, $00, sidUpdateVoice2AttackDecay,
+                      IID.V2_ATC, IID.V2_PULSE, IID.V2_DCY, IID.V1_ATC, IID.V3_ATC)
 
 voice2InputDecay:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 10, 4, strInputNameVoiceDecay, $00, $00, sidUpdateVoice2AttackDecay)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 10, 4, strInputNameVoiceDecay, $00, $00, sidUpdateVoice2AttackDecay,
+                      IID.V2_DCY, IID.V2_ATC, IID.V2_SUS, IID.V1_DCY, IID.V3_DCY)
 
 voice2InputSustain:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 10, 4, strInputNameVoiceSustain, $0F, $00, sidUpdateVoice2SustainRelease)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 10, 4, strInputNameVoiceSustain, $0F, $00, sidUpdateVoice2SustainRelease,
+                      IID.V2_SUS, IID.V2_DCY, IID.V2_RLS, IID.V1_SUS, IID.V3_SUS)
 
 voice2InputRelease:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 10, 4, strInputNameVoiceRelease, $0A, $00, sidUpdateVoice2SustainRelease)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 10, 4, strInputNameVoiceRelease, $0A, $00, sidUpdateVoice2SustainRelease,
+                      IID.V2_RLS, IID.V2_SUS, IID.V2_RING, IID.V1_RLS, IID.V3_RLS)
 
 voice2InputUse:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 9, 4, strInputNameVoiceUse, $01, $00, sidUpdateVoice2WaveFormControl)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 9, 4, strInputNameVoiceUse, $01, $00, sidUpdateVoice2WaveFormControl,
+                      IID.V2_USE, IID.V2_RLS, IID.V2_WAVE, IID.V1_RING, IID.V2_SYNC)
 
 voice2InputSync:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 10, 4, strInputNameVoiceSync, $00, $00, sidUpdateVoice2WaveFormControl)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 10, 4, strInputNameVoiceSync, $00, $00, sidUpdateVoice2WaveFormControl,
+                      IID.V2_SYNC, IID.V2_RLS, IID.V2_WAVE, IID.V2_USE, IID.V2_RING)
 
 voice2InputRingMod:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 11, 4, strInputNameVoiceRingMod, $00, $00, sidUpdateVoice2WaveFormControl)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 11, 4, strInputNameVoiceRingMod, $00, $00, sidUpdateVoice2WaveFormControl,
+                      IID.V2_RING, IID.V2_RLS, IID.V2_WAVE, IID.V2_SYNC, IID.V3_USE)
 
 voice2InputArray:
     .byte(<voice2InputWaveform)
@@ -282,31 +300,40 @@ voice2InputArray:
  * ---------------------------------------------------------------- */ 
 
 voice3InputWaveform:
-    createStructInput(INPUT_TYPE.WAVEFORM, 1, 16, 5, strInputNameVoiceWaveform, WAVEFORM.TRIANGULAR, $00, sidUpdateVoice3WaveFormControl)
+    createStructInput(INPUT_TYPE.WAVEFORM, 1, 16, 5, strInputNameVoiceWaveform, WAVEFORM.TRIANGULAR, $00, sidUpdateVoice3WaveFormControl,
+                      IID.V3_WAVE, IID.V3_RING, IID.V3_PULSE, IID.V2_WAVE, IID.FILTER_CUTOFF)
 
 voice3InputPulseWidth:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 16, 6, strInputNameVoicePulseWidth, $F0, $0F, sidUpdateVoice3PulseWidth)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 16, 6, strInputNameVoicePulseWidth, $F0, $0F, sidUpdateVoice3PulseWidth,
+                      IID.V3_PULSE, IID.V3_WAVE, IID.V3_ATC, IID.V2_PULSE, IID.FILTER_RES)
 
 voice3InputAttack:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 16, 4, strInputNameVoiceAttack, $0F, $00, sidUpdateVoice3AttackDecay)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 16, 4, strInputNameVoiceAttack, $0F, $00, sidUpdateVoice3AttackDecay,
+                      IID.V3_ATC, IID.V3_PULSE, IID.V3_DCY, IID.V2_ATC, IID.FILTER_V1)
 
 voice3InputDecay:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 16, 4, strInputNameVoiceDecay, $00, $00, sidUpdateVoice3AttackDecay)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 19, 16, 4, strInputNameVoiceDecay, $00, $00, sidUpdateVoice3AttackDecay,
+                      IID.V3_DCY, IID.V3_ATC, IID.V3_SUS, IID.V2_DCY, IID.FILTER_V1)
 
 voice3InputSustain:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 16, 4, strInputNameVoiceSustain, $0F, $00, sidUpdateVoice3SustainRelease)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 24, 16, 4, strInputNameVoiceSustain, $0F, $00, sidUpdateVoice3SustainRelease,
+                      IID.V3_SUS, IID.V3_DCY, IID.V3_RLS, IID.V2_SUS, IID.FILTER_LOWPASS)
 
 voice3InputRelease:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 16, 4, strInputNameVoiceRelease, $0A, $00, sidUpdateVoice3SustainRelease)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 29, 16, 4, strInputNameVoiceRelease, $0A, $00, sidUpdateVoice3SustainRelease,
+                      IID.V3_RLS, IID.V3_SUS, IID.V3_RING, IID.V2_RLS, IID.FILTER_LOWPASS)
 
 voice3InputUse:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 15, 4, strInputNameVoiceUse, $01, $00, sidUpdateVoice3WaveFormControl)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 15, 4, strInputNameVoiceUse, $01, $00, sidUpdateVoice3WaveFormControl,
+                      IID.V3_USE, IID.V3_RLS, IID.V3_WAVE, IID.V2_RING, IID.V3_SYNC)
 
 voice3InputSync:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 16, 4, strInputNameVoiceSync, $00, $00, sidUpdateVoice3WaveFormControl)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 16, 4, strInputNameVoiceSync, $00, $00, sidUpdateVoice3WaveFormControl,
+                      IID.V3_SYNC, IID.V3_RLS, IID.V3_WAVE, IID.V3_USE, IID.V3_RING)
 
 voice3InputRingMod:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 17, 4, strInputNameVoiceRingMod, $00, $00, sidUpdateVoice3WaveFormControl)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 17, 4, strInputNameVoiceRingMod, $00, $00, sidUpdateVoice3WaveFormControl,
+                      IID.V3_RING, IID.V3_RLS, IID.V3_WAVE, IID.V3_SYNC, IID.MAIN_VOL)
 
 voice3InputArray:
     .byte(<voice3InputWaveform)
@@ -337,28 +364,36 @@ voice3InputArray:
  * ---------------------------------------------------------------- */ 
 
 filterInputCutoff:
-    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 1, 22, 6, strInputNameFilterCutoff, $00, $00, sidUpdateFilterCutoffFrequency)
+    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 1, 22, 6, strInputNameFilterCutoff, $00, $00, sidUpdateFilterCutoffFrequency,
+                      IID.FILTER_CUTOFF, IID.MAIN_VOL, IID.FILTER_RES, IID.V3_WAVE, IID.DETUNING_V1)
 
 filterInputResonance:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 8, 22, 4, strInputNameFilterResonance, $00, $00, sidUpdateFilterSwitchesAndResonance)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 8, 22, 4, strInputNameFilterResonance, $00, $00, sidUpdateFilterSwitchesAndResonance,
+                      IID.FILTER_RES, IID.FILTER_CUTOFF, IID.FILTER_V3, IID.V3_PULSE, IID.DETUNING_V1_NEG)
 
 filterInputVoice1:
-    createStructInput(INPUT_TYPE.BOOLEAN, 13, 21, 7, strInputNameFilterVoice1, $01, $00, sidUpdateFilterSwitchesAndResonance)
+    createStructInput(INPUT_TYPE.BOOLEAN, 13, 21, 7, strInputNameFilterVoice1, $01, $00, sidUpdateFilterSwitchesAndResonance,
+                      IID.FILTER_V1, IID.FILTER_RES, IID.FILTER_LOWPASS, IID.V3_ATC, IID.FILTER_V2)
 
 filterInputVoice2:
-    createStructInput(INPUT_TYPE.BOOLEAN, 13, 22, 7, strInputNameFilterVoice2, $01, $00, sidUpdateFilterSwitchesAndResonance)
+    createStructInput(INPUT_TYPE.BOOLEAN, 13, 22, 7, strInputNameFilterVoice2, $01, $00, sidUpdateFilterSwitchesAndResonance,
+                      IID.FILTER_V2, IID.FILTER_RES, IID.FILTER_HIGHPASS, IID.FILTER_V1, IID.FILTER_V3)
 
 filterInputVoice3:
-    createStructInput(INPUT_TYPE.BOOLEAN, 13, 23, 7, strInputNameFilterVoice3, $01, $00, sidUpdateFilterSwitchesAndResonance)
+    createStructInput(INPUT_TYPE.BOOLEAN, 13, 23, 7, strInputNameFilterVoice3, $01, $00, sidUpdateFilterSwitchesAndResonance,
+                      IID.FILTER_V3, IID.FILTER_RES, IID.FILTER_BANDWIDTH, IID.FILTER_V2, IID.DETUNING_V2)
 
 filterInputLowpass:
-    createStructInput(INPUT_TYPE.BOOLEAN, 21, 21, 7, strInputNameFilterLowpass, $01, $00, sidUpdateFilterModesAndVolume)
+    createStructInput(INPUT_TYPE.BOOLEAN, 21, 21, 7, strInputNameFilterLowpass, $01, $00, sidUpdateFilterModesAndVolume,
+                      IID.FILTER_LOWPASS, IID.FILTER_V1, IID.MAIN_VOL, IID.V3_SUS, IID.FILTER_HIGHPASS)
 
 filterInputHighpass:
-    createStructInput(INPUT_TYPE.BOOLEAN, 21, 22, 7, strInputNameFilterHighpass, $00, $00, sidUpdateFilterModesAndVolume)
+    createStructInput(INPUT_TYPE.BOOLEAN, 21, 22, 7, strInputNameFilterHighpass, $00, $00, sidUpdateFilterModesAndVolume,
+                      IID.FILTER_HIGHPASS, IID.FILTER_V2, IID.MAIN_VOL, IID.FILTER_LOWPASS, IID.FILTER_BANDWIDTH)
 
 filterInputBandwidth:
-    createStructInput(INPUT_TYPE.BOOLEAN, 21, 23, 7, strInputNameFilterBandwidth, $00, $00, sidUpdateFilterModesAndVolume)
+    createStructInput(INPUT_TYPE.BOOLEAN, 21, 23, 7, strInputNameFilterBandwidth, $00, $00, sidUpdateFilterModesAndVolume,
+                      IID.FILTER_BANDWIDTH, IID.FILTER_V3, IID.MAIN_VOL, IID.FILTER_HIGHPASS, IID.DETUNING_V2_NEG)
 
 filterInputArray:
     .byte(<filterInputCutoff)
@@ -387,7 +422,8 @@ filterInputArray:
  * ---------------------------------------------------------------- */ 
 
 mainInputVol:
-    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 35, 22, 4, strInputNameMainVol, $0F, $00, sidUpdateFilterModesAndVolume)
+    createStructInput(INPUT_TYPE.INTEGER_4_BITS, 35, 22, 4, strInputNameMainVol, $0F, $00, sidUpdateFilterModesAndVolume,
+                      IID.MAIN_VOL, IID.FILTER_BANDWIDTH, IID.FILTER_CUTOFF, IID.V3_RING, IID.DETUNING_V3_NEG)
 
 mainInputArray:
     .byte(<mainInputVol)
@@ -402,22 +438,28 @@ mainInputArray:
  * ---------------------------------------------------------------- */ 
 
 detuningInputVoice1:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 1, 4, 6, strInputNameDetuningInputVoice1, $00, $00, pitchUpdateDetuningInputVoice1)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 1, 4, 6, strInputNameDetuningInputVoice1, $00, $00, pitchUpdateDetuningInputVoice1,
+                      IID.DETUNING_V1, IID.DETUNING_V3_NEG, IID.DETUNING_V1_NEG, IID.FILTER_CUTOFF, IID.RESOSC_V1)
 
 detuningInputDetuneDownVoice1:
-    createStructInput(INPUT_TYPE.BOOLEAN, 8, 5, 5, strInputNameDetuningInputDetuneDownVoice, $00, $00, pitchUpdateDetuningInputVoice1)
+    createStructInput(INPUT_TYPE.BOOLEAN, 8, 5, 5, strInputNameDetuningInputDetuneDownVoice, $00, $00, pitchUpdateDetuningInputVoice1,
+                      IID.DETUNING_V1_NEG, IID.DETUNING_V1, IID.DETUNING_V2, IID.FILTER_RES, IID.RESOSC_V2)
 
 detuningInputVoice2:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 13, 4, 6, strInputNameDetuningInputVoice2, $00, $00, pitchUpdateDetuningInputVoice2)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 13, 4, 6, strInputNameDetuningInputVoice2, $00, $00, pitchUpdateDetuningInputVoice2,
+                      IID.DETUNING_V2, IID.DETUNING_V1_NEG, IID.DETUNING_V2_NEG, IID.FILTER_V3, IID.RESOSC_V2)
 
 detuningInputDetuneDownVoice2:
-    createStructInput(INPUT_TYPE.BOOLEAN, 20, 5, 5, strInputNameDetuningInputDetuneDownVoice, $00, $00, pitchUpdateDetuningInputVoice2)
+    createStructInput(INPUT_TYPE.BOOLEAN, 20, 5, 5, strInputNameDetuningInputDetuneDownVoice, $00, $00, pitchUpdateDetuningInputVoice2,
+                      IID.DETUNING_V2_NEG, IID.DETUNING_V2, IID.DETUNING_V3, IID.FILTER_BANDWIDTH, IID.RESOSC_V3)
 
 detuningInputVoice3:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 26, 4, 6, strInputNameDetuningInputVoice3, $00, $00, pitchUpdateDetuningInputVoice3)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 26, 4, 6, strInputNameDetuningInputVoice3, $00, $00, pitchUpdateDetuningInputVoice3,
+                      IID.DETUNING_V3, IID.DETUNING_V2_NEG, IID.DETUNING_V3_NEG, IID.FILTER_BANDWIDTH, IID.RESOSC_V3)
 
 detuningInputDetuneDownVoice3:
-    createStructInput(INPUT_TYPE.BOOLEAN, 33, 5, 5, strInputNameDetuningInputDetuneDownVoice, $00, $00, pitchUpdateDetuningInputVoice3)
+    createStructInput(INPUT_TYPE.BOOLEAN, 33, 5, 5, strInputNameDetuningInputDetuneDownVoice, $00, $00, pitchUpdateDetuningInputVoice3,
+                      IID.DETUNING_V3_NEG, IID.DETUNING_V3, IID.DETUNING_V1, IID.MAIN_VOL, IID.RESOSC_V3)
 
 detuningInputArray:
     .byte(<detuningInputVoice1)
@@ -442,13 +484,16 @@ detuningInputArray:
  * ---------------------------------------------------------------- */ 
 
 resetOscillatorVoice1:
-    createStructInput(INPUT_TYPE.BOOLEAN, 1, 10, 8, strInputNameResetOscillatorVoice1, $00, $00, sidUpdateResetOscillatorVoice1)
+    createStructInput(INPUT_TYPE.BOOLEAN, 1, 10, 8, strInputNameResetOscillatorVoice1, $00, $00, sidUpdateResetOscillatorVoice1,
+                      IID.RESOSC_V1, IID.RESOSC_V3, IID.RESOSC_V2, IID.DETUNING_V1, IID.V3SPECIAL_MUTE)
 
 resetOscillatorVoice2:
-    createStructInput(INPUT_TYPE.BOOLEAN, 10, 10, 8, strInputNameResetOscillatorVoice2, $00, $00, sidUpdateResetOscillatorVoice2)
+    createStructInput(INPUT_TYPE.BOOLEAN, 10, 10, 8, strInputNameResetOscillatorVoice2, $00, $00, sidUpdateResetOscillatorVoice2,
+                      IID.RESOSC_V2, IID.RESOSC_V1, IID.RESOSC_V3, IID.DETUNING_V2, IID.V3SPECIAL_PULSE)
 
 resetOscillatorVoice3:
-    createStructInput(INPUT_TYPE.BOOLEAN, 19, 10, 8, strInputNameResetOscillatorVoice3, $00, $00, sidUpdateResetOscillatorVoice3)
+    createStructInput(INPUT_TYPE.BOOLEAN, 19, 10, 8, strInputNameResetOscillatorVoice3, $00, $00, sidUpdateResetOscillatorVoice3,
+                      IID.RESOSC_V3, IID.RESOSC_V2, IID.RESOSC_V1, IID.DETUNING_V2_NEG, IID.V3SPECIAL_PULSE_NEG)
 
 resetOscillatorsInputArray:
     .byte(<resetOscillatorVoice1)
@@ -467,25 +512,32 @@ resetOscillatorsInputArray:
  * ---------------------------------------------------------------- */ 
 
 voice3FeaturesInputMuteVoice3:
-    createStructInput(INPUT_TYPE.BOOLEAN, 1, 15, 13, strInputNameVoice3FeaturesInputMuteVoice3, $01, $00, sidUpdateFilterModesAndVolume)
+    createStructInput(INPUT_TYPE.BOOLEAN, 1, 15, 13, strInputNameVoice3FeaturesInputMuteVoice3, $01, $00, sidUpdateFilterModesAndVolume,
+                      IID.V3SPECIAL_MUTE, IID.V3SPECIAL_CUTOFF_NEG, IID.V3SPECIAL_PULSE, IID.RESOSC_V1, IID.V3SPECIAL_MOD_PULSE)
 
 voice3FeaturesModulatePulseWidth:
-    createStructInput(INPUT_TYPE.BOOLEAN, 1, 16, 14, strInputNameVoice3FeaturesModulatePulseWidth, $00, $00, pulseWidthUpdateVoice3EnvelopeModulatePulseWidthValue)
+    createStructInput(INPUT_TYPE.BOOLEAN, 1, 16, 14, strInputNameVoice3FeaturesModulatePulseWidth, $00, $00, pulseWidthUpdateVoice3EnvelopeModulatePulseWidthValue,
+                      IID.V3SPECIAL_MOD_PULSE, IID.V3SPECIAL_CUTOFF_NEG, IID.V3SPECIAL_PULSE, IID.V3SPECIAL_MUTE, IID.V3SPECIAL_MOD_FILTER)
 
 voice3FeaturesModulateFilter:
-    createStructInput(INPUT_TYPE.BOOLEAN, 1, 17, 15, strInputNameVoice3FeaturesModulateFilter, $01, $00, filterUpdateVoice3EnvelopeModulateFilterValue)
+    createStructInput(INPUT_TYPE.BOOLEAN, 1, 17, 15, strInputNameVoice3FeaturesModulateFilter, $01, $00, filterUpdateVoice3EnvelopeModulateFilterValue,
+                      IID.V3SPECIAL_MOD_FILTER, IID.V3SPECIAL_CUTOFF_NEG, IID.V3SPECIAL_PULSE, IID.V3SPECIAL_MOD_PULSE, IID.V1_WAVE)
 
 voice3FeaturesPulseWidth:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 15, 16, 6, strInputNameVoice3FeaturesPulseWidth, $FF, $0F, pulseWidthUpdateVoice3PulseWidthValue)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 15, 16, 6, strInputNameVoice3FeaturesPulseWidth, $FF, $0F, pulseWidthUpdateVoice3PulseWidthValue,
+                      IID.V3SPECIAL_PULSE, IID.V3SPECIAL_MOD_FILTER, IID.V3SPECIAL_PULSE_NEG, IID.RESOSC_V2, IID.V1_ATC)
 
 voice3FeaturesPulseWidthNegative:
-    createStructInput(INPUT_TYPE.BOOLEAN, 22, 17, 5, strInputNameVoice3FeaturesPulseWidthNegative, $00, $00, pulseWidthUpdateVoice3PulseWidthNegativeValue)
+    createStructInput(INPUT_TYPE.BOOLEAN, 22, 17, 5, strInputNameVoice3FeaturesPulseWidthNegative, $00, $00, pulseWidthUpdateVoice3PulseWidthNegativeValue,
+                      IID.V3SPECIAL_PULSE_NEG, IID.V3SPECIAL_PULSE, IID.V3SPECIAL_CUTOFF, IID.RESOSC_V3, IID.V1_SUS)
 
 voice3FeaturesFilterCutoff:
-    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 28, 16, 6, strInputNameVoice3FeaturesFilterCutoff, $FF, $07, filterUpdateVoice3FilterCutoffValue)
+    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 28, 16, 6, strInputNameVoice3FeaturesFilterCutoff, $FF, $07, filterUpdateVoice3FilterCutoffValue,
+                      IID.V3SPECIAL_CUTOFF, IID.V3SPECIAL_PULSE_NEG, IID.V3SPECIAL_CUTOFF_NEG, IID.RESOSC_V3, IID.V1_RLS)
 
 voice3FeaturesFilterCutoffNegative:
-    createStructInput(INPUT_TYPE.BOOLEAN, 35, 17, 5, strInputNameVoice3FeaturesFilterCutoffNegative, $00, $00, filterUpdateVoice3FilterCutoffNegativeValue)
+    createStructInput(INPUT_TYPE.BOOLEAN, 35, 17, 5, strInputNameVoice3FeaturesFilterCutoffNegative, $00, $00, filterUpdateVoice3FilterCutoffNegativeValue,
+                      IID.V3SPECIAL_CUTOFF_NEG, IID.V3SPECIAL_CUTOFF, IID.V3SPECIAL_MOD_FILTER, IID.RESOSC_V3, IID.V1_USE)
 
 voice3FeaturesInputArray:
     .byte(<voice3FeaturesInputMuteVoice3)

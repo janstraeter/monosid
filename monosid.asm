@@ -614,75 +614,93 @@ exit:
     rts
 
 cursorDownKeyPressed:
-    // Cursor down: increase current module index,
-    // wrap around if number of modules is reached
-    jsr userinterfaceRemoveModuleFocus
-    jsr userinterfaceRemoveInputFocus
-    inc currentModuleIndex
-    lda currentModuleIndex
-    cmp modulesNum
-    bne cursorDownNoWrap
-    lda #$00
-    sta currentModuleIndex
-
-cursorDownNoWrap:
-    jsr correctCurrentInputIndex
-    jsr switchPageIfNeccessary
-    jsr userinterfaceAddModuleFocus
-    jsr userinterfaceAddInputFocus
-    rts
+    // cursor down, load IID of bottom neighbor into accu and update screen
+    jsr inputLoadAddressOfCurrentInputToZPR7
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.BOTTOM_NEIGHBOR_IID)
+    jmp cursorKeyPressedFinalize
 
 cursorRightKeyPressed:
-    // Cursor right: increase current input index,
-    // wrap around if current module´s input number is reached
-    jsr userinterfaceRemoveInputFocus
-    jsr loadCurrentModuleInputNumToAccu
-    sta currentModuleInputNum
-    inc currentInputIndex
-    lda currentInputIndex
-    cmp currentModuleInputNum
-    bne cursorRightNoWrap
-    lda #$00
-    sta currentInputIndex
-
-cursorRightNoWrap:
-    jsr userinterfaceAddInputFocus
-    rts
+    // cursor right, load IID of right neighbor into accu and update screen
+    jsr inputLoadAddressOfCurrentInputToZPR7
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.RIGHT_NEIGHBOR_IID)
+    jmp cursorKeyPressedFinalize
 
 cursorUpKeyPressed:
-    // Cursor up: decrease current module index,
-    // wrap around if below zero is reached
-    jsr userinterfaceRemoveModuleFocus
-    jsr userinterfaceRemoveInputFocus
-    dec currentModuleIndex
-    bpl cursorUpNoWrap
-    lda modulesNum
-    sec
-    sbc #1
-    sta currentModuleIndex
+    // cursor up, load IID of top neighbor into accu and update screen
+    jsr inputLoadAddressOfCurrentInputToZPR7
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.TOP_NEIGHBOR_IID)
+    jmp cursorKeyPressedFinalize
 
-cursorUpNoWrap:
-    jsr correctCurrentInputIndex
-    jsr switchPageIfNeccessary
+cursorLeftKeyPressed:
+    // cursor left, load IID of left neighbor into accu and update screen
+    jsr inputLoadAddressOfCurrentInputToZPR7
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.LEFT_NEIGHBOR_IID)
+    jmp cursorKeyPressedFinalize
+
+cursorKeyPressedFinalize:
+    // after it has been determined which page, module and index should now be selected,
+    // update the screen accordingly
+
+    // save the IID
+    sta iidOfNextSelectedInput
+    
+    // save current page, module and input indecies
+    lda currentPage
+    sta previousPage
+    lda currentModuleIndex
+    sta previousModuleIndex
+    lda currentInputIndex
+    sta previousInputIndex
+
+    // update current page, module and input indecies to the new values,
+    // according to the newly selected input element
+    lda iidOfNextSelectedInput
+    jsr selectInputAfterCursorKeyPress
+
+    // check if page swap neccessary
+    lda currentPage
+    cmp previousPage
+    beq noPageSwap
+
+    // swap the page
+    jsr userinterfaceInitScreen
+    jsr userinterfaceDrawMain
+
+    // if second page, show the logo, otherwise hide the logo
+    lda #1
+    cmp currentPage
+    bne hideLogo
+    jsr logoShow
+    jmp pageSwapAddFocus
+
+hideLogo:
+    jsr logoHide
+
+pageSwapAddFocus:
+    // after the redrawing of the whole screen, add the focus
     jsr userinterfaceAddModuleFocus
     jsr userinterfaceAddInputFocus
     rts
 
-cursorLeftKeyPressed:
-    // Cursor left: decrease current input index,
-    // wrap around if below zero is reached
-    jsr userinterfaceRemoveInputFocus
-    jsr loadCurrentModuleInputNumToAccu
-    sta currentModuleInputNum
-    dec currentInputIndex
-    bpl cursorLeftNoWrap
-    lda currentModuleInputNum
-    sec
-    sbc #1
-    sta currentInputIndex
+noPageSwap:
+    // no page swap
+    // check if the module index has changed
+    lda previousModuleIndex
+    cmp currentModuleIndex
+    beq noModuleIndexChange
 
-cursorLeftNoWrap:
+    // yes, module focus needs to chang to the newly selected module
+    jsr userinterfaceRemoveModuleFocus
+    jsr userinterfaceAddModuleFocus
+
+noModuleIndexChange:
+    // update the focus to the newly selected input
+    lda previousInputIndex
+    ldx previousModuleIndex
+    jsr userinterfaceRemoveInputFocus
     jsr userinterfaceAddInputFocus
+
+    // screen updated, return
     rts
 
 returnKeyPressed:
@@ -714,8 +732,14 @@ minusKeyPressed:
     jsr inputHandleMinusKeyPressed
     rts
 
-currentModuleInputNum:
+iidOfNextSelectedInput:
 	.byte(0)
+previousPage:
+    .byte(0)
+previousModuleIndex:
+    .byte(0)
+previousInputIndex:
+    .byte(0)
 }
 
 
@@ -723,53 +747,101 @@ currentModuleInputNum:
  * Subroutine
  * ----------
  *
- * Loads the number of input elements of the currently selected module
- * into the accu register
- *
- * Reads global variables:  modules, currentModuleIndex
- * Writes global variables: none
+ * Updates currentPage, currentModuleIndex and currentInputIndex accordingly to
+ * the selected input element with the IID provided as parameter in the accu.
  * 
+ * Parameter:               accu - IID of the selected input element
+ *
+ * Reads global variables:  modules, moduleNum
+ *
+ * Writes global variables: currentPage, currentModuleIndex, currentInputIndex
+ *
  * ---------------------------------------------------------------- */ 
 
-loadCurrentModuleInputNumToAccu:
+selectInputAfterCursorKeyPress:
 {
-	loadPointerToZPR(modules, ZPR_6)
-    stuctLoadPointerArrayItemToZPR(ZPR_6, currentModuleIndex, ZPR_7);
-	structLoadByteToAccu(ZPR_7, STRUCT_MODULE.INPUT_ARRAY_NUM)
-    rts
-}
+    // the IID to find comes as a parameter in the accu, save it into searchIID
+    sta searchIID
 
+	// load address of module array into ZPR_4
+    loadPointerToZPR(modules, ZPR_4)
+    
+    // initialize moduleIndex with zero
+    lda #0
+    sta moduleIndex
 
-/* -------------------------------------------------------------------
- * Subroutine
- * ----------
- *
- * Checks if the current input index is bigger than the max
- * input index of the current module and sets it to the max
- * value if neccessary
- *
- * Reads global variables:  modules, currentModuleIndex, currentInputIndex
- * Writes global variables: none
- * 
- * ---------------------------------------------------------------- */ 
+moduleLoop:
+    // once for each module
+    // load address of modules[moduleIndex] into ZPR_5
+    stuctLoadPointerArrayItemToZPR(ZPR_4, moduleIndex, ZPR_5)
+    
+    // store number of inputs of modules[moduleIndex] in inputArrayNum
+    structLoadByteToAccu(ZPR_5, STRUCT_MODULE.INPUT_ARRAY_NUM)
+    sta inputArrayNum
 
-correctCurrentInputIndex:
-{
-    jsr loadCurrentModuleInputNumToAccu
-    sta inputNum
-    lda currentInputIndex
-    cmp inputNum
-    bcc exit
+    // store the page number of modules[moduleIndex] in page
+    structLoadByteToAccu(ZPR_5, STRUCT_MODULE.PAGE)
+    sta page
 
-    lda inputNum
-    sec
-    sbc #1
+    // load the address of the input array of modules[moduleIndex] into ZPR_6
+    structLoadWordToAddress(ZPR_5, STRUCT_MODULE.INPUT_ARRAY, ZPR_6)
+
+    // initialize inputIndex with zero
+    lda #0
+    sta inputIndex
+
+inputLoop:
+    // once for each input - modules[moduleIndex][inputIndex]
+    // load the address of modules[moduleIndex][inputIndex] into ZPR_7
+    stuctLoadPointerArrayItemToZPR(ZPR_6, inputIndex, ZPR_7)
+    
+    // load the IID (unique input ID) of modules[moduleIndex][inputIndex] into the accu
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.IID)
+
+    // compare the IID of modules[moduleIndex][inputIndex] with the value in searchIID
+    cmp searchIID
+    beq foundIID
+
+    // IID not found yet - increase inputIndex, check for end of input array
+    // if inputIndex != inputArrayNum goto inputLoop
+    inc inputIndex
+    lda inputArrayNum
+    cmp inputIndex
+    bne inputLoop
+
+    // inputIndex == inputArrayNum, so increase moduleIndex, check for end of module array
+    // if moduleIndex != modulesNum goto moduleLoop
+    inc moduleIndex
+    lda modulesNum
+    cmp moduleIndex
+    bne moduleLoop
+
+    // this should never be reached - but only to be sure...
+    lda #0
+    sta currentPage
+    sta currentModuleIndex
     sta currentInputIndex
-
-exit:
     rts
 
-inputNum:
+foundIID:
+    // save the indecies of the current module and input and return
+    lda page
+    sta currentPage
+    lda moduleIndex
+    sta currentModuleIndex
+    lda inputIndex
+    sta currentInputIndex
+    rts
+
+searchIID:
+    .byte(0)
+page:
+    .byte(0)
+moduleIndex:
+    .byte(0)
+inputIndex:
+    .byte(0)
+inputArrayNum:
     .byte(0)
 }
 
