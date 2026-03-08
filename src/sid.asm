@@ -1100,7 +1100,7 @@ sidUpdateFilterSwitchesAndResonance:
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // check if the filter sould be used for voice 1
-    // if yes, set the first bit to 1, of no set the first bit to zero
+    // if yes, set the first bit to 1, if no set the first bit to zero
     cmp #0
     beq doNotUseFilterForVoice1
     lda #%00000001
@@ -1123,7 +1123,7 @@ saveUseFilter1:
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // check if the filter sould be used for voice 2
-    // if yes, set the second bit to 1, of no set the second bit to zero
+    // if yes, set the second bit to 1, if no set the second bit to zero
     cmp #0
     beq doNotUseFilterForVoice2
     lda #%00000010
@@ -1146,7 +1146,7 @@ saveUseFilter2:
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // check if the filter sould be used for voice 3
-    // if yes, set the third bit to 1, of no set the third bit to zero
+    // if yes, set the third bit to 1, if no set the third bit to zero
     cmp #0
     beq doNotUseFilterForVoice3
     lda #%00000100
@@ -1195,7 +1195,7 @@ sidUpdateFilterModesAndVolume:
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // check if the highpass filter sould be used 
-    // if yes, set the seventh bit to 1, of no set the seventh bit to zero
+    // if yes, set the seventh bit to 1, if no set the seventh bit to zero
     cmp #0
     beq doNotUseHighpassFilter
     lda #%01000000
@@ -1217,7 +1217,7 @@ saveUseHighpassFilter:
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // check if the bandwidth filter sould be used
-    // if yes, set the sixth bit to 1, of no set the sixth bit to zero
+    // if yes, set the sixth bit to 1, if no set the sixth bit to zero
     cmp #0
     beq doNotUseBandwithFilter
     lda #%00100000
@@ -1240,7 +1240,7 @@ saveUseBandwithFilter:
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // check if the lowpass filter sould be used
-    // if yes, set the fifth bit to 1, of no set the fifth bit to zero
+    // if yes, set the fifth bit to 1, if no set the fifth bit to zero
     cmp #0
     beq doNotUseLowpassFilter
     lda #%00010000
@@ -1261,8 +1261,8 @@ saveUseLowpassFilter:
     loadPointerToZPR(voice3FeaturesInputMuteVoice3, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
-    // check if the lowpass filter sould be used
-    // if yes, set the MSB to 1, of no set it to 0
+    // check if voice #3 should be muted
+    // if yes, set the MSB to 1, if no set it to 0
     cmp #0
     beq doNotMuteVoice3
     lda #%10000000
