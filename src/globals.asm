@@ -2,6 +2,30 @@
 
 /* -------------------------------------------------------------------
  *
+ * Detected model of the C64 system (PAL, NTSC1, NTSC2, DREAN)
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+detectedC64model:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Is true if a PAL system was detected, false for NTSC systems
+ *
+ * Type: Boolean
+ *
+ * ---------------------------------------------------------------- */ 
+
+detectedPALSystem:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
  * Currently selected program mode
  *
  * Type: Integer

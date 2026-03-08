@@ -69,15 +69,36 @@ notDetuning:
     tax
     
     // load current note and use it as index in Y
+    // (multiply by 2, because frequency array consists of words)
     lda lastPlayedNote
+    asl
     tay
 
-    // load the low byte of the frequency and save it
-    lda freqTablePalLo, y
+    // check if PAL system detected
+    lda detectedPALSystem
+    cmp #1
+    beq notDetuningUsePALTable
+
+    // no, load the low byte of the NTSC frequency table and save it
+    lda frequencyTableNTSC, y
     sta voiceFrequencies, x
 
-    // load the hight byte of the frequency and save it
-    lda freqTablePalHi, y
+    // now load the hight byte of the NTSC frequency table and save it
+    iny
+    lda frequencyTableNTSC, y
+    inx
+    sta voiceFrequencies, x
+
+    rts
+
+notDetuningUsePALTable:
+    // yes, load the low byte of the PAL frequency table and save it
+    lda frequencyTablePAL, y
+    sta voiceFrequencies, x
+
+    // now load the hight byte of the PAL frequency table and save it
+    iny
+    lda frequencyTablePAL, y
     inx
     sta voiceFrequencies, x
 
@@ -197,15 +218,37 @@ calculateVoiceFrequency:
     // load the frequency of the calculated new base note
     // first, copy detunedBaseNote to X as index
     lda detunedBaseNote
+    asl
     tax
 
-    // load the low byte of the base frequency
-    lda freqTablePalLo, x
+    // check if PAL system detected
+    lda detectedPALSystem
+    cmp #1
+    beq calculateVoiceFrequencyUsePALTable
+
+    // load the low byte of the base frequency (NTSC table)
+    lda frequencyTableNTSC, x
     sta baseFrequencyLo
 
-    // load the high byte of the base frequency
-    lda freqTablePalHi, x
+    // load the high byte of the base frequency (NTSC table)
+    inx
+    lda frequencyTableNTSC, x
     sta baseFrequencyHi
+
+    jmp calculateVoiceFrequencyLoadDetuningFactor
+
+calculateVoiceFrequencyUsePALTable:
+
+    // load the low byte of the base frequency (PAL table)
+    lda frequencyTablePAL, x
+    sta baseFrequencyLo
+
+    // load the high byte of the base frequency (PAL table)
+    inx
+    lda frequencyTablePAL, x
+    sta baseFrequencyHi
+
+calculateVoiceFrequencyLoadDetuningFactor:
 
     // now load the detuning factor from the lookup table
     // first, multiply detuningOfBaseNoteInCent by 2 and save it into to X as index

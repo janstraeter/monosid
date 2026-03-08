@@ -55,6 +55,7 @@
  *
  * ---------------------------------------------------------------- */ 
 
+#import "src/detect.asm"
 #import "src/string.asm"
 #import "src/math.asm"
 #import "src/convert.asm"
@@ -82,6 +83,9 @@
 
 mainProgram:
 {
+    // detect if PAL or NTSC
+    jsr detectC64Model
+
     // let all keys repeat
     lda $80
     sta REPEAT_FLAG
@@ -145,8 +149,6 @@ ignoreMidiNote:
     jmp waitLoop
 
 modeMain:
-    //lda SID.ENVELOPE_VOICE_3
-    // jsr debugDumpByte
 	// Switch for the current program mode sub mode
 	lda currentSubMode
 	cmp #MODE_MAIN_SUBMODE.SELECT_INPUT
