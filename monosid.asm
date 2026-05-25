@@ -1,11 +1,23 @@
-/* -------------------------------------------------------------------
+/* -----------------------------------------------------------------------------------------------------------------------
  *
  * monosid
  * -------
+ * 
+ * ░▒███████████████████████████████████████████████████████████████████▓▓█▓▒█▓▒▓░   ░▓▓▓▓▓▒      ▓▓▓▓▓░░▓▓▓▓▓▓▓▓▒         
+ * ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▒▒▓░▓░  ░▓▓▓▓▓▓▓▓▓▓▓▒   ▓▓▓▓▓░░▓▓▓▓▓▓▓▓▓▓▓▓▓▓░   
+ * ████░░░▒█▓░░   ░░███░░░       ░░░███░░░░   ░████▓░░░██▒░░░      ░░░▒███▒░░   ░█████  ░█████▒  ▓████░░████████████████░ 
+ * ████████████▒░██████████░   ▒███████████░  ░██████████████░   ░███████████░░░██████           █████░░████▓      ▓█████░
+ * █████████████████████████ ░▒██████████████ ░███████████████░ ░██████████████░░███████▓        █████░░████▓       █████░
+ * ████░   ░▓█████░   ░██████▒████▒░   ░██████░████▓░   ░█████░░█████░    ▓█████░ ░█████████▒    █████░░████▓       ██████
+ * ████     ▓████░     ░█████▒████▒     ░█████░████▓     █████░░█████      █████░     ░███████▒  █████░░████▓       █████░
+ * ████     ▓████░     ░█████▒████▒     ░█████░████▓     █████░░█████      █████░        ▒█████░ █████░░████▓      ▓█████░
+ * ████     ▓████░     ░█████░▒█████░  ██████ ░████▓     █████░░░█████▓  ▓█████░░█████   ▒█████░ ▓████░░████▓  ▒████████░ 
+ * ████     ▓████░     ░█████ ░▓████████████░ ░████▓     █████░ ░▒████████████░  ░▓▓▓▓▓▓▓▓▓▓▓▓░  ▓▓▓▓▓░░▓▓▓▓▓▓▓▓▓▓▓▓▓▓░   
+ * ████     ▓████░     ░█████   ░▒███████▒▒░  ░████▓     █████░   ░▒▓██████▓▒░      ░▓▓▓▓▓▓▒     ▓▓▓▓▓░░▓▓▓▓▓▓▓▓▓▓░       
+ * 
+ * A litte MIDI capable mono-synth for the SID chip of the good old C64
  *
- * A litte software mono-synth for the good old C64
- *
- * ---------------------------------------------------------------- */ 
+ * ---------------------------------------------------------------------------------------------------------------------- */ 
 
 .file [name="monosid.prg", segments="Start, Data, Subroutines, MainProgram"]
 
@@ -186,8 +198,8 @@ modeMenu:
  * done in the main loop, only reading the MIDI input can be
  * done via interrupt. But we need a machanism to get the timing
  * for the jiffy clock, cursor blinking and keyboard reading right.
- * So we setup a custom RSI - this RSI is called 60 times per second,
- * as setup by the Kernal. This custom RSI only indicates to the
+ * So we setup a custom ISR - this ISR is called 60 times per second,
+ * as setup by the Kernal. This custom ISR only indicates to the
  * main loop, that the usual Kernal stuff is due - but does not do the
  * actual updating in the ISR itself. 
  *
@@ -230,7 +242,7 @@ customInterruptServiceRoutine:
     // to call the Kernal ISR emulation
     lda #1
     sta callEmulationOfKernalISR
-    
+
     // restore the registers from the stack and return
     pla
     tay
@@ -443,6 +455,10 @@ checkForNoteChange:
     lda tempCurrentNote
     sta currentNote
 
+    // the keyboard has obviously no velocity value, so assume full volume for the note
+    ldx #15
+    stx currentNoteVolume
+
     // update lastPlayedNote, but only if there is an actual note to play
     cmp #$FF
     beq doNotUpdateLastPlayedNote
@@ -523,14 +539,26 @@ frequenciesHaveNotChanged:
 
 playCurrentNote:
 {
+    // ceck if new note to play, if no -> exit
     lda noteHasChangedFlag
-    cmp #$01
-    bne exit
+    beq exit
 
+    // update the gate bits
     jsr sidUpdateGateBitsForAllVoices
 
-    lda #$00
+    // clear the note has changed flag
+    lda #0
     sta noteHasChangedFlag
+
+    // check if MIDI note velocity should be used
+    lda currentVelocityUse
+    beq exit
+
+    // yes, so update main volume or the sustain volumes for the voices
+    jsr sidUpdateFilterModeMainVolumeRegisterWithVelocity
+    jsr sidUpdateVoice1SustainRelease
+    jsr sidUpdateVoice2SustainRelease
+    jsr sidUpdateVoice3SustainRelease
 
 exit:
     rts

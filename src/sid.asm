@@ -196,8 +196,8 @@ gateBitSet:
  * Subroutine
  * ----------
  *
- * Updates all SID registers with the values of the input fields
- * in all modules (voices 1, 2 and 3, filter and main)
+ * Updates all SID registers / global variables with the values
+ * of the input fields in all modules
  *
  * Reads global variables: all input structs
  *
@@ -205,23 +205,29 @@ gateBitSet:
 
 sidUpdateAllRegisters:
 {
+    // update velocity (do this first, because the values
+    // of the sustain/release and the filter modes/main volume registers
+    // depend on the velocity settings)
+    jsr sidUpdateVelocityUse
+    jsr sidUpdateVelocitySustain
+
     // update voice 1
     jsr sidUpdateVoice1PulseWidth
     jsr sidUpdateVoice1WaveFormControl
     jsr sidUpdateVoice1AttackDecay
-    jsr sidUpdateVoice1SustainRelease
+    // jsr sidUpdateVoice1SustainRelease -> called by sidUpdateVelocityUse / sidUpdateVelocitySustain
 
     // update voice 2
     jsr sidUpdateVoice2PulseWidth
     jsr sidUpdateVoice2WaveFormControl
     jsr sidUpdateVoice2AttackDecay
-    jsr sidUpdateVoice2SustainRelease
+    // jsr sidUpdateVoice2SustainRelease -> called by sidUpdateVelocityUse / sidUpdateVelocitySustain
 
     // update voice 3
     jsr sidUpdateVoice3PulseWidth
     jsr sidUpdateVoice3WaveFormControl
     jsr sidUpdateVoice3AttackDecay
-    jsr sidUpdateVoice3SustainRelease
+    // jsr sidUpdateVoice3SustainRelease -> called by sidUpdateVelocityUse / sidUpdateVelocitySustain
 
     // update filter
     jsr sidUpdateFilterCutoffFrequency
@@ -468,10 +474,32 @@ controlByte:
  
 sidUpdateVoice1SustainRelease:
 {
-    // load the current value of the sustain input for voice 1
+    // check if (currentVelocitySustain AND currentVelocityUse)
+    lda currentVelocitySustain
+    and currentVelocityUse
+    bne caluclateVelocityForSustain
+
+    // no, just load the current value of the sustain input for voice 1
     loadPointerToZPR(voice1InputSustain, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+    jmp saveRegister
 
+caluclateVelocityForSustain:   
+    // calculate the the sustain volume, using a lookup table
+    // (current note volume * current sustain volume / 15)
+    // the accu contains in the end the lower 4 bits of the register
+    loadPointerToZPR(voice1InputSustain, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+    asl
+    asl
+    asl
+    asl
+    clc
+    adc currentNoteVolume
+    tax
+    lda multiplyVolumeByVolumeTable, x
+
+saveRegister:
     // shift 4 times to the left and save into controlByte
     asl
     asl
@@ -713,10 +741,32 @@ controlByte:
  
 sidUpdateVoice2SustainRelease:
 {
-    // load the current value of the sustain input for voice 1
+    // check if (currentVelocitySustain AND currentVelocityUse)
+    lda currentVelocitySustain
+    and currentVelocityUse
+    bne caluclateVelocityForSustain
+
+    // no, just load the current value of the sustain input for voice 2
     loadPointerToZPR(voice2InputSustain, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+    jmp saveRegister
 
+caluclateVelocityForSustain:   
+    // calculate the the sustain volume, using a lookup table
+    // (current note volume * current sustain volume / 15)
+    // the accu contains in the end the lower 4 bits of the register
+    loadPointerToZPR(voice2InputSustain, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+    asl
+    asl
+    asl
+    asl
+    clc
+    adc currentNoteVolume
+    tax
+    lda multiplyVolumeByVolumeTable, x
+
+saveRegister:
     // shift 4 times to the left and save into controlByte
     asl
     asl
@@ -724,7 +774,7 @@ sidUpdateVoice2SustainRelease:
     asl
     sta controlByte
 
-    // load the current value of the release input for voice 1
+    // load the current value of the release input for voice 2
     loadPointerToZPR(voice2InputRelease, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
@@ -958,10 +1008,35 @@ controlByte:
  
 sidUpdateVoice3SustainRelease:
 {
-    // load the current value of the sustain input for voice 3
+    // check if ((NOT muteVoice3) AND currentVelocitySustain AND currentVelocityUse)
+    loadPointerToZPR(voice3FeaturesInputMuteVoice3, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+    eor #$FF
+    and currentVelocitySustain
+    and currentVelocityUse
+    bne caluclateVelocityForSustain
+
+    // no, just load the current value of the sustain input for voice 3
     loadPointerToZPR(voice3InputSustain, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+    jmp saveRegister
 
+caluclateVelocityForSustain:   
+    // calculate the the sustain volume, using a lookup table
+    // (current note volume * current sustain volume / 15)
+    // the accu contains in the end the lower 4 bits of the register
+    loadPointerToZPR(voice3InputSustain, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+    asl
+    asl
+    asl
+    asl
+    clc
+    adc currentNoteVolume
+    tax
+    lda multiplyVolumeByVolumeTable, x
+
+saveRegister:
     // shift 4 times to the left and save into controlByte
     asl
     asl
@@ -1177,14 +1252,16 @@ controlByte:
  * Subroutine
  * ----------
  *
- * Updates the SID registers regarding the filter modes and the main volume
+ * Updates the filter modes global variable
  *
- * Reads global variables: mainInputVol, filterInputLowpass, 
+ * Reads global variables: filterInputLowpass, 
  *                         filterInputHighpass, filterInputBandwidth
+ *
+ * Writes global variables: sidCurrentFilterModesValue
  *
  * ---------------------------------------------------------------- */ 
  
-sidUpdateFilterModesAndVolume:
+sidUpdateCurrentFilterModesValue:
 {
     // -----------------------------------------
     // Use highpass filter
@@ -1275,29 +1352,109 @@ saveMuteVoice3:
     ora controlByte
     sta controlByte
 
-    // -----------------------------------------
-    // Main volume
-    // -----------------------------------------
-
-    // load the current value of the main volume input
-    loadPointerToZPR(mainInputVol, ZPR_7)
-    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
-
-    // OR the value of the volume (least 4 bits) together with the higher bits
-    ora controlByte
-
-
-    // -----------------------------------------
-    // Finish
-    // -----------------------------------------
-
-    // save it into the SID control register
-    sta SID.FILTER_MODE_MAIN_VOLUME
+    // save it into the global variable, so we do not have to calculate this value
+    // everytime the current played note changes
+    sta sidCurrentFilterModesValue
 
     rts
 
 controlByte:
     .byte(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Updates the global variable sidCurrentMainVolumeValue with the
+ * current value of the main volume input field.
+ *
+ * Reads global variables: mainInputVol
+ *
+ * Writes global variables: sidCurrentMainVolumeValue
+ *
+ * ---------------------------------------------------------------- */ 
+ 
+sidUpdateCurrentMainVolumeValue:
+{
+    // load the current value of the main volume input
+    loadPointerToZPR(mainInputVol, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+
+    // save it into global variable, so we do not have to calculate this value
+    // everytime the current played note changes
+    sta sidCurrentMainVolumeValue
+
+    rts
+}
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Updates the SID registers regarding the filter modes and the main volume
+ * If the velocity settings are set to use velocity for main volume,
+ * caluclate the current main volume value from the current note volume.
+ *
+ * Reads global variables: sidCurrentMainVolumeValue, currentNoteVolume,
+ *                         sidCurrentFilterModesValue, currentVelocityUse,
+ *                         currentVelocitySustain
+ *
+ * ---------------------------------------------------------------- */ 
+ 
+sidUpdateFilterModeMainVolumeRegisterWithVelocity:
+{
+    // check if ((NOT currentVelocitySustain) AND currentVelocityUse)
+    lda currentVelocitySustain
+    eor #$FF
+    and currentVelocityUse
+    bne caluclateVelocityForVolume
+
+    // no, just load the current main volume value
+    lda sidCurrentMainVolumeValue
+    jmp saveRegister
+
+caluclateVelocityForVolume:   
+    // calculate the current main volume, using a lookup table
+    // (current note volume * current main volume / 15)
+    // the accu contains in the end the lower 4 bits of the register
+    lda sidCurrentMainVolumeValue
+    asl
+    asl
+    asl
+    asl
+    clc
+    adc currentNoteVolume
+    tax
+    lda multiplyVolumeByVolumeTable, x
+
+saveRegister:
+    // combine the volume with the filter modes (upper 4 bits of the register)
+    ora sidCurrentFilterModesValue
+
+    // save it into the SID control register
+    sta SID.FILTER_MODE_MAIN_VOLUME
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Updates the SID registers and global variables regarding
+ * the filter modes and the main volume.
+ *
+ * ---------------------------------------------------------------- */ 
+ 
+sidUpdateFilterModesAndVolume:
+{
+    jsr sidUpdateCurrentFilterModesValue
+    jsr sidUpdateCurrentMainVolumeValue
+    jsr sidUpdateFilterModeMainVolumeRegisterWithVelocity
+    rts
 }
 
 
@@ -1410,3 +1567,69 @@ sidUpdateResetOscillatorVoice3:
 
     rts
 }
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Updates the global variable "velocityUse" which the
+ * current value of the input field for use velocity in the module "Velocity"
+ *
+ * Reads global variable:  velocityUse
+ *
+ * Writes global variable: currentVelocityUse
+ *
+ * ---------------------------------------------------------------- */ 
+ 
+sidUpdateVelocityUse:
+{
+    // load the current value of the use velocity input
+    loadPointerToZPR(velocityUse, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+
+    // save it into the global variable for easier access
+    sta currentVelocityUse
+
+    // update all registers which may be affected
+    jsr sidUpdateFilterModeMainVolumeRegisterWithVelocity
+    jsr sidUpdateVoice1SustainRelease
+    jsr sidUpdateVoice2SustainRelease
+    jsr sidUpdateVoice3SustainRelease
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Updates the global variable "velocityUse" which the
+ * current value of the input field for use velocity for sustain in the module "Velocity"
+ *
+ * Reads global variable:  velocitySus
+ *
+ * Writes global variable: currentVelocitySus
+ *
+ * ---------------------------------------------------------------- */ 
+ 
+sidUpdateVelocitySustain:
+{
+    // load the current value of the use velocity for sustain input
+    loadPointerToZPR(velocitySustain, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+
+    // save it into the global variable for easier access
+    sta currentVelocitySustain
+
+    // update all registers which may be affected
+    jsr sidUpdateFilterModeMainVolumeRegisterWithVelocity
+    jsr sidUpdateVoice1SustainRelease
+    jsr sidUpdateVoice2SustainRelease
+    jsr sidUpdateVoice3SustainRelease
+
+    rts
+}
+
+

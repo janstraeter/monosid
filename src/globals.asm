@@ -125,6 +125,19 @@ previousNote:
 
 /* -------------------------------------------------------------------
  *
+ * Current note volume (calculated from the MIDI note velocity value)
+ * possible value: 0 to 15 (initialized with 15)
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentNoteVolume:
+    .byte(15)
+
+
+/* -------------------------------------------------------------------
+ *
  * Currently pressed key (read from zero page addr. 203)
  * 64 = no key
  *
@@ -471,7 +484,7 @@ detuningInputDetuneDownVoice1:
 
 detuningInputVoice2:
     createStructInput(INPUT_TYPE.INTEGER_12_BITS, 13, 4, 6, strInputNameDetuningInputVoice2, $00, $00, pitchUpdateDetuningInputVoice2,
-                      IID.DETUNING_V2, IID.DETUNING_V1_NEG, IID.DETUNING_V2_NEG, IID.FILTER_V3, IID.RESOSC_V2)
+                      IID.DETUNING_V2, IID.DETUNING_V1_NEG, IID.DETUNING_V2_NEG, IID.FILTER_V3, IID.RESOSC_V3)
 
 detuningInputDetuneDownVoice2:
     createStructInput(INPUT_TYPE.BOOLEAN, 20, 5, 5, strInputNameDetuningInputDetuneDownVoice, $00, $00, pitchUpdateDetuningInputVoice2,
@@ -479,11 +492,11 @@ detuningInputDetuneDownVoice2:
 
 detuningInputVoice3:
     createStructInput(INPUT_TYPE.INTEGER_12_BITS, 26, 4, 6, strInputNameDetuningInputVoice3, $00, $00, pitchUpdateDetuningInputVoice3,
-                      IID.DETUNING_V3, IID.DETUNING_V2_NEG, IID.DETUNING_V3_NEG, IID.FILTER_BANDWIDTH, IID.RESOSC_V3)
+                      IID.DETUNING_V3, IID.DETUNING_V2_NEG, IID.DETUNING_V3_NEG, IID.FILTER_BANDWIDTH, IID.VELOCITY_USE)
 
 detuningInputDetuneDownVoice3:
     createStructInput(INPUT_TYPE.BOOLEAN, 33, 5, 5, strInputNameDetuningInputDetuneDownVoice, $00, $00, pitchUpdateDetuningInputVoice3,
-                      IID.DETUNING_V3_NEG, IID.DETUNING_V3, IID.DETUNING_V1, IID.MAIN_VOL, IID.RESOSC_V3)
+                      IID.DETUNING_V3_NEG, IID.DETUNING_V3, IID.DETUNING_V1, IID.MAIN_VOL, IID.VELOCITY_SUS)
 
 detuningInputArray:
     .byte(<detuningInputVoice1)
@@ -508,16 +521,16 @@ detuningInputArray:
  * ---------------------------------------------------------------- */ 
 
 resetOscillatorVoice1:
-    createStructInput(INPUT_TYPE.BOOLEAN, 1, 10, 8, strInputNameResetOscillatorVoice1, $00, $00, sidUpdateResetOscillatorVoice1,
-                      IID.RESOSC_V1, IID.RESOSC_V3, IID.RESOSC_V2, IID.DETUNING_V1, IID.V3SPECIAL_MUTE)
+    createStructInput(INPUT_TYPE.BOOLEAN, 1, 10, 6, strInputNameResetOscillatorVoice1, $00, $00, sidUpdateResetOscillatorVoice1,
+                      IID.RESOSC_V1, IID.VELOCITY_SUS, IID.RESOSC_V2, IID.DETUNING_V1, IID.V3SPECIAL_MUTE)
 
 resetOscillatorVoice2:
-    createStructInput(INPUT_TYPE.BOOLEAN, 10, 10, 8, strInputNameResetOscillatorVoice2, $00, $00, sidUpdateResetOscillatorVoice2,
-                      IID.RESOSC_V2, IID.RESOSC_V1, IID.RESOSC_V3, IID.DETUNING_V2, IID.V3SPECIAL_PULSE)
+    createStructInput(INPUT_TYPE.BOOLEAN, 8, 10, 6, strInputNameResetOscillatorVoice2, $00, $00, sidUpdateResetOscillatorVoice2,
+                      IID.RESOSC_V2, IID.RESOSC_V1, IID.RESOSC_V3, IID.DETUNING_V1_NEG, IID.V3SPECIAL_MUTE)
 
 resetOscillatorVoice3:
-    createStructInput(INPUT_TYPE.BOOLEAN, 19, 10, 8, strInputNameResetOscillatorVoice3, $00, $00, sidUpdateResetOscillatorVoice3,
-                      IID.RESOSC_V3, IID.RESOSC_V2, IID.RESOSC_V1, IID.DETUNING_V2_NEG, IID.V3SPECIAL_PULSE_NEG)
+    createStructInput(INPUT_TYPE.BOOLEAN, 15, 10, 6, strInputNameResetOscillatorVoice3, $00, $00, sidUpdateResetOscillatorVoice3,
+                      IID.RESOSC_V3, IID.RESOSC_V2, IID.VELOCITY_USE, IID.DETUNING_V2, IID.V3SPECIAL_PULSE)
 
 resetOscillatorsInputArray:
     .byte(<resetOscillatorVoice1)
@@ -526,6 +539,28 @@ resetOscillatorsInputArray:
     .byte(>resetOscillatorVoice2)
     .byte(<resetOscillatorVoice3)
     .byte(>resetOscillatorVoice3)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Definition of the structs for the input elements
+ * for the module "VELOCITY"
+ *
+ * ---------------------------------------------------------------- */ 
+
+velocityUse:
+    createStructInput(INPUT_TYPE.BOOLEAN, 24, 10, 4, strInputNameVelocityUse, $00, $00, sidUpdateVelocityUse,
+                      IID.VELOCITY_USE, IID.RESOSC_V3, IID.VELOCITY_SUS, IID.DETUNING_V3, IID.V3SPECIAL_PULSE_NEG)
+
+velocitySustain:
+    createStructInput(INPUT_TYPE.BOOLEAN, 29, 10, 4, strInputNameVelocitySustain, $00, $00, sidUpdateVelocitySustain,
+                      IID.VELOCITY_SUS, IID.VELOCITY_USE, IID.RESOSC_V1, IID.DETUNING_V3_NEG, IID.V3SPECIAL_CUTOFF)
+
+velocityInputArray:
+    .byte(<velocityUse)
+    .byte(>velocityUse)
+    .byte(<velocitySustain)
+    .byte(>velocitySustain)
 
 
 /* -------------------------------------------------------------------
@@ -549,19 +584,19 @@ voice3FeaturesModulateFilter:
 
 voice3FeaturesPulseWidth:
     createStructInput(INPUT_TYPE.INTEGER_12_BITS, 15, 16, 6, strInputNameVoice3FeaturesPulseWidth, $FF, $0F, pulseWidthUpdateVoice3PulseWidthValue,
-                      IID.V3SPECIAL_PULSE, IID.V3SPECIAL_MOD_FILTER, IID.V3SPECIAL_PULSE_NEG, IID.RESOSC_V2, IID.V1_ATC)
+                      IID.V3SPECIAL_PULSE, IID.V3SPECIAL_MOD_FILTER, IID.V3SPECIAL_PULSE_NEG, IID.RESOSC_V3, IID.V1_ATC)
 
 voice3FeaturesPulseWidthNegative:
     createStructInput(INPUT_TYPE.BOOLEAN, 22, 17, 5, strInputNameVoice3FeaturesPulseWidthNegative, $00, $00, pulseWidthUpdateVoice3PulseWidthNegativeValue,
-                      IID.V3SPECIAL_PULSE_NEG, IID.V3SPECIAL_PULSE, IID.V3SPECIAL_CUTOFF, IID.RESOSC_V3, IID.V1_SUS)
+                      IID.V3SPECIAL_PULSE_NEG, IID.V3SPECIAL_PULSE, IID.V3SPECIAL_CUTOFF, IID.VELOCITY_USE, IID.V1_SUS)
 
 voice3FeaturesFilterCutoff:
     createStructInput(INPUT_TYPE.INTEGER_11_BITS, 28, 16, 6, strInputNameVoice3FeaturesFilterCutoff, $FF, $07, filterUpdateVoice3FilterCutoffValue,
-                      IID.V3SPECIAL_CUTOFF, IID.V3SPECIAL_PULSE_NEG, IID.V3SPECIAL_CUTOFF_NEG, IID.RESOSC_V3, IID.V1_RLS)
+                      IID.V3SPECIAL_CUTOFF, IID.V3SPECIAL_PULSE_NEG, IID.V3SPECIAL_CUTOFF_NEG, IID.VELOCITY_SUS, IID.V1_RLS)
 
 voice3FeaturesFilterCutoffNegative:
     createStructInput(INPUT_TYPE.BOOLEAN, 35, 17, 5, strInputNameVoice3FeaturesFilterCutoffNegative, $00, $00, filterUpdateVoice3FilterCutoffNegativeValue,
-                      IID.V3SPECIAL_CUTOFF_NEG, IID.V3SPECIAL_CUTOFF, IID.V3SPECIAL_MOD_FILTER, IID.RESOSC_V3, IID.V1_USE)
+                      IID.V3SPECIAL_CUTOFF_NEG, IID.V3SPECIAL_CUTOFF, IID.V3SPECIAL_MOD_FILTER, IID.VELOCITY_SUS, IID.V1_USE)
 
 voice3FeaturesInputArray:
     .byte(<voice3FeaturesInputMuteVoice3)
@@ -661,7 +696,19 @@ moduleDetuning:
  * ---------------------------------------------------------------- */ 
 
 moduleResetOscillators:
-    createStructModule(strModuleNameResetOscillators, 0,  9, 38, 1, GRAY, 3, resetOscillatorsInputArray, 1)
+    createStructModule(strModuleNameResetOscillators, 0,  9, 20, 1, GRAY, 3, resetOscillatorsInputArray, 1)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Definition of module "VELOCITY"
+ *
+ * Type: STRUCT_MODULE
+ *
+ * ---------------------------------------------------------------- */ 
+
+moduleVelocity:
+    createStructModule(strModuleNameVelocity, 23,  9, 15, 1, GRAY, 2, velocityInputArray, 1)
 
 
 /* -------------------------------------------------------------------
@@ -699,6 +746,8 @@ modules:
     .byte(>moduleDetuning)
     .byte(<moduleResetOscillators)
     .byte(>moduleResetOscillators)
+    .byte(<moduleVelocity)
+    .byte(>moduleVelocity)
     .byte(<moduleVoice3Features)
     .byte(>moduleVoice3Features)
 
@@ -712,7 +761,7 @@ modules:
  * ---------------------------------------------------------------- */ 
 
 modulesNum:
-    .byte($08)
+    .byte($09)
 
 
 /* -------------------------------------------------------------------
@@ -1195,3 +1244,53 @@ sidCurrentFilterCutoffFrequency:
 
 sidCurrentModulatedFilterCutoffFrequency:
     .word(0)    
+
+
+/* -------------------------------------------------------------------
+ *
+ * current value of the calculated filter modes
+ * (upper 4 bits of the corresponding register)
+ *
+ * Type: 8-bit unsigned integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+sidCurrentFilterModesValue:
+    .byte(0)    
+
+
+/* -------------------------------------------------------------------
+ *
+ * current value of the main volume
+ * (lower 4 bits of the corresponding register)
+ *
+ * Type: 8-bit unsigned integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+sidCurrentMainVolumeValue:
+    .byte(0)    
+
+
+/* -------------------------------------------------------------------
+ *
+ * current value of of the use velocity input field
+ *
+ * Type: 8-bit unsigned integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentVelocityUse:
+    .byte(0)    
+
+
+/* -------------------------------------------------------------------
+ *
+ * current value of of the use velocity for sustain input field
+ *
+ * Type: 8-bit unsigned integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentVelocitySustain:
+    .byte(0)    

@@ -244,11 +244,14 @@
     .label RESOSC_V2                = 44
     .label RESOSC_V3                = 45
 
-    .label V3SPECIAL_MUTE           = 46
-    .label V3SPECIAL_MOD_PULSE      = 47
-    .label V3SPECIAL_MOD_FILTER     = 48
-    .label V3SPECIAL_PULSE          = 49
-    .label V3SPECIAL_PULSE_NEG      = 50
-    .label V3SPECIAL_CUTOFF         = 51
-    .label V3SPECIAL_CUTOFF_NEG     = 52
+    .label VELOCITY_USE             = 46
+    .label VELOCITY_SUS             = 47
+
+    .label V3SPECIAL_MUTE           = 48
+    .label V3SPECIAL_MOD_PULSE      = 49
+    .label V3SPECIAL_MOD_FILTER     = 50
+    .label V3SPECIAL_PULSE          = 51
+    .label V3SPECIAL_PULSE_NEG      = 52
+    .label V3SPECIAL_CUTOFF         = 53
+    .label V3SPECIAL_CUTOFF_NEG     = 54
 }

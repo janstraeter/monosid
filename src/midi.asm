@@ -349,9 +349,14 @@ noteOn:
     bcs exit // if 108 or greater
 
     // the MIDI note is in our playable range,
-    // so substract 12 from the note value and add the note to the buffer
+    // so substract 12 from the note value
     sec
     sbc #12
+
+    // load the velocity value
+    ldy midiDataBufferSecondByte
+
+    // add the note to the buffer
     jsr midiAddActiveNote
 
     rts
@@ -421,6 +426,7 @@ exit:
  * the new note at the end.
  *
  * Parameters:              accu: note value (index into frequency table)
+ *                          Y:    velocity value
  *
  * Writes global variables: midiActiveNotesNum, midiActiveNotesBuffer
  *
@@ -439,8 +445,23 @@ midiAddActiveNote:
     jsr midiRemoveActiveNote
     pla
 
-    // now check if buffer is full, if so jump to the according label
+    // check if buffer is empty
     ldx midiActiveNotesNum
+    cpx #0
+    bne doNotUpdateCurrentNoteVolume
+
+    // buffer is empty, therefore the current MIDI note is the first pressed note
+    // update the current note volume according to the velocity value of the MIDI note
+    pha
+    tya
+    tax
+    lda midiVelocityToVolumeTable, x
+    sta currentNoteVolume
+    ldx #0
+    pla
+
+doNotUpdateCurrentNoteVolume:
+    // now check if buffer is full, if so jump to the according label
     cpx #MIDI_MAX_ACTIVE_NOTES
     bcs bufferFull
     

@@ -4,7 +4,7 @@
  * Subroutine
  * ----------
  *
- * 8 bit unsigned multiplication, algorithm by Damon Slye
+ * 8x8 bit unsigned multiplication, algorithm by Damon Slye
  *
  * Parameters:   Accu:       multiplier
  *               X-Register: multiplicant

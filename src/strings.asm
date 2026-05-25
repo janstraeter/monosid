@@ -47,6 +47,10 @@ strModuleNameResetOscillators:
     .text "RESET OSCILLATORS"
     .byte $00
 
+strModuleNameVelocity:  
+    .text "VELOCITY"
+    .byte $00
+
 strModuleNameVoice3Features:
     .text "VOICE 3 SPECIAL FEATURES"
     .byte $00
@@ -140,15 +144,23 @@ strInputNameDetuningInputDetuneDownVoice:
     .byte $00
 
 strInputNameResetOscillatorVoice1:         
-    .text "VOICE 1"
+    .text "VOC 1"
     .byte $00
 
 strInputNameResetOscillatorVoice2:         
-    .text "VOICE 2"
+    .text "VOC 2"
     .byte $00
 
 strInputNameResetOscillatorVoice3:         
-    .text "VOICE 3"
+    .text "VOC 3"
+    .byte $00
+
+strInputNameVelocityUse:
+    .text "USE"
+    .byte $00
+
+strInputNameVelocitySustain:
+    .text "SUSTAIN"
     .byte $00
 
 strInputNameVoice3FeaturesInputMuteVoice3:
