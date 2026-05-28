@@ -80,3 +80,28 @@ logoHide:
     sta VIC.SPRITE_ACTIVE
     rts
 }
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * If second page, showx the logo, otherwise hides the logo
+ *
+ * Reads global variables: currentPage
+ *               
+ * ---------------------------------------------------------------- */ 
+
+logoShowIfCurrentPageIsLast:
+{
+    lda #1
+    cmp currentPage
+    bne hideLogo
+    
+    jsr logoShow
+    rts
+
+hideLogo:
+    jsr logoHide
+    rts
+}

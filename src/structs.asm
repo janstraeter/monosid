@@ -22,6 +22,45 @@
  * Macro
  * -----
  *
+ * Uses indirect-indexed addressing to write a byte from the accu
+ * into a struct
+ *
+ * Parameters:   Accu:        value to write into the struct
+ *               ZPR:         address of zeropage register
+ *               structIndex: index to load into the Y register
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro structWriteByteFromAccu(ZPR, structIndex) {
+    ldy #structIndex
+    sta (ZPR), y
+}
+
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Uses indirect-indexed addressing to write a byte value
+ * into a struct
+ *
+ * Parameters:   ZPR:         address of zeropage register
+ *               structIndex: index to load into the Y register
+ *               byteValue:   value to write into the struct
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro structWriteByteValue(ZPR, structIndex, byteValue) {
+    lda #byteValue
+    ldy #structIndex
+    sta (ZPR), y
+}
+
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
  * Uses indirect-indexed addressing to load 2 bytes from a struct
  * and save them into the specified zeropage register
  *
@@ -59,6 +98,51 @@
     tax
     iny
     lda (srcZPR), y
+}
+
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Uses indirect-indexed addressing to write 2 bytes from the accu
+ * (hi-byte) and the X-register (lo-byte) into a struct
+ *
+ * Parameters:   Accu:        hi-byte to write into the struct
+ *               X-register:  lo-byte
+ *               srcZPR:      address of zeropage register (the struct)
+ *               structIndex: index to load into the X register
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro structWriteWordFromXAccu(srcZPR, structIndex) {
+    ldy #structIndex+1
+    sta (srcZPR), y
+    txa
+    dey
+    sta (srcZPR), y
+}
+
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Uses indirect-indexed addressing to write a word value into a struct
+ *
+ * Parameters:   srcZPR:      address of zeropage register (the struct)
+ *               structIndex: index to load into the X register
+ *               wordValue:   value to write into the struct
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro structWriteWordValue(srcZPR, structIndex, wordValue) {
+    lda #<wordValue
+    ldy #structIndex
+    sta (srcZPR), y
+    lda #>wordValue
+    iny
+    sta (srcZPR), y
 }
 
 
@@ -295,4 +379,90 @@
     .byte(rightNeighborIID)             // $17
     .byte(topNeighborIID)               // $18
     .byte(bottomNeighborIID)            // $19
+}
+
+
+/* -------------------------------------------------------------------
+ * Struct definition
+ * -----------------
+ *
+ * Holds all information of a patch
+ *
+ * ---------------------------------------------------------------- */ 
+
+.namespace STRUCT_PATCH {
+    // name, 8 charachters long null terminated string (9 byte)
+    .label NAME                                    = 0
+
+    // voice 1
+    .label VOICE_1_INPUT_WAVEFORM                  = 9
+    .label VOICE_1_INPUT_PULSEWIDTH                = 10
+    .label VOICE_1_INPUT_ATTACK                    = 12
+    .label VOICE_1_INPUT_DECAY                     = 13
+    .label VOICE_1_INPUT_SUSTAIN                   = 14
+    .label VOICE_1_INPUT_RELEASE                   = 15
+    .label VOICE_1_INPUT_USE                       = 16
+    .label VOICE_1_INPUT_SYNC                      = 17
+    .label VOICE_1_INPUT_RINGMOD                   = 18
+
+    // voice 2
+    .label VOICE_2_INPUT_WAVEFORM                  = 19
+    .label VOICE_2_INPUT_PULSEWIDTH                = 20
+    .label VOICE_2_INPUT_ATTACK                    = 22
+    .label VOICE_2_INPUT_DECAY                     = 23
+    .label VOICE_2_INPUT_SUSTAIN                   = 24
+    .label VOICE_2_INPUT_RELEASE                   = 25
+    .label VOICE_2_INPUT_USE                       = 26
+    .label VOICE_2_INPUT_SYNC                      = 27
+    .label VOICE_2_INPUT_RINGMOD                   = 28
+
+    // voice 3
+    .label VOICE_3_INPUT_WAVEFORM                  = 29
+    .label VOICE_3_INPUT_PULSEWIDTH                = 30
+    .label VOICE_3_INPUT_ATTACK                    = 32
+    .label VOICE_3_INPUT_DECAY                     = 33
+    .label VOICE_3_INPUT_SUSTAIN                   = 34
+    .label VOICE_3_INPUT_RELEASE                   = 35
+    .label VOICE_3_INPUT_USE                       = 36
+    .label VOICE_3_INPUT_SYNC                      = 37
+    .label VOICE_3_INPUT_RINGMOD                   = 38
+
+    // filter
+    .label FILTER_INPUT_CUTOFF                     = 39
+    .label FILTER_INPUT_RESONANCE                  = 41
+    .label FILTER_INPUT_VOICE_1                    = 42
+    .label FILTER_INPUT_VOICE_2                    = 43
+    .label FILTER_INPUT_VOICE_3                    = 44
+    .label FILTER_INPUT_LOWPASS                    = 45
+    .label FILTER_INPUT_HIGHPASS                   = 46
+    .label FILTER_INPUT_BANDWIDTH                  = 47
+
+    // main volume
+    .label MAIN_INPUT_VOL                          = 48
+
+    // detuning
+    .label DETUNING_INPUT_VOICE_1                  = 49
+    .label DETUNING_INPUT_DETUNE_DOWN_VOICE_1      = 51
+    .label DETUNING_INPUT_VOICE_2                  = 52
+    .label DETUNING_INPUT_DETUNE_DOWN_VOICE_2      = 54
+    .label DETUNING_INPUT_VOICE_3                  = 55
+    .label DETUNING_INPUT_DETUNE_DOWN_VOICE_3      = 57
+
+    // reset oscillators
+    .label RESET_OSCILLATOR_VOICE_1                = 58
+    .label RESET_OSCILLATOR_VOICE_2                = 59
+    .label RESET_OSCILLATOR_VOICE_3                = 60
+
+    // velocity
+    .label VELOCITY_USE                            = 61
+    .label VELOCITY_SUSTAIN                        = 62
+
+    // voice 3 special features
+    .label VOICE_3_FEATURES_INPUT_MUTE_VOICE_3     = 63
+    .label VOICE_3_FEATURES_MODULATE_PULSE_WIDTH   = 64
+    .label VOICE_3_FEATURES_MODULATE_FILTER        = 65
+    .label VOICE_3_FEATURES_PULSE_WIDTH            = 66
+    .label VOICE_3_FEATURES_PULSE_WIDTH_NEGATIVE   = 68
+    .label VOICE_3_FEATURES_FILTER_CUTOFF          = 69
+    .label VOICE_3_FEATURES_FILTER_CUTOFF_NEGATIVE = 71    
 }

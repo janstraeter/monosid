@@ -19,7 +19,7 @@
  *
  * ---------------------------------------------------------------------------------------------------------------------- */ 
 
-.file [name="monosid.prg", segments="Start, Data, Subroutines, MainProgram"]
+.file [name="monosid.prg", segments="Start, MainProgram, Subroutines, Data, Patches"]
 
 
 // *******************************************************************
@@ -28,7 +28,7 @@
 
 
 // *******************************************************************
-.segment Data [start=$80e]
+.segment Data [startAfter="Subroutines"]
 // *******************************************************************
 
 
@@ -55,9 +55,16 @@
 #import "src/lookuptables.asm"
 #import "src/globals.asm"
 
+// *******************************************************************
+.segment Patches [startAfter="Data"]
+// *******************************************************************
+
+patches:
+    .byte(0)
+
 
 // *******************************************************************
-.segment Subroutines [startAfter="Data"]
+.segment Subroutines [startAfter="MainProgram"]
 // *******************************************************************
 
 
@@ -81,10 +88,11 @@
 #import "src/pitch.asm"
 #import "src/pulsewidth.asm"
 #import "src/filter.asm"
-
+#import "src/patches.asm"
+#import "src/patchselector.asm"
 
 // *******************************************************************
-.segment MainProgram [startAfter="Subroutines"]
+.segment MainProgram [start=$80e]
 // *******************************************************************
 
 /* -------------------------------------------------------------------
@@ -105,14 +113,15 @@ mainProgram:
     // Setup logo sprites, but do not show yet
     jsr logoSetupSprites
 
-    // Draw the UI in it's inital state
-    jsr userinterfaceInitScreen
-    jsr userinterfaceDrawMain
-    jsr userinterfaceAddModuleFocus
-    jsr userinterfaceAddInputFocus
+    // Setup patches
+    jsr patchesInit
+    
+    // switch to the first patch, automatically intializes the SID chip
+    lda #0
+    jsr patchesSwitchToPatch
 
-    // initialize the SID chip with the initial state of the UI
-    jsr sidUpdateAllRegisters
+    // start in the main mode, submode input select
+    jsr switchToModeMain
 
     // initialize a custom ISR for the Kernal functionality
     jsr setupCustomInterruptServiceRoutine
@@ -158,6 +167,8 @@ ignoreMidiNote:
 	beq modeMain
 	cmp #MODE.MENU
 	beq modeMain
+	cmp #MODE.PATCH_SELECTOR
+	beq modePatchSelector
     jmp waitLoop
 
 modeMain:
@@ -186,6 +197,65 @@ subModeMainInputEditor:
 modeMenu:
     //** @TODO: Implement menu */
     jmp waitLoop
+
+modePatchSelector:
+    jsr patchSelectorHandleKeyboardInput
+    jmp waitLoop
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Switches the program mode to the main mode, submode input selection
+ * Clears the screen and draws the main UI
+ *
+ * Writes global variables: currentMode,
+ *                          currentSubMode
+ *
+ * ---------------------------------------------------------------- */ 
+
+switchToModeMain:
+{
+    lda #MODE.MAIN
+    sta currentMode
+    lda #MODE_MAIN_SUBMODE.SELECT_INPUT
+    sta currentSubMode
+    jsr userinterfaceInitScreen
+    jsr userinterfaceDrawMain
+    jsr userinterfaceAddModuleFocus
+    jsr userinterfaceAddInputFocus
+    jsr logoShowIfCurrentPageIsLast
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Switches the program mode to the patch selector mode
+ * Draws the patch selector UI
+ *
+ * Writes global variables: currentMode,
+ *                          currentSubMode
+ *
+ * ---------------------------------------------------------------- */ 
+
+switchToModePatchSelector:
+{
+    lda #MODE.PATCH_SELECTOR
+    sta currentMode
+    lda #MODE_PATCH_SELECTOR_SUBMODE.SELECT_PATCH
+    sta currentSubMode
+    jsr logoHide
+    jsr patchSelectorDrawMain
+    lda currentPatchIndex
+    sta currentPatchSelectorIndex
+    jsr patchSelectorCalculateCurrentColumnAndRowFromIndex
+    jsr patchSelectorAddFocus
+    rts
 }
 
 
@@ -355,7 +425,7 @@ found:
     lda (ZPR_1), y
     sta currentKeyboardPianoNoteOffset
 
-    jsr userInterfaceOutputCurrentKeyboardPianoOctave
+    jsr userInterfaceOutputInfoBarCurrentKeyboardPianoOctave
 
 notFound:
     rts
@@ -639,6 +709,11 @@ mainModeHandleKeyboardInputForSubModeSelectInput:
 	bne *+5
     jmp minusKeyPressed
 
+    // F3
+    cmp #PETSCII.F3
+	bne *+5
+    jmp f3KeyPressed
+
     // If no key pressed we can handle here, exit
 exit:
     rts
@@ -696,17 +771,9 @@ cursorKeyPressedFinalize:
     jsr userinterfaceInitScreen
     jsr userinterfaceDrawMain
 
-    // if second page, show the logo, otherwise hide the logo
-    lda #1
-    cmp currentPage
-    bne hideLogo
-    jsr logoShow
-    jmp pageSwapAddFocus
+    // show the logo if necessary
+    jsr logoShowIfCurrentPageIsLast
 
-hideLogo:
-    jsr logoHide
-
-pageSwapAddFocus:
     // after the redrawing of the whole screen, add the focus
     jsr userinterfaceAddModuleFocus
     jsr userinterfaceAddInputFocus
@@ -760,6 +827,11 @@ minusKeyPressed:
     // for waveform inputs: switch to previous waveform
     jsr inputLoadAddressOfCurrentInputToZPR7
     jsr inputHandleMinusKeyPressed
+    rts
+
+f3KeyPressed:
+    // show the patch selector
+    jsr switchToModePatchSelector
     rts
 
 iidOfNextSelectedInput:

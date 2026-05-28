@@ -8,10 +8,21 @@
 
 .encoding "screencode_upper"
 
-strMenu:
-	.byte $5f, $a0, $8d, $85, $8e, $95, $a0, $69, $00
+strInfoBarF1:
+	.byte $76, $86, $B1, $61, $00
 
-strOctave:
+strInfoBarMenu:
+    .text "MENU"
+    .byte $00
+
+strInfoBarF3:
+	.byte $76, $86, $B3, $61, $00
+
+strInfoBarPatch:
+    .text "PATCH"
+    .byte $00
+
+strInfoBarOct:
 	.text "OCT:"
 	.byte $00
 
@@ -202,3 +213,16 @@ strWaveformSquare:
 
 strWaveformNoise:
     .byte 142, 147, 133, 0
+
+strPatchEmptyName:
+    .text "EMPTY-"
+    .byte $00
+
+strPatchNumbers:
+    .text "01020304050607080910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364"
+    .byte $00
+
+strPatchSelectorHeadline:
+    // " SELECT PATCH " (inverted)
+    .byte 160, 147, 133, 140, 133, 131, 148, 160, 144, 129, 148, 131, 136, 160
+    .byte(0)

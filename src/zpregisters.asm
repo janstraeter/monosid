@@ -166,19 +166,41 @@
  * Macro
  * -----
  *
- * Adds the first byte of an memory address to an ZPR containing an 16-bit address
+ * Adds a byte to an ZPR containing an 16-bit address
  *
  * Parameters:   ZPR: address of zeropage register
- *               byteValue: value to be added
+ *               byteAddress: memory address of the byte to be added
  * 
  * ---------------------------------------------------------------- */ 
 
-.macro addByteAddressToZPRAddress(ZPR, byteAddress) {
+.macro addByteToZPRAddress(ZPR, byteAddress) {
     clc
     lda ZPR
     adc byteAddress
     sta ZPR
     lda ZPR+1
     adc #$00
+    sta ZPR+1
+}
+
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Adds a 16 bit value to an ZPR containing an 16-bit address
+ *
+ * Parameters:   ZPR: address of zeropage register
+ *               wordAddress: memory address of the word to be added
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro addWordToZPRAddress(ZPR, wordAddress) {
+    clc
+    lda ZPR
+    adc wordAddress
+    sta ZPR
+    lda ZPR+1
+    adc wordAddress+1
     sta ZPR+1
 }

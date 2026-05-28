@@ -32,22 +32,19 @@ userinterfaceInitScreen:
  *
  * Parameters: None
  *
- * Reads global variables:  modulesNum, modules, currentKeyboardPianoOctave,
- *                          currentNoteOfOctave, noteNames
+ * Reads global variables:  modulesNum, modules
  *               
  * ---------------------------------------------------------------- */ 
 
 userinterfaceDrawMain:
 {
-	screenPutString(9, 0, strMenu)
-	screenPutString(18, 0, strOctave)
-	screenPutString(33, 0, strMonosid)
-    jsr userInterfaceOutputCurrentKeyboardPianoOctave
+	// print info bar in the first screen line
+	jsr userInterfaceDrawInfoBar
 
+	// iterate through all modules
 	lda modulesNum
 	sta moduleLoopCounter
 	loadPointerToZPR(modules, ZPR_6)
-
 	lda #0
 	sta moduleIndex
 
@@ -96,6 +93,35 @@ modulesLoop:
  * Subroutine
  * ----------
  *
+ * Draws the info bar in the first line of the screen
+ *               
+ * ---------------------------------------------------------------- */ 
+
+userInterfaceDrawInfoBar:
+{
+	// current octave
+	screenPutString(4, 0, strInfoBarOct)
+    jsr userInterfaceOutputInfoBarCurrentKeyboardPianoOctave
+	
+	// F1 Menu
+	screenPutStringColor(10, 0, strInfoBarF1, YELLOW)
+	screenPutString(14, 0, strInfoBarMenu)
+
+	// F3 Patch
+	screenPutStringColor(19, 0, strInfoBarF3, YELLOW)
+	screenPutString(23, 0, strInfoBarPatch)
+	
+	// current patch number and name
+	jsr userInterfaceOutputInfoBarCurrentPatch
+
+	rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
  * Prints the current piano octave in the first line of the screen
  *
  * Parameters: None
@@ -104,13 +130,64 @@ modulesLoop:
  *               
  * ---------------------------------------------------------------- */ 
 
-userInterfaceOutputCurrentKeyboardPianoOctave:
+userInterfaceOutputInfoBarCurrentKeyboardPianoOctave:
 {
     lda currentKeyboardPianoOctave
     clc
     adc #$30
-    sta SCREENMEM+22
+    sta SCREENMEM+8
     rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Prints the current patch index and name in the first line of the screen
+ *
+ * Parameters: None
+ *
+ * Reads global variables: currentPatchIndex, currentPatchAddress
+ *               
+ * ---------------------------------------------------------------- */ 
+
+userInterfaceOutputInfoBarCurrentPatch:
+{
+	// the patch index should be displayed in white
+	screenPutColor(29, 0, WHITE)
+	screenPutColor(30, 0, WHITE)
+
+    // load ZPR_1 with the screen memory address,
+	// the accu with the patch index, then call "patchesOutputPatchNumber"
+	.var patchIndexMemoryAddress = screenCalculateMemoryAddress(29, 0)
+	lda #<patchIndexMemoryAddress
+	sta ZPR_1
+	lda #>patchIndexMemoryAddress
+	sta ZPR_1+1
+	lda currentPatchIndex
+	jsr patchesOutputPatchNumber
+
+	// output the ":" between the patch index and the name
+	ldy #2
+	lda #$3A
+	sta (ZPR_1), y
+
+	// load ZPR_8 with the address of the current patch
+	// and ZPR_1 with screen memory address to write the name to
+	// then call "patchesOutputPatchName"
+	lda currentPatchAddress
+	sta ZPR_8_LO
+	lda currentPatchAddress+1
+	sta ZPR_8_HI
+    .var patchNameMemoryAddress = screenCalculateMemoryAddress(32, 0)
+	lda #<patchNameMemoryAddress
+	sta ZPR_1
+	lda #>patchNameMemoryAddress
+	sta ZPR_1+1
+	jsr patchesOutputPatchName
+
+	rts
 }
 
 

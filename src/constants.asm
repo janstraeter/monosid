@@ -125,6 +125,7 @@
 .namespace MODE {
     .label MAIN                     = $01
     .label MENU                     = $02
+    .label PATCH_SELECTOR           = $03
 }
 
 .namespace MODE_MAIN_SUBMODE {
@@ -134,6 +135,10 @@
 
 .namespace MODE_MENU_SUBMODE {
     .label SELECT_ITEM              = $01
+}
+
+.namespace MODE_PATCH_SELECTOR_SUBMODE {
+    .label SELECT_PATCH            = $01
 }
 
 .namespace INPUT_TYPE {
@@ -168,6 +173,9 @@
     .label MINUS                    = $2D
 
     .label DELETE                   = $14
+
+    .label F1                       = $85
+    .label F3                       = $86
 }
 
 .namespace MIDI_INTERFACE_DATEL {
@@ -189,7 +197,6 @@
 .label MIDI_MAX_ACTIVE_NOTES        = 10
 
 .label MAX_NOTE_INDEX               = 95 // 8 octaves, highest index number is 95
-
 
 .namespace IID {
     .label V1_WAVE                  = 1
@@ -255,3 +262,7 @@
     .label V3SPECIAL_CUTOFF         = 53
     .label V3SPECIAL_CUTOFF_NEG     = 54
 }
+
+.label PATCH_NUM                    = 64
+.label PATCH_MEMORY_SIZE            = 72
+.label PATCH_ARRAY_MEMORY_SIZE      = PATCH_NUM * PATCH_MEMORY_SIZE

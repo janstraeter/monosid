@@ -1294,3 +1294,46 @@ currentVelocityUse:
 
 currentVelocitySustain:
     .byte(0)    
+
+
+/* -------------------------------------------------------------------
+ *
+ * index of the currently active patch
+ *
+ * Type: 8-bit unsigned integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentPatchIndex:
+    .byte(0)    
+
+
+/* -------------------------------------------------------------------
+ *
+ * address of the currently active patch
+ *
+ * Type: 16-bit unsigned integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentPatchAddress:
+    .byte(0)    
+    .byte(0)    
+
+
+/* -------------------------------------------------------------------
+ *
+ * current values of hte patch selector
+ *
+ * Type: 8-bit unsigned integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentPatchSelectorColumn:
+    .byte(0)
+
+currentPatchSelectorRow:
+    .byte(0)
+
+currentPatchSelectorIndex:
+    .byte(0)
