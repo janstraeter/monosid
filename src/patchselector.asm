@@ -15,21 +15,13 @@ patchSelectorDrawMain:
     lda #GRAY
     jsr screenClearColor
 
+    jsr screenSwitchToUpperCase
+
     // draw selector border
-    screenDrawRectangleColor(0, 0, 38, 23, GRAY)
+    screenDrawRectangleColor(0, 1, 38, 22, YELLOW)
 
     // draw headline
-    screenPutString(1, 0, strPatchSelectorHeadline)
-    
-    // draw the line below the headline
-    .var headlineUnderlineAddress = screenCalculateMemoryAddress(0, 1)
-    ldx #14
-    lda #120
-
-headlineUnderlineLoop:
-    sta headlineUnderlineAddress, x
-    dex
-    bne headlineUnderlineLoop
+    screenPutStringColor(1, 0, strPatchSelectorHeadline, YELLOW)
 
     // --------------------------------------
     // draw the 3 columns with patch indecies and names
