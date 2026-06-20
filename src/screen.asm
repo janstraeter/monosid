@@ -4,6 +4,38 @@
  * Subroutine
  * ----------
  *
+ * Switches to the upper case character set
+ *
+ * ---------------------------------------------------------------- */ 
+
+screenSwitchToUpperCase:
+{
+    lda #$15
+    sta VIC.CHARACTER_MEMORY_POINTER
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Switches to the mixed case character set
+ *
+ * ---------------------------------------------------------------- */ 
+
+screenSwitchToMixedCase:
+{
+    lda #$17
+    sta VIC.CHARACTER_MEMORY_POINTER
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
  * Clears the screen memory (fills the sceen memory with the space character)
  *
  * ---------------------------------------------------------------- */ 

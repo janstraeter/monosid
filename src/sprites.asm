@@ -16,7 +16,7 @@
 
 .macro spriteSetBlockRegister(spritePointerAddress, spriteAddress)
 {
-    lda #spriteAddress / 64
+    lda #<spriteAddress/64
     sta spritePointerAddress
 }
 

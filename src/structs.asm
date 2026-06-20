@@ -464,5 +464,8 @@
     .label VOICE_3_FEATURES_PULSE_WIDTH            = 66
     .label VOICE_3_FEATURES_PULSE_WIDTH_NEGATIVE   = 68
     .label VOICE_3_FEATURES_FILTER_CUTOFF          = 69
-    .label VOICE_3_FEATURES_FILTER_CUTOFF_NEGATIVE = 71    
+    .label VOICE_3_FEATURES_FILTER_CUTOFF_NEGATIVE = 71
+
+    // 8 bytes reserved for future use
+    .label RESERVED_FOR_FUTURE_USE                 = 72  
 }

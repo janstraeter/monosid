@@ -19,7 +19,7 @@
  *
  * ---------------------------------------------------------------------------------------------------------------------- */ 
 
-.file [name="monosid.prg", segments="Start, MainProgram, Subroutines, Data, Patches"]
+.file [name="monosid.prg", segments="Start, MainProgram, SpriteData, Subroutines, Data, Patches"]
 
 
 // *******************************************************************
@@ -30,7 +30,6 @@
 // *******************************************************************
 .segment Data [startAfter="Subroutines"]
 // *******************************************************************
-
 
 /* -------------------------------------------------------------------
  *
@@ -50,7 +49,6 @@
  *
  * ---------------------------------------------------------------- */ 
 
-#import "src/spritedata.asm"
 #import "src/strings.asm"
 #import "src/lookuptables.asm"
 #import "src/globals.asm"
@@ -63,10 +61,18 @@ patches:
     .byte(0)
 
 
+
 // *******************************************************************
-.segment Subroutines [startAfter="MainProgram"]
+.segment SpriteData [start=$2000]
 // *******************************************************************
 
+#import "src/spritedata.asm"
+
+
+
+// *******************************************************************
+.segment Subroutines [startAfter="SpriteData"]
+// *******************************************************************
 
 /* -------------------------------------------------------------------
  *
@@ -74,22 +80,25 @@ patches:
  *
  * ---------------------------------------------------------------- */ 
 
-#import "src/detect.asm"
-#import "src/string.asm"
-#import "src/math.asm"
 #import "src/convert.asm"
-#import "src/screen.asm"
-#import "src/sprites.asm"
-#import "src/logo.asm"
-#import "src/userinterface.asm"
-#import "src/input.asm"
-#import "src/sid.asm"
-#import "src/midi.asm"
-#import "src/pitch.asm"
-#import "src/pulsewidth.asm"
+#import "src/detect.asm"
+#import "src/file.asm"
 #import "src/filter.asm"
+#import "src/input.asm"
+#import "src/logo.asm"
+#import "src/math.asm"
+#import "src/menu.asm"
+#import "src/midi.asm"
 #import "src/patches.asm"
 #import "src/patchselector.asm"
+#import "src/pitch.asm"
+#import "src/pulsewidth.asm"
+#import "src/screen.asm"
+#import "src/sid.asm"
+#import "src/sprites.asm"
+#import "src/string.asm"
+#import "src/userinterface.asm"
+
 
 // *******************************************************************
 .segment MainProgram [start=$80e]
@@ -166,13 +175,13 @@ ignoreMidiNote:
 	cmp #MODE.MAIN
 	beq modeMain
 	cmp #MODE.MENU
-	beq modeMain
+	beq modeMenu
 	cmp #MODE.PATCH_SELECTOR
 	beq modePatchSelector
     jmp waitLoop
 
 modeMain:
-	// Switch for the current program mode sub mode
+	// Switch for the main sub mode
 	lda currentSubMode
 	cmp #MODE_MAIN_SUBMODE.SELECT_INPUT
 	beq subModeMainSelectInput
@@ -195,10 +204,29 @@ subModeMainInputEditor:
     jmp waitLoop
 
 modeMenu:
-    //** @TODO: Implement menu */
+	// Switch for the menu submode
+	lda currentSubMode
+	cmp #MODE_MENU_SUBMODE.SELECT_ITEM
+	beq subModeMenuSelectItem
+	cmp #MODE_MENU_SUBMODE.SHOW_ERROR_MESSAGE
+	beq subModeMenuShowErrorMessage
+    jmp waitLoop
+
+subModeMenuSelectItem:
+    // handle the keyboard input for the main menu
+    jsr menuHandleKeyboardInput
+    jmp waitLoop
+
+subModeMenuShowErrorMessage:
+    // wait for any key pressed after a disk error happend 
+    jsr KERNAL.GETIN
+    cmp #$00
+    beq waitLoop
+    jsr switchToModeMenu
     jmp waitLoop
 
 modePatchSelector:
+    // handle the keyboard input for the patch selector
     jsr patchSelectorHandleKeyboardInput
     jmp waitLoop
 }
@@ -226,7 +254,36 @@ switchToModeMain:
     jsr userinterfaceDrawMain
     jsr userinterfaceAddModuleFocus
     jsr userinterfaceAddInputFocus
+    jsr logoSetupMainLogo
     jsr logoShowIfCurrentPageIsLast
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Switches the program mode to the menu mode, submode item selection
+ * Clears the screen and draws the menu UI
+ *
+ * Writes global variables: currentMode,
+ *                          currentSubMode
+ *
+ * ---------------------------------------------------------------- */ 
+
+switchToModeMenu:
+{
+    lda #MODE.MENU
+    sta currentMode
+    lda #MODE_MENU_SUBMODE.SELECT_ITEM
+    sta currentSubMode
+    lda #0
+    sta currentMenuIndex
+    jsr logoSetupMenuLogo
+    jsr logoShow
+    jsr menuDrawMain
+    jsr menuAddItemFocus
     rts
 }
 
@@ -709,6 +766,11 @@ mainModeHandleKeyboardInputForSubModeSelectInput:
 	bne *+5
     jmp minusKeyPressed
 
+    // F1
+    cmp #PETSCII.F1
+	bne *+5
+    jmp f1KeyPressed
+
     // F3
     cmp #PETSCII.F3
 	bne *+5
@@ -827,6 +889,11 @@ minusKeyPressed:
     // for waveform inputs: switch to previous waveform
     jsr inputLoadAddressOfCurrentInputToZPR7
     jsr inputHandleMinusKeyPressed
+    rts
+
+f1KeyPressed:
+    // show the main menu
+    jsr switchToModeMenu
     rts
 
 f3KeyPressed:

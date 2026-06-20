@@ -2,7 +2,7 @@
 
 /* -------------------------------------------------------------------
  *
- * All the null-terminated strings used in the program
+ * All the uppercase null-terminated strings used in the program
  *
  * ---------------------------------------------------------------- */ 
 
@@ -223,6 +223,81 @@ strPatchNumbers:
     .byte $00
 
 strPatchSelectorHeadline:
-    // " SELECT PATCH " (inverted)
-    .byte 160, 147, 133, 140, 133, 131, 148, 160, 144, 129, 148, 131, 136, 160
+    .text "SELECT PATCH"
+    .byte(0)
+
+/* -------------------------------------------------------------------
+ *
+ * All the mixed case null-terminated strings used in the program
+ *
+ * ---------------------------------------------------------------- */ 
+
+.encoding "screencode_mixed"
+
+strMainMenuSavePatchesToDisk:
+    .text "Save patches to disk"
+    .byte(0)
+
+strMainMenuLoadPatchesFromDisk:
+    .text "(Re-)Load patches from disk"
+    .byte(0)
+
+strMainMenuRenameCurrentPatch:
+    .text "Rename current patch"
+    .byte(0)
+
+strMainMenuClearCurrentPatch:
+    .text "Clear current patch"
+    .byte(0)
+
+strMainMenuMidiCartridgeSetup:
+    .text "MIDI cartridge setup"
+    .byte(0)
+
+strMainMenuSetMidiChannel:
+    .text "Set MIDI channel"
+    .byte(0)
+
+strMainMenuSaveMidiSettings:
+    .text "Save MIDI settings"
+    .byte(0)
+
+strMainMenuReturn:
+    .text "Return"
+    .byte(0)
+
+strMainMenuDevelopedBy:
+    .text "Developed 2026 by Jan Straeter"
+    .byte(0)
+
+strMainMenuWebsite:
+    .text "monosid.janstraeter.de"
+    .byte(0)
+
+strMainMenuFocusedItem:
+    .text ">"
+    .byte(0)
+
+strPatchesLoading:
+    .text "Loading patches from disk"
+    .byte(0)
+
+strPatchesSaving:
+    .text "Saving patches to disk"
+    .byte(0)
+
+strPatches01Of64:
+    .text "01/64"
+    .byte(0)
+
+strDiskError:
+    .text "DISK ERROR"
+    .byte(0)
+
+strKernalFileOpenError:
+    .text "No disk drive found"
+    .byte(0)
+
+strErrorPressAnyKey:
+    .text "Press any key to return to menu"
     .byte(0)

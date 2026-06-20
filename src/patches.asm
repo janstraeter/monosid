@@ -18,7 +18,7 @@ patchLoop:
     jsr patchesInitPatch
 
     inc patchIndex
-    lda #PATCH_NUM
+    lda #PATCHES_NUM
     cmp patchIndex
     bne patchLoop
 
@@ -471,12 +471,192 @@ patchesTransferFromPatchToModules:
  * Subroutine
  * ----------
  *
+ * Prints the loading screen
  *
+ * ---------------------------------------------------------------- */ 
+
+patchesDrawLoadScreen:
+{
+    jsr logoHide
+    jsr userinterfaceInitScreen
+    screenPutStringColor(7, 11, strPatchesLoading, WHITE)
+    screenPutStringColor(17, 13, strPatches01Of64, YELLOW)
+    rts
+}
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Saves the patches data to a file called "MONOSID.PTC" to disk
+ * Prints an error message if any disk drive errors occur.
+ *
+ * Sets carry bit on error, clears carry bit on success
  *
  * ---------------------------------------------------------------- */ 
 
 patchesLoadFromDisk:
 {
+    .label LOGICAL_FILE_NUMBER = 2
+
+    // turn off Kernal messages
+    lda #0
+    jsr KERNAL.SETMSG
+
+    // open error channel, then try to open the file, a set carry indicates Kernal error
+    fileOpenErrorChannel()
+    bcc *+5
+    jmp kernalFileOpenError
+    fileOpen(LOGICAL_FILE_NUMBER, LOGICAL_FILE_NUMBER, FILENAME, FILENAME_LENGTH)
+    bcc *+5
+    jmp kernalFileOpenError
+
+    // read message from error channel (accu contains error number, zero if no error)
+    jsr fileReadErrorChannel
+    
+    // check for error (e.g. file not found)
+    cmp #0
+    bne printErrorMessageAndExit
+    
+    // assign the current input channel to the logical file number
+    ldx #LOGICAL_FILE_NUMBER
+    jsr KERNAL.CHKIN
+    bcs readErrorMessageAndExit
+
+    // set ZPR_2 to patches start address
+    loadPointerToZPR(patches, ZPR_2)
+    
+    // initialize counter variables
+    lda #0
+    sta patchIndex
+    sta byteIndex
+
+    // load the scrren address of the position of the patch number into ZPR_1
+    .var currentPathScreenAddress = screenCalculateMemoryAddress(17, 13)
+    loadPointerToZPR(currentPathScreenAddress, ZPR_1)
+
+patchLoadLoop:
+    // print the current patch number on the screen
+    lda patchIndex
+    jsr patchesOutputPatchNumber
+
+byteLoadLoop:
+    // read the status byte into accu
+    jsr KERNAL.READST
+
+    // check for error (without destroying the accu)
+    bit ST_ERROR
+    bne readErrorMessageAndExit
+
+    // check for EOF (without destroying the accu)
+    bit ST_EOF
+    bne closeFileAndExit
+
+    // read the next byte from the file
+    jsr KERNAL.CHRIN
+    bcs readErrorMessageAndExit
+
+    // write the loaded byte into the patches buffer
+    ldy byteIndex
+    sta (ZPR_2), y
+
+    // increase the byte counter for the current patch
+    // and check for end of patch
+    inc byteIndex
+    lda byteIndex
+    cmp #PATCH_MEMORY_SIZE
+    bne byteLoadLoop
+
+    // increase pointer in ZPR_2 by the patch size
+    addByteValueToZPRAddress(ZPR_2, PATCH_MEMORY_SIZE)
+
+    // reset the byte counter
+    lda #0
+    sta byteIndex
+
+    // increase the patch counter
+    // and check for last patch finished
+    inc patchIndex
+    lda patchIndex
+    cmp #PATCHES_NUM
+    bne patchLoadLoop
+
+closeFileAndExit:
+    // close file, error channel and restore I/O channel
+    fileCloseErrorChannel()
+    fileClose(LOGICAL_FILE_NUMBER)
+    jsr KERNAL.CLRCHN
+    
+    // clear carry bit to indicate success
+    clc
+    rts
+
+kernalFileOpenError:
+    // print the message that the Kernal could not open a file
+    jsr patchesPrintKernalFileOpenError
+
+    // set carry bit to indicate error
+    sec
+    rts
+
+readErrorMessageAndExit:
+    // read message from error channel
+    jsr fileReadErrorChannel
+
+printErrorMessageAndExit:
+    // print error message
+    jsr patchesPrintLastDiskDriveError
+
+    // close file, error channel and restore I/O channel
+    fileCloseErrorChannel()
+    fileClose(LOGICAL_FILE_NUMBER)
+    jsr KERNAL.CLRCHN
+
+    // set carry bit to indicate error
+    sec
+    rts
+
+FILENAME:
+    // SETNAM expects the filename to be encoded in PETSCII
+    .encoding "petscii_upper"
+
+    // filename MONOSID.PTC
+    // "0:" - 
+    // "U" - user file
+    // "R" - open for reading
+    .text "0:MONOSID.PTC,U,R"
+
+    // calculate string length
+    .label FILENAME_LENGTH = * - FILENAME
+
+ST_EOF:
+    .byte($40)
+
+ST_ERROR:
+    .byte($BF)
+
+byteIndex:
+    .byte(0)
+
+patchIndex:
+    .byte(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Prints the saving screen
+ *
+ * ---------------------------------------------------------------- */ 
+
+patchesDrawSaveScreen:
+{
+    jsr logoHide
+    jsr userinterfaceInitScreen
+    screenPutStringColor(8, 11, strPatchesSaving, WHITE)
+    screenPutStringColor(17, 13, strPatches01Of64, YELLOW)
     rts
 }
 
@@ -485,14 +665,206 @@ patchesLoadFromDisk:
  * Subroutine
  * ----------
  *
+ * Saves the patches data to a file called "MONOSID.PTC" to disk
+ * Prints an error message if any disk drive errors occur.
  *
+ * Sets carry bit on error, clears carry bit on success
  *
  * ---------------------------------------------------------------- */ 
 
 patchesSaveToDisk:
 {
+    .label LOGICAL_FILE_NUMBER = 3
+    
+    // turn off Kernal messages
+    lda #0
+    jsr KERNAL.SETMSG
+
+    // open error channel, then try to open the file, a set carry indicates Kernal error
+    fileOpenErrorChannel()
+    bcc *+5
+    jmp kernalFileOpenError
+    fileOpen(LOGICAL_FILE_NUMBER, LOGICAL_FILE_NUMBER, FILENAME, FILENAME_LENGTH)
+    bcc *+5
+    jmp kernalFileOpenError
+
+    // read message from error channel (accu contains error number, zero if no error)
+    jsr fileReadErrorChannel
+    
+    // check for error (e.g. device not ready)
+    cmp #0
+    bne printErrorMessageAndExit
+
+    // assign the current output channel to the logical file number
+    ldx #LOGICAL_FILE_NUMBER
+    jsr KERNAL.CHKOUT
+
+    // set ZPR_2 to patches start address
+    loadPointerToZPR(patches, ZPR_2)
+    
+    // initialize counter variables
+    lda #0
+    sta patchIndex
+    sta byteIndex
+
+    // load the scrren address of the position of the patch number into ZPR_1
+    .var currentPathScreenAddress = screenCalculateMemoryAddress(17, 13)
+    loadPointerToZPR(currentPathScreenAddress, ZPR_1)
+
+patchWriteLoop:
+    // print the current patch number on the screen
+    lda patchIndex
+    jsr patchesOutputPatchNumber
+
+byteWriteLoop:    
+    // read next patch data byte
+    ldy byteIndex
+    lda (ZPR_2), y
+
+    // write the byte to the file
+    jsr KERNAL.CHROUT
+    
+    // read the status byte and check for error
+    jsr KERNAL.READST
+    cmp #0
+    bne readErrorMessageAndExit
+
+    // increase the byte counter for the current patch
+    // and check for end of patch
+    inc byteIndex
+    lda byteIndex
+    cmp #PATCH_MEMORY_SIZE
+    bne byteWriteLoop
+
+    // increase pointer in ZPR_2 by the patch size
+    addByteValueToZPRAddress(ZPR_2, PATCH_MEMORY_SIZE)
+
+    // reset the byte counter
+    lda #0
+    sta byteIndex
+
+    // increase the patch counter
+    // and check for last patch finished
+    inc patchIndex
+    lda patchIndex
+    cmp #PATCHES_NUM
+    bne patchWriteLoop
+
+
+closeFileAndExit:
+    // close file, error channel and restore I/O channel
+    fileCloseErrorChannel()
+    fileClose(LOGICAL_FILE_NUMBER)
+    jsr KERNAL.CLRCHN
+    
+    // clear carry bit to indicate success
+    clc
+    rts
+
+kernalFileOpenError:
+    // print the message that the Kernal could not open a file
+    jsr patchesPrintKernalFileOpenError
+
+    // set carry bit to indicate error
+    sec
+    rts
+
+readErrorMessageAndExit:
+    // read message from error channel
+    jsr fileReadErrorChannel
+
+printErrorMessageAndExit:
+    // print error message
+    jsr patchesPrintLastDiskDriveError
+
+    // close file, error channel and restore I/O channel
+    fileCloseErrorChannel()
+    fileClose(LOGICAL_FILE_NUMBER)
+    jsr KERNAL.CLRCHN
+
+    // set carry bit to indicate error
+    sec
+    rts
+
+FILENAME:
+    // SETNAM expects the filename to be encoded in PETSCII
+    .encoding "petscii_upper"
+
+    // filename MONOSID.PTC
+    // "@0:" - overwrite file, if already exsists
+    // "U" - user file
+    // "W" - open for writing
+    .text "@0:MONOSID.PTC,U,W"
+
+    // calculate string length
+    .label FILENAME_LENGTH = * - FILENAME
+
+byteIndex:
+    .byte(0)
+
+patchIndex:
+    .byte(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Prints the error message from the disk drive
+ * in buffer diskDriveErrorBuffer on the screen
+ *
+ * Reads global variables: diskDriveErrorBuffer, diskDriveErrorLength
+ *
+ * ---------------------------------------------------------------- */ 
+
+patchesPrintLastDiskDriveError:
+{
+    // print error headline
+    screenPutStringColor(0, 15, strDiskError, RED)
+
+    // make the error message in red
+    screenPutColorLength(0, 16, 40, RED)
+    
+    // load the screen address of the position of the error message into ZPR_1
+    .var errorMessageScreenAddress = screenCalculateMemoryAddress(0, 16)
+    loadPointerToZPR(errorMessageScreenAddress, ZPR_1)
+
+    // copy the error message to the screen
+    ldx diskDriveErrorLength
+    ldy #0
+
+loop:
+    lda diskDriveErrorBuffer, y
+    sta (ZPR_1), y
+    iny
+    dex
+    bne loop
+
+    // print press any key message
+    screenPutStringColor(0, 17, strErrorPressAnyKey, WHITE)
+
     rts
 }
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Prints an error message to the screen, informing the user
+ * that the kernal could not open the file (probably because no disk drive is present)
+ *
+ * ---------------------------------------------------------------- */ 
+
+patchesPrintKernalFileOpenError:
+{
+    screenPutStringColor(0, 15, strDiskError, RED)
+    screenPutStringColor(0, 16, strKernalFileOpenError, RED)
+    screenPutStringColor(0, 17, strErrorPressAnyKey, WHITE)
+    rts
+}
+
 
 /* -------------------------------------------------------------------
  * Subroutine

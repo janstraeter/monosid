@@ -52,6 +52,8 @@
     .label SPRITE_ACTIVE            = $d015
     .label SPRITE_DOUBLE_HEIGHT     = $d017
 
+    .label CHARACTER_MEMORY_POINTER = $d018
+
     .label INTERRUPT_REGISTER       = $d019
     .label INTERRUPT_ENABLED        = $d01a
 
@@ -75,6 +77,7 @@
     .label SPRITE_5_COLOR           = $d02c
     .label SPRITE_6_COLOR           = $d02d
     .label SPRITE_7_COLOR           = $d02e
+
 }
 
 .namespace KERNAL {
@@ -83,6 +86,26 @@
     .label INTERRUPT_ROUTINE        = $ea31
     .label GETIN                    = $ffe4
     .label PLOT                     = $FFF0
+
+    .label SETLFS                   = $FFBA
+    .label SETNAM                   = $FFBD
+    .label OPEN                     = $FFC0
+    .label CLOSE                    = $FFC3
+    .label LOAD                     = $FFD5
+    .label SAVE                     = $FFD8
+
+    .label IOINIT                   = $FF84
+    .label SETMSG                   = $FF90
+    .label READST                   = $FFB7
+    .label CHKIN                    = $FFC6
+    .label CHKOUT                   = $FFC9
+    .label CLRCHN                   = $FFCC
+    .label CHRIN                    = $FFCF
+    .label CHROUT                   = $FFD2
+    .label CLALL                    = $FFE7
+
+    .label LFN_ERR                  = 15
+    .label SA_ERR                   = 15
 }
 
 .namespace SID {
@@ -135,6 +158,7 @@
 
 .namespace MODE_MENU_SUBMODE {
     .label SELECT_ITEM              = $01
+    .label SHOW_ERROR_MESSAGE       = $02
 }
 
 .namespace MODE_PATCH_SELECTOR_SUBMODE {
@@ -263,6 +287,19 @@
     .label V3SPECIAL_CUTOFF_NEG     = 54
 }
 
-.label PATCH_NUM                    = 64
-.label PATCH_MEMORY_SIZE            = 72
-.label PATCH_ARRAY_MEMORY_SIZE      = PATCH_NUM * PATCH_MEMORY_SIZE
+.label PATCHES_NUM                  = 64
+.label PATCH_MEMORY_SIZE            = 80
+.label PATCH_ARRAY_MEMORY_SIZE      = PATCHES_NUM * PATCH_MEMORY_SIZE
+
+.label MENU_ITEMS_NUM               = 8
+
+.namespace MENU_ITEM {
+    .label SAVE_PATCHES             = 0
+    .label LOAD_PATCHES             = 1
+    .label RENAME_CURRENT_PATCH     = 2
+    .label CLEAR_CURRENT_PATCH      = 3
+    .label MIDI_CARTRIDGE_SETUP     = 3
+    .label SET_MIDI_CHANNEL         = 4
+    .label SAVE_MIDI_SETTINGS       = 5
+    .label RETURN                   = 7
+}

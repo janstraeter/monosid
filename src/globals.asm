@@ -1323,7 +1323,7 @@ currentPatchAddress:
 
 /* -------------------------------------------------------------------
  *
- * current values of hte patch selector
+ * current values of the patch selector
  *
  * Type: 8-bit unsigned integer
  *
@@ -1336,4 +1336,40 @@ currentPatchSelectorRow:
     .byte(0)
 
 currentPatchSelectorIndex:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * current values of the main menu
+ *
+ * Type: 8-bit unsigned integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentMenuIndex:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Buffer to hold the last disk drive error message
+ *
+ * Type: 40 byte buffer
+ *
+ * ---------------------------------------------------------------- */ 
+
+diskDriveErrorBuffer:
+    .fill 40, 0
+
+
+/* -------------------------------------------------------------------
+ *
+ * Length of error message in the disk drive error message buffer
+ *
+ * Type: 8-bit unsigned integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+diskDriveErrorLength:
     .byte(0)

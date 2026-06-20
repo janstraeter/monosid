@@ -15,7 +15,7 @@ userinterfaceInitScreen:
 {
     lda #CYAN
     sta VIC.BORDERCOLOR
-    lda #DARK_GRAY
+    lda #BLACK
     sta VIC.BACKGROUND_COLOR_0
 	jsr screenClear
     lda #GRAY
@@ -38,6 +38,8 @@ userinterfaceInitScreen:
 
 userinterfaceDrawMain:
 {
+	jsr screenSwitchToUpperCase
+	
 	// print info bar in the first screen line
 	jsr userInterfaceDrawInfoBar
 
