@@ -324,9 +324,6 @@ exit:
 statusByteBitSet:
     // MSB of the recieved byte high indicates a status byte, not a data byte
     .byte(%10000000)
-
-systemMessageBitMask:
-    .byte(%11110000)
 }
 
 
