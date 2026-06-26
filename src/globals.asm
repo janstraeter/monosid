@@ -1373,3 +1373,28 @@ diskDriveErrorBuffer:
 
 diskDriveErrorLength:
     .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
+ * Global variables for the main menu`s input editor
+ *
+ * ---------------------------------------------------------------- */ 
+
+menuInputEditorBuffer:
+    .fill 9, 0
+
+menuInputEditorX:
+    .byte(0)
+
+menuInputEditorY:
+    .byte(0)
+
+menuInputEditorMaxLength:
+    .byte(0)
+
+menuInputEditorAllowedCharactersMin:
+    .byte(0)
+
+menuInputEditorAllowedCharactersMax:
+    .byte(0)    

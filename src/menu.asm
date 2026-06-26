@@ -16,14 +16,12 @@ menuDrawMain:
     jsr screenSwitchToMixedCase
 
     // print menu items
-    screenPutString(5, 1, strMainMenuSavePatchesToDisk)
-    screenPutString(5, 3, strMainMenuLoadPatchesFromDisk)
-    screenPutString(5, 5, strMainMenuRenameCurrentPatch)
-    screenPutString(5, 7, strMainMenuClearCurrentPatch)
-    screenPutString(5, 9, strMainMenuMidiCartridgeSetup)
-    screenPutString(5, 11, strMainMenuSetMidiChannel)
-    screenPutString(5, 13, strMainMenuSaveMidiSettings)
-    screenPutString(5, 15, strMainMenuReturn)
+    screenPutString(10, 1, strMainMenuSavePatchesToDisk)
+    screenPutString(10, 3, strMainMenuLoadPatchesFromDisk)
+    screenPutString(10, 5, strMainMenuRenameCurrentPatch)
+    screenPutString(10, 7, strMainMenuClearCurrentPatch)
+    screenPutString(10, 9, strMainMenuSetMidiChannel)
+    screenPutString(10, 11, strMainMenuReturn)
 
     // print developer info
     screenPutStringColor(5, 23, strMainMenuDevelopedBy, DARK_GRAY)
@@ -56,11 +54,11 @@ menuCalculateAddressOfCurrentMenuItem:
     sta rowOffset+1
 
     // load screen memory address of top left corner of the menu into ZPR_1
-    .var menuTopLeftAddress = screenCalculateMemoryAddress(3, 1)
+    .var menuTopLeftAddress = screenCalculateMemoryAddress(8, 1)
     loadPointerToZPR(menuTopLeftAddress, ZPR_1)
     
     // load color memory address of top left corner of the menu into ZPR_3
-    .var menuTopLeftColorAddress = screenCalculateColorMemoryAddress(3, 1)
+    .var menuTopLeftColorAddress = screenCalculateColorMemoryAddress(8, 1)
     loadPointerToZPR(menuTopLeftColorAddress, ZPR_3)
 
     // add the offset to both the screen and the color memory addresses
@@ -99,7 +97,7 @@ menuAddItemFocus:
 
     // make the item yellow
     lda #YELLOW
-    ldx #35
+    ldx #28
     jsr screenPutColorLengthAddress
 
     rts
@@ -128,7 +126,7 @@ menuRemoveItemFocus:
 
     // make the item gray again
     lda #GRAY
-    ldx #35
+    ldx #28
     jsr screenPutColorLengthAddress
 
     rts
@@ -287,12 +285,8 @@ menuHandleSelectedMainMenuItem:
     beq renameCurrentPatch
     cmp #MENU_ITEM.CLEAR_CURRENT_PATCH
     beq clearCurrentPatch
-    cmp #MENU_ITEM.MIDI_CARTRIDGE_SETUP
-    beq midiCartridgeSetup
     cmp #MENU_ITEM.SET_MIDI_CHANNEL
     beq setMidiChannel
-    cmp #MENU_ITEM.SAVE_MIDI_SETTINGS
-    beq saveMidiSettings
     cmp #MENU_ITEM.RETURN
     beq return
 
@@ -341,6 +335,10 @@ loadPatchesSuccessful:
     // ----------------------------------------------------
 
 renameCurrentPatch:
+    jsr patchesDrawRenameScreen
+    jsr menuActivateEditorForPatchRename
+    lda #MODE_MENU_SUBMODE.RENAME_PATCH
+    sta currentSubMode
     rts
 
     // ----------------------------------------------------
@@ -352,24 +350,10 @@ clearCurrentPatch:
     rts
 
     // ----------------------------------------------------
-    // midi cartridge setup
-    // ----------------------------------------------------
-
-midiCartridgeSetup:
-    rts
-
-    // ----------------------------------------------------
     //set midi channel
     // ----------------------------------------------------
 
 setMidiChannel:
-    rts
-
-    // ----------------------------------------------------
-    // save midi settings
-    // ----------------------------------------------------
-
-saveMidiSettings:
     rts
 
     // ----------------------------------------------------
@@ -408,3 +392,381 @@ menuHandleMenuItemActionClearCurrentPatch:
 
     rts
 }
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Prepares the menu input editor to be used for renaming the current
+ * patch. 
+ * 
+ *
+ * Writes global variables: menuInputEditorX, menuInputEditorY,
+ *                          menuInputEditorMaxLength,
+ *                          menuInputEditorAllowedCharactersMin,
+ *                          menuInputEditorAllowedCharactersMax
+ *
+ * ---------------------------------------------------------------- */ 
+
+menuActivateEditorForPatchRename:
+{
+    // set the menu editor`s variables
+    lda #15
+    sta menuInputEditorX
+    lda #12
+    sta menuInputEditorY
+    lda #8
+    sta menuInputEditorMaxLength
+    lda #32
+    sta menuInputEditorAllowedCharactersMin
+    lda #96
+    sta menuInputEditorAllowedCharactersMax
+
+    // activate the editor
+    jsr menuActivateEditor
+
+    rts
+}
+
+
+menuActivateEditorForSetMidiChannel:
+{
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Activates the menu input editor. Clears the input buffer,
+ * sets the cursor position to the beginning of the input field,
+ * activates the cursor blinking.
+ *
+ * Writes global variables: menuInputEditorBuffer
+ *
+ * ---------------------------------------------------------------- */ 
+
+menuActivateEditor:
+{
+    // set cursor color
+    lda #WHITE
+    sta KERNAL.TEXTCOLOR
+    sta KERNAL.CURSORCOLOR
+
+    // activate cursor
+    lda #0
+    sta ZP.CURSOR_FLASH
+
+    // empty the string referenced by "menuInputEditorBuffer" by writing a zero to the first byte
+    lda #0
+    sta menuInputEditorBuffer
+
+    // set cursor position accordingly
+    jsr menuEditorUpdateCursorPosition
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Deactivates the cursor blinking and switches to the main mode
+ *
+ * ---------------------------------------------------------------- */ 
+
+menuDeactivateEditor:
+{
+    // deactivate cursor
+    lda #$FF
+    sta ZP.CURSOR_FLASH
+
+    // return to main screen
+    jsr switchToModeMain
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Sets the position of the cursor to the menu input editor,
+ * after the last character of the contents of "menuInputEditorBuffer".
+ *
+ * Reads global variables:  menuInputEditorBuffer, menuInputEditorX,
+ *                          menuInputEditorY
+ *
+ * Writes global variables: none
+ *
+ * ---------------------------------------------------------------- */ 
+
+menuEditorUpdateCursorPosition:
+{
+    // get length of text in "menuInputEditorBuffer" and save it in ZPR_0
+    loadPointerToZPR(menuInputEditorBuffer, ZPR_1)
+    jsr stringGetLength
+    sta ZPR_0
+    
+	// load Y position into X
+    ldx menuInputEditorY
+    
+    // load X position (menuInputEditorX + string length) into Y
+    lda menuInputEditorX
+    clc
+    adc ZPR_0
+    tay
+
+    // clear carry to indicate that we want to set the position of the cursor not read it
+    clc
+    
+    // call the Kernal function (https://www.pagetable.com/c64ref/kernal/, search for "$FFF0" or "plot")
+    jsr KERNAL.PLOT
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Prints the current content of the input buffer and pads it
+ * with blanks if shorter than the max. length
+ *
+ * Reads global variables:  menuInputEditorBuffer, menuInputEditorX,
+ *                          menuInputEditorY
+ *
+ * ---------------------------------------------------------------- */ 
+
+menuEditorOutputCurrentString:
+{
+    // load address of input buffer into ZPR_1
+    loadPointerToZPR(menuInputEditorBuffer, ZPR_1)
+
+    // load X and Y position into ZPR_2
+    lda menuInputEditorX
+    sta ZPR_2_LO
+    lda menuInputEditorY
+    sta ZPR_2_HI
+
+    // print the string
+    jsr screenPutStringXY
+
+    // ZPR_2 now contains the screen memory address (screenPutStringXY calculated it)
+    // the Y register contains the number of written bytes
+
+    // calculate the number of characters to pad
+    // padding = menuInputEditorMaxLength + 1 - bytesWritten
+    tya
+    sta bytesWritten
+    lda menuInputEditorMaxLength
+    clc
+    adc #1
+    sec
+    sbc bytesWritten
+    beq exit
+
+    // pad the remaining characters of the input field with blank spaces
+    sta padding
+    lda #32
+
+paddingLoop:
+    sta (ZPR_2), y
+    iny
+    dec padding
+    bne paddingLoop
+
+exit:
+    rts
+
+bytesWritten:
+    .byte(0)
+
+padding:
+    .byte(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Handles the keyboard input for the menu input editor
+ * 
+ * Reads global variables:  menuInputEditorAllowedCharactersMin,
+ *                          menuInputEditorAllowedCharactersMax
+ *
+ * ---------------------------------------------------------------- */ 
+
+menuHandleKeyboardInputForEditor:
+{
+    // Read pressed keycode, if no key pressed, exit
+    jsr KERNAL.GETIN
+    cmp #$00
+    beq exit1
+
+    // check if return or delete is pressed and jump accordingly
+    cmp #PETSCII.DELETE
+	beq deleteKeyPressed
+    cmp #PETSCII.RETURN
+	beq returnKeyPressed
+
+    // check if pressed key is in the range of allowed characters 
+    // if any other character, exit
+    cmp menuInputEditorAllowedCharactersMin
+    bcc exit1
+    cmp menuInputEditorAllowedCharactersMax
+    bcs exit1
+    jmp validCharacter
+
+exit1:
+    rts
+
+validCharacter:    
+    // convert the chraracter into screen code and save it into pressedKeyCode
+    jsr convertPetsciiToScreenCode
+    sta pressedKeyCode
+
+    // determine the length of the input editors current text
+    loadPointerToZPR(menuInputEditorBuffer, ZPR_1)
+    jsr stringGetLength
+    
+    // compare the current length with the max. length, exit of max. length is reached
+    cmp menuInputEditorMaxLength
+    bcs exit
+
+    // max. length not reached, append the pressed keycode to the editor`s text
+    tay
+    lda pressedKeyCode
+    sta (ZPR_1), y
+    iny
+    lda #0
+    sta (ZPR_1), y
+
+    // update the screen and cursor position
+    jsr menuEditorUpdateCursorPosition
+    jsr menuEditorOutputCurrentString
+
+    rts
+
+deleteKeyPressed:
+    // load address of current text into ZPR_1
+    loadPointerToZPR(menuInputEditorBuffer, ZPR_1)
+    
+    // determine the length of the input editors current text
+    jsr stringGetLength
+    
+    // check current length for zero - if zero, exit
+    cmp #0
+    beq exit
+
+    // length is greater than zero,
+    // move one byte to the left and write a null byte
+    tay
+    dey
+    lda #0
+    sta (ZPR_1), y
+
+    // update the screen and cursor position
+    jsr menuEditorUpdateCursorPosition
+    jsr menuEditorOutputCurrentString
+
+    rts
+
+returnKeyPressed:
+    // return key pressed - finish the editor
+    jsr menuHandleInputEditorFinish
+
+exit:
+    rts
+
+pressedKeyCode:
+    .byte(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Finishes the menu input editor after return key pressed.
+ * Handles renaming the current patch or setting the midi channel
+ * according to the current sub mode
+ * 
+ * Reads global variables:  currentSubMode,
+ *                          menuInputEditorBuffer
+ *
+ * Writes global variables: currentPatchAddress
+ *
+ * ---------------------------------------------------------------- */ 
+
+menuHandleInputEditorFinish:
+{
+    // switch for menu sub mode
+    lda currentSubMode
+    cmp #MODE_MENU_SUBMODE.RENAME_PATCH
+    beq finishRenamePatch
+    cmp #MODE_MENU_SUBMODE.SET_MIDI_CHANNEL
+    beq finishSetMidiChannel
+    jmp finish
+
+    // ----------------------------------------------------
+    // rename patch
+    // ----------------------------------------------------
+
+finishRenamePatch:
+
+    // load address of buffer into ZPR_1
+    loadPointerToZPR(menuInputEditorBuffer, ZPR_1)
+    
+    // check if string length, do not update the name if zero
+    jsr stringGetLength
+    cmp #0
+    beq finish
+	
+    // load address of current patch into ZPR_2
+    lda currentPatchAddress
+	sta ZPR_2_LO
+	lda currentPatchAddress+1
+	sta ZPR_2_HI
+    
+    // copy over the new patch name and done
+    jsr stringCopy
+    jmp finish
+
+    // ----------------------------------------------------
+    // change midi channel
+    // ----------------------------------------------------
+
+finishSetMidiChannel:
+
+    /* // convert string into (16-bit unsigned) integer
+    lda #$30
+    sta ZPR_0
+    loadPointerToZPR(menuInputEditorBuffer, ZPR_1)
+    jsr convertStringToInteger
+    
+    // save the result of the conversion in the input-struct´s value
+    lda ZPR_2_LO
+    ldy #STRUCT_INPUT.VALUE
+    sta (ZPR_7), y
+    iny
+    lda ZPR_2_HI
+    sta (ZPR_7), y
+
+    // set value to max. if neccessary
+    jsr inputIntegerSanitizeValue */
+
+finish:
+
+    // deactivate the editor
+    jsr menuDeactivateEditor
+
+    rts
+}
+

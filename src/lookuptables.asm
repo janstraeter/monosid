@@ -555,6 +555,8 @@ pitchBendValuesToCentTable:
  * ---------------------------------------------------------------- */ 
 
 midiVelocityToVolumeTable:
+    // the first 24 values are mathematically 0, but I changed them to 1,
+    // so the notes are always (at least somewhat) audible
     .byte(1) // 0 velocity
     .byte(1) // 1
     .byte(1) // 2
@@ -579,7 +581,7 @@ midiVelocityToVolumeTable:
     .byte(1) // 21
     .byte(1) // 22
     .byte(1) // 23
-
+    // the following values are mathematically correct
     .byte(1) // 24
     .byte(1) // 25
     .byte(1) // 26

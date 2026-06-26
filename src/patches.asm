@@ -935,3 +935,48 @@ paddingLoop:
 exit:
     rts
 }
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Prints the rename current patch screen
+ *
+ * Reads global variables: currentPatchAddress
+ *
+ * ---------------------------------------------------------------- */ 
+
+patchesDrawRenameScreen:
+{
+    // clear screen, use uppercase, hide logo
+    jsr screenSwitchToUpperCase
+    jsr logoHide
+    jsr userinterfaceInitScreen
+    
+    // print headline
+    screenPutStringColor(10, 5, strRenamePatchHeadline, WHITE)
+
+    // print current patch name
+    screenPutString(9, 8, strRenamePatchCurrentName)
+	lda currentPatchAddress
+	sta ZPR_8_LO
+	lda currentPatchAddress+1
+	sta ZPR_8_HI
+    .var patchNameMemoryAddress = screenCalculateMemoryAddress(23, 8)
+	lda #<patchNameMemoryAddress
+	sta ZPR_1
+	lda #>patchNameMemoryAddress
+	sta ZPR_1+1
+	jsr patchesOutputPatchName
+
+    // print box for new name
+    screenDrawRectangleColor(14, 11, 9, 1, YELLOW)
+    screenPutStringColor(15, 10, strRenamePatchNewName, YELLOW)
+    screenPutColorLength(15, 12, 9, WHITE)
+    
+    // print additional info text
+    screenPutString(4, 16, strRenamePatchInfo)
+
+    rts
+}

@@ -82,6 +82,7 @@
 
 .namespace KERNAL {
     .label TEXTCOLOR                = $0286
+    .label CURSORCOLOR              = $0287
     .label CLS                      = $e544
     .label INTERRUPT_ROUTINE        = $ea31
     .label GETIN                    = $ffe4
@@ -159,10 +160,12 @@
 .namespace MODE_MENU_SUBMODE {
     .label SELECT_ITEM              = $01
     .label SHOW_ERROR_MESSAGE       = $02
+    .label RENAME_PATCH             = $03
+    .label SET_MIDI_CHANNEL         = $04
 }
 
 .namespace MODE_PATCH_SELECTOR_SUBMODE {
-    .label SELECT_PATCH            = $01
+    .label SELECT_PATCH             = $01
 }
 
 .namespace INPUT_TYPE {
@@ -291,15 +294,13 @@
 .label PATCH_MEMORY_SIZE            = 80
 .label PATCH_ARRAY_MEMORY_SIZE      = PATCHES_NUM * PATCH_MEMORY_SIZE
 
-.label MENU_ITEMS_NUM               = 8
+.label MENU_ITEMS_NUM               = 6
 
 .namespace MENU_ITEM {
     .label SAVE_PATCHES             = 0
     .label LOAD_PATCHES             = 1
     .label RENAME_CURRENT_PATCH     = 2
     .label CLEAR_CURRENT_PATCH      = 3
-    .label MIDI_CARTRIDGE_SETUP     = 3
     .label SET_MIDI_CHANNEL         = 4
-    .label SAVE_MIDI_SETTINGS       = 5
-    .label RETURN                   = 7
+    .label RETURN                   = 5
 }

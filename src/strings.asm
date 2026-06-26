@@ -226,6 +226,23 @@ strPatchSelectorHeadline:
     .text "SELECT PATCH"
     .byte(0)
 
+strRenamePatchHeadline:
+    .text "RENAME CURRENT PATCH"
+    .byte(0)
+
+strRenamePatchCurrentName:
+    .text "CURRENT NAME:"
+    .byte(0)
+    
+strRenamePatchNewName:
+    .text "NEW NAME"
+    .byte(0)
+
+strRenamePatchInfo:
+    .text "LEAVE BLANK TO KEEP CURRENT NAME"
+    .byte(0)
+
+
 /* -------------------------------------------------------------------
  *
  * All the mixed case null-terminated strings used in the program
@@ -239,7 +256,7 @@ strMainMenuSavePatchesToDisk:
     .byte(0)
 
 strMainMenuLoadPatchesFromDisk:
-    .text "(Re-)Load patches from disk"
+    .text "Load patches from disk"
     .byte(0)
 
 strMainMenuRenameCurrentPatch:
@@ -250,16 +267,8 @@ strMainMenuClearCurrentPatch:
     .text "Clear current patch"
     .byte(0)
 
-strMainMenuMidiCartridgeSetup:
-    .text "MIDI cartridge setup"
-    .byte(0)
-
 strMainMenuSetMidiChannel:
     .text "Set MIDI channel"
-    .byte(0)
-
-strMainMenuSaveMidiSettings:
-    .text "Save MIDI settings"
     .byte(0)
 
 strMainMenuReturn:

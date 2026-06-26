@@ -17,7 +17,7 @@
  *
  * Return value: ZPR_0: length of the return string 
  *
- * ---------------------------------------------------------------- */ 
+ * -------------------------------------------------------------*/ 
 
 convertIntegerToString:
 {
@@ -106,7 +106,7 @@ writeNullByte:
  *
  * Return value: ZPR_2: result of conversion
  *
- * ---------------------------------------------------------------- */ 
+ * -------------------------------------------------------------*/ 
 
 convertStringToInteger:
 {
@@ -186,4 +186,89 @@ result:
 resultBy10:
     .byte(0)
     .byte(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Converts a PETSCII character byte to its screen code equivalent.
+ * Assumes that the upper case character set is used.
+ *
+ * Source of conversion table: https://sta.c64.org/cbm64pettoscr.html
+ *
+ * Parameters:   Accu - PETSCII character
+ *
+ * Return value: Accu - screen code
+ *
+ * ------------------------------------------------------------------- */ 
+
+convertPetsciiToScreenCode:
+{
+    // $00–$1F: control codes -> $80–$9F
+    cmp #$20
+    bcs notCtrl1
+    clc
+    adc #$80
+    rts
+
+notCtrl1:
+    // $20–$3F: punctuation/digits -> unchanged
+    cmp #$40
+    bcs notPunctuation
+    rts
+
+notPunctuation:
+    // $40–$5F: @, A–Z, [\]^_ -> $00–$1F
+    cmp #$60
+    bcs notUpper
+    sec
+    sbc #$40
+    rts
+
+notUpper:
+    // $60–$7F: graphics/lowercase -> $40–$5F
+    cmp #$80
+    bcs notGfx1
+    sec
+    sbc #$20
+    rts
+
+notGfx1:
+    // $80–$9F: control codes -> $C0–$DF
+    cmp #$A0
+    bcs notCtrl2
+    clc
+    adc #$40
+    rts
+
+notCtrl2:
+    // $A0–$BF: shifted graphics -> $60–$7F
+    cmp #$C0
+    bcs notGfx2
+    sec
+    sbc #$40
+    rts
+
+notGfx2:
+    // $C0–$DF: Shift-@, Shift-A–Z … -> $40–$5F
+    cmp #$E0
+    bcs notUpper2
+    sec
+    sbc #$80
+    rts
+
+notUpper2:
+    // $FF: pi symbol -> $5E (checkerboard)
+    cmp #$FF
+    beq isPi
+    // $E0–$FE: graphics mirror -> $60–$7E
+    sec
+    sbc #$80
+    rts
+
+isPi:
+    lda #$5E
+    rts
 }

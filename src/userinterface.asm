@@ -1104,9 +1104,6 @@ printBlankChars:
 	lda inputCharsLeft
 	beq exit
 
-	// lda inputCharsLeft
-	// jsr debugDumpByte
-
 blankCharsLoop:
 	// draw the blank characters until the end of the input field is reached
 	lda #$A0

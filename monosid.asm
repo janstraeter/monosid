@@ -210,6 +210,8 @@ modeMenu:
 	beq subModeMenuSelectItem
 	cmp #MODE_MENU_SUBMODE.SHOW_ERROR_MESSAGE
 	beq subModeMenuShowErrorMessage
+    cmp #MODE_MENU_SUBMODE.RENAME_PATCH
+    beq subModeMenuRenamePatch
     jmp waitLoop
 
 subModeMenuSelectItem:
@@ -223,6 +225,11 @@ subModeMenuShowErrorMessage:
     cmp #$00
     beq waitLoop
     jsr switchToModeMenu
+    jmp waitLoop
+
+subModeMenuRenamePatch:
+    // handle the keyboard input for the main menu input editor
+    jsr menuHandleKeyboardInputForEditor
     jmp waitLoop
 
 modePatchSelector:
