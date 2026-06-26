@@ -242,6 +242,18 @@ strRenamePatchInfo:
     .text "LEAVE BLANK TO KEEP CURRENT NAME"
     .byte(0)
 
+strSetMidiChannelHeadline:
+    .text "SET MIDI CHANNEL"
+    .byte(0)
+
+strSetMidiChannelInfo1:
+    .text "POSSIBLE VALUES 1-16"
+    .byte(0)
+
+strSetMidiChannelInfo2:
+    .text "LEAVE BLANK TO LISTEN TO ALL CHANNELS"
+    .byte(0)
+
 
 /* -------------------------------------------------------------------
  *

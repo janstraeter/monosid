@@ -354,6 +354,10 @@ clearCurrentPatch:
     // ----------------------------------------------------
 
 setMidiChannel:
+    jsr menuDrawSetMidiChannelScreen
+    jsr menuActivateEditorForSetMidiChannel
+    lda #MODE_MENU_SUBMODE.SET_MIDI_CHANNEL
+    sta currentSubMode
     rts
 
     // ----------------------------------------------------
@@ -398,6 +402,38 @@ menuHandleMenuItemActionClearCurrentPatch:
  * Subroutine
  * ----------
  *
+ * Prints the "Set MIDI channel" screen
+ *
+ * Reads global variables: midiChannel
+ *
+ * ---------------------------------------------------------------- */ 
+
+menuDrawSetMidiChannelScreen:
+{
+    // clear screen, use uppercase, hide logo
+    jsr screenSwitchToUpperCase
+    jsr logoHide
+    jsr userinterfaceInitScreen
+    
+    // print headline
+    screenPutStringColor(12, 8, strSetMidiChannelHeadline, WHITE)
+
+    // print box for channel input
+    screenDrawRectangleColor(17, 11, 3, 1, YELLOW)
+    screenPutColorLength(18, 12, 3, WHITE)
+    
+    // print additional info text
+    screenPutString(10, 16, strSetMidiChannelInfo1)
+    screenPutString(1, 17, strSetMidiChannelInfo2)
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
  * Prepares the menu input editor to be used for renaming the current
  * patch. 
  * 
@@ -430,8 +466,38 @@ menuActivateEditorForPatchRename:
 }
 
 
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Prepares the menu input editor to be used for setting the
+ * MIDI channel
+ * 
+ *
+ * Writes global variables: menuInputEditorX, menuInputEditorY,
+ *                          menuInputEditorMaxLength,
+ *                          menuInputEditorAllowedCharactersMin,
+ *                          menuInputEditorAllowedCharactersMax
+ *
+ * ---------------------------------------------------------------- */ 
+
 menuActivateEditorForSetMidiChannel:
 {
+    // set the menu editor`s variables
+    lda #18
+    sta menuInputEditorX
+    lda #12
+    sta menuInputEditorY
+    lda #2
+    sta menuInputEditorMaxLength
+    lda #48
+    sta menuInputEditorAllowedCharactersMin
+    lda #57
+    sta menuInputEditorAllowedCharactersMax
+
+    // activate the editor
+    jsr menuActivateEditor
+
     rts
 }
 
@@ -621,6 +687,7 @@ menuHandleKeyboardInputForEditor:
     cmp menuInputEditorAllowedCharactersMin
     bcc exit1
     cmp menuInputEditorAllowedCharactersMax
+    beq validCharacter
     bcs exit1
     jmp validCharacter
 
@@ -745,28 +812,41 @@ finishRenamePatch:
 
 finishSetMidiChannel:
 
-    /* // convert string into (16-bit unsigned) integer
+    // load address of buffer into ZPR_1
+    loadPointerToZPR(menuInputEditorBuffer, ZPR_1)
+    
+    // check if string length, set to any channel if zero
+    jsr stringGetLength
+    cmp #0
+    beq setToAnyChannel
+	
+    // convert string into (16-bit unsigned) integer
     lda #$30
     sta ZPR_0
     loadPointerToZPR(menuInputEditorBuffer, ZPR_1)
     jsr convertStringToInteger
     
-    // save the result of the conversion in the input-struct´s value
+    // ZPR_2_LO now contains the low byte of the conversion
     lda ZPR_2_LO
-    ldy #STRUCT_INPUT.VALUE
-    sta (ZPR_7), y
-    iny
-    lda ZPR_2_HI
-    sta (ZPR_7), y
 
-    // set value to max. if neccessary
-    jsr inputIntegerSanitizeValue */
+    // check if in range 1-16, if out of range, set to any channel
+    cmp #1
+    bcc setToAnyChannel
+    cmp #17
+    bcs setToAnyChannel
+
+    // is 1-16, set as new MIDI channel number and done
+    sta midiChannel
+    jmp finish
+
+setToAnyChannel:
+    // assume any channel
+    lda #255
+    sta midiChannel
 
 finish:
-
     // deactivate the editor
     jsr menuDeactivateEditor
 
     rts
 }
-

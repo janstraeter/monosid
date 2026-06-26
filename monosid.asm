@@ -212,6 +212,8 @@ modeMenu:
 	beq subModeMenuShowErrorMessage
     cmp #MODE_MENU_SUBMODE.RENAME_PATCH
     beq subModeMenuRenamePatch
+    cmp #MODE_MENU_SUBMODE.SET_MIDI_CHANNEL
+    beq subModeMenuSetMidiChannel
     jmp waitLoop
 
 subModeMenuSelectItem:
@@ -223,11 +225,13 @@ subModeMenuShowErrorMessage:
     // wait for any key pressed after a disk error happend 
     jsr KERNAL.GETIN
     cmp #$00
-    beq waitLoop
+    bne *+5
+    jmp waitLoop
     jsr switchToModeMenu
     jmp waitLoop
 
 subModeMenuRenamePatch:
+subModeMenuSetMidiChannel:
     // handle the keyboard input for the main menu input editor
     jsr menuHandleKeyboardInputForEditor
     jmp waitLoop

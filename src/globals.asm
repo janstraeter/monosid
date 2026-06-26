@@ -1012,6 +1012,18 @@ midiCurrentMessage:
 
 /* -------------------------------------------------------------------
  *
+ * Contains the number of the current MIDI channel (255 for any channel)
+ *
+ * Type: Integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiChannel:
+    .byte(255)
+
+
+/* -------------------------------------------------------------------
+ *
  * Buffer to remember the last played notes (currently played/to play last,
  * oldest note first)
  *
