@@ -187,15 +187,36 @@ midiProcessLastRecievedByte:
     // so they do not mess up the rest of the algorithm
     and #%11111000 
     cmp #%11111000
-    beq exit
+    beq exitStatusByte
 
     // save the recieved byte as the new current status
     lda midiLastRecievedByte
     sta midiCurrentStatus
 
-    // now determine which type of MIDI message is indicated by the status byte
-    // (we ignore the channel number for now, assuming channel mode 2: Omni on, mono)
+    // first check for system messages, as they are independent from the channel
+    and #%11110000 
+    cmp #%11110000
+    beq midiMessageSystemMessages
+
+    // now check for the channel (if midiChannel has a value different from 255)
+    ldx midiChannel
+    bmi handleChannelMessages
+
+    // midiChannel set, so check for same channel in the status byte
+    lda midiCurrentStatus  
+    and #%00001111
+    cmp midiChannel
+    bne ignoredChannelMessages
+
+    // load status byte again, because we destroyed the accu with the AND
+    lda midiCurrentStatus
+
+handleChannelMessages:
+
+    // mask out the channel number
     and #%11110000
+
+    // now check for channel message
     cmp #$80
     beq midiMessageNoteOff
     cmp #$90
@@ -253,10 +274,13 @@ midiMessageProgramChange:
 midiMessageChannelPressure:
 midiMessageSystemMessages:
 unhandledMidiMessages:
+ignoredChannelMessages:
     lda #1
     sta midiIgnoreDataBytesUntilNewStatus
     rts
 
+exitStatusByte:
+    rts
 
 isDataByte:
 
@@ -300,6 +324,9 @@ exit:
 statusByteBitSet:
     // MSB of the recieved byte high indicates a status byte, not a data byte
     .byte(%10000000)
+
+systemMessageBitMask:
+    .byte(%11110000)
 }
 
 

@@ -836,6 +836,8 @@ finishSetMidiChannel:
     bcs setToAnyChannel
 
     // is 1-16, set as new MIDI channel number and done
+    sec
+    sbc #1
     sta midiChannel
     jmp finish
 
