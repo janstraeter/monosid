@@ -76,3 +76,310 @@ exit:
 
     rts
 }
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ * 
+ * Detects which (if any) MIDI cartridge is installed by trying out
+ * their respective register addresses
+ *
+ * Sequential and Namesoft share the same addresses, and can not be
+ * differentiated by this subroutine.
+ *
+ * Shamelessly stolen from here: https://github.com/MichaelTroelsen/SIDDetector-II
+ *
+ * Original description of the subroutine:
+ * --------------------------------------------------------------------------------------------------
+ * checkmidi: probe each documented C64 MIDI cart for a 6850 ACIA signature.
+ * Reference: https://codebase.c64.org/doku.php?id=base:c64_midi_interfaces
+ *
+ * A 6850 ACIA after master reset (write $03 to its control register) returns
+ *   status & $73 == $02   (TDRE=1, RDRF=0, no FE/OVRN/PE).
+ * VICE's built-in MIDI emulation matches this.  CTS/DCD/IRQ (bits 2/3/7) are
+ * masked off because they're modem-control inputs that vary by cart wiring.
+ *
+ * Probe order is first-hit-wins (per codebase reference + user constraint:
+ * only ONE MIDI cartridge can be attached at a time):
+ *   1) Sequential / Namesoft : ctrl $DE00, status $DE02
+ *   2) DATEL / Siel / JMS    : ctrl $DE04, status $DE06
+ *   3) Passport              : ctrl/status $DE08 (write=ctrl, read=status)
+ *   4) Maplin                : ctrl/status $DF00 (write=ctrl, read=status)
+ *
+ * Sequential and Namesoft share the polled-read fingerprint (only IRQ vs
+ * NMI line routing differs); both report as SEQUENTIAL.
+ *
+ * Two-read consistency check on each candidate filters open-bus jitter on
+ * real hardware (no cart present → $DE/$DF reads are bus noise).
+ *
+ * Guards on the $DF00 (Maplin) probe — same set as checkfmyam since they
+ * all contend for I/O2:
+ *   - data4=$30        (SIDFX area, may also clobber SCI handshake)
+ *   - is_u64 != 0      (Ultimate64 UCI at $DF1C-$DF1F)
+ *   - skpico_fm >= 4   (SIDKick-pico OPL2 at $DF00)
+ *   - armsid_map_h2 lo nibble = 3   (ARM2SID SFX- slot at $DF00)
+ *
+ * --------------------------------------------------------------------------------------------------
+ *
+ * Sets midiDetectedCartridge:
+ *   0 = none, 1 = SEQ/Namesoft, 3 = DATEL, 4 = Passport, 5 = Maplin.
+ *
+ * Writes global variables: midiDetectedCartridge
+ *
+ * ---------------------------------------------------------------- */ 
+
+detectMidiCartridgeByRegisterAddresses:
+{
+    lda #$00
+    sta midiDetectedCartridge
+
+    // 1) Sequential / Namesoft @ $DE00 / $DE02
+    lda #$03
+    sta $DE00              // master reset → ACIA control
+    lda $DE02              // status read
+    and #$73               // mask CTS/DCD/IRQ
+    cmp #$02
+    bne cmidi_n1
+    lda $DE02              // 2nd read confirms it's not bus jitter
+    and #$73
+    cmp #$02
+    bne cmidi_n1
+    lda #MIDI_CARTRIDGE.SEQUENTIAL
+    sta midiDetectedCartridge
+    rts
+cmidi_n1:
+    // 2) DATEL / Siel / JMS @ $DE04 / $DE06
+    lda #$03
+    sta $DE04
+    lda $DE06
+    and #$73
+    cmp #$02
+    bne cmidi_n2
+    lda $DE06
+    and #$73
+    cmp #$02
+    bne cmidi_n2
+    lda #MIDI_CARTRIDGE.DATEL_SIEL_JMS
+    sta midiDetectedCartridge
+    rts
+cmidi_n2:
+    // 3) Passport @ $DE08 (CR/SR share addr; read returns SR)
+    lda #$03
+    sta $DE08
+    lda $DE08
+    and #$73
+    cmp #$02
+    bne cmidi_n3
+    lda $DE08
+    and #$73
+    cmp #$02
+    bne cmidi_n3
+    lda #MIDI_CARTRIDGE.PASSPORT
+    sta midiDetectedCartridge
+    rts
+cmidi_n3:
+    // 4) Maplin @ $DF00 — guarded against I/O2 owners
+    /*
+
+    // ------------------------------------------------
+    // Commented out this part, because it uses 
+    // variables from other parts of the SIDDetector-II
+    // which I do not want to include here
+
+    lda data4
+    cmp #$30
+    beq cmidi_done         // SIDFX
+    lda is_u64
+    bne cmidi_done         // U64 UCI
+    lda skpico_fm
+    cmp #$04
+    bcs cmidi_done         // SKpico FM
+    lda armsid_map_h2
+    and #$0F
+    cmp #$03
+    beq cmidi_done         // ARM2SID SFX-
+    
+    // ------------------------------------------------
+
+    */
+    lda #$03
+    sta $DF00
+    lda $DF00
+    and #$73
+    cmp #$02
+    bne cmidi_done
+    lda $DF00
+    and #$73
+    cmp #$02
+    bne cmidi_done
+    lda #MIDI_CARTRIDGE.MAPLIN
+    sta midiDetectedCartridge
+cmidi_done:
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ * 
+ * Detects if the Sequantial or the Namesoft MIDI cartridge is active
+ * Becuse these two cartridges use the exact same register addresses,
+ * the only way to differentiate them is to set up test IRQ-
+ * and NMI-routines and check which of the two get invoced.
+ *
+ * This routine should only be called when it is clear, that a
+ * Sequential or Namesoft cartridge ist installed.
+ *
+ * Writes global variables: midiDetectedCartridge
+ *
+ * ---------------------------------------------------------------- */ 
+
+detectSequentialOrNamesoft:
+{
+    .const IRQ_VEC_LO   = $0314
+    .const IRQ_VEC_HI   = $0315
+    .const NMI_VEC_LO   = $0318
+    .const NMI_VEC_HI   = $0319
+    .const KERNAL_IRQ   = $EA31     // Kernal IRQ-Returnpfad
+    .const IRQ_FIRED    = $FC
+    .const NMI_FIRED    = $FD
+    .const MIDI_CTRL    = $DE00
+    .const MIDI_RESET   = $03       // Master Reset
+    .const MIDI_TXINT   = $35       // 8N1, /16, TxInt ein
+    .const MIDI_ENABLE  = $15       // 8N1, /16, kein Interrupt
+    .const MIDI_RXINT   = $95       // 8N1, /16, RxInt ein
+    .const CIA1_ICR     = $DC0D     // CIA1 Interrupt Control Register
+
+    // suppress IRQ interrupts
+    sei
+
+    // initialize variables
+    lda #0
+    sta IRQ_FIRED
+    sta NMI_FIRED
+
+    // deactivate CIA1, so it can not mess up our code
+    lda #$7F
+    sta CIA1_ICR
+
+    // clear CIA1 for good measure
+    lda CIA1_ICR
+
+    // set our test IRQ handler
+    lda #<TEST_IRQ_HANDLER
+    sta IRQ_VEC_LO
+    lda #>TEST_IRQ_HANDLER
+    sta IRQ_VEC_HI
+
+    // set our test NMI handler
+    lda #<TEST_NMI_HANDLER
+    sta NMI_VEC_LO
+    lda #>TEST_NMI_HANDLER
+    sta NMI_VEC_HI
+
+    // 6850 Master Reset
+    lda #MIDI_RESET
+    sta MIDI_CTRL
+
+    // initialize MIDI cartridge,
+    // activate transmitting interrupt
+    lda #MIDI_TXINT
+    sta MIDI_CTRL
+
+    // activate IRQs, the only IRQ possible is the MIDI transmitting interrupt
+    cli
+    
+    // wait a short period of time
+    .for (var i = 0; i < 16; i++) { nop }
+    
+    // suppress IRQs again
+    sei
+
+    // deactivate the transmitting interrupt of the 6850
+    lda #MIDI_ENABLE
+    sta MIDI_CTRL
+
+    // re-activate the CIA1 timer
+    lda #$81
+    sta CIA1_ICR
+
+    // set the IRQ vector back to the original
+    lda #<KERNAL_IRQ
+    sta IRQ_VEC_LO
+    lda #>KERNAL_IRQ
+    sta IRQ_VEC_HI
+
+    // allow interrupts again
+    cli
+
+    // check the results
+    lda IRQ_FIRED
+    beq CHECK_NMI
+    lda #MIDI_CARTRIDGE.SEQUENTIAL
+    sta midiDetectedCartridge
+    rts
+
+CHECK_NMI:
+    lda NMI_FIRED
+    beq UNKNOWN
+    lda #MIDI_CARTRIDGE.NAMESOFT
+    sta midiDetectedCartridge
+    rts
+
+UNKNOWN:
+    rts
+
+    // ------------------------------------------
+    // Test IRQ handler
+    // ------------------------------------------
+
+TEST_IRQ_HANDLER:
+    lda #MIDI_ENABLE
+    sta MIDI_CTRL
+    lda #1
+    sta IRQ_FIRED
+    pla
+    tay
+    pla
+    tax
+    pla
+    rti
+
+    // ------------------------------------------
+    // Test NMI handler
+    // ------------------------------------------
+    
+TEST_NMI_HANDLER:
+    pha
+    lda #MIDI_ENABLE
+    sta MIDI_CTRL
+    lda #1
+    sta NMI_FIRED
+    pla
+    rti
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ * 
+ * Detects which (if any) MIDI cartridge is installed
+ *
+ * Writes global variables: midiDetectedCartridge
+ *
+ * ---------------------------------------------------------------- */ 
+
+detectMidiCartridge:
+{
+    jsr detectMidiCartridgeByRegisterAddresses
+    lda midiDetectedCartridge
+    cmp #1
+    bne exit
+
+    jsr detectSequentialOrNamesoft
+
+exit:
+    rts
+}

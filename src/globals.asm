@@ -879,58 +879,28 @@ currentSidResetOscillatorVoice3:
  *
  * ---------------------------------------------------------------- */ 
 
-midiInterfacePresent:
+midiDetectedCartridge:
     .byte(0)
 
 
 /* -------------------------------------------------------------------
  *
- * Address of the control register of the MIDI interface
+ * 128 byte ring buffer for recieved MIDI bytes
  *
- * Type: 16 bit address
- *
- * ---------------------------------------------------------------- */ 
-
-midiInterfaceControlRegister:
-    .byte(0)
-    .byte(0)
-
-
-/* -------------------------------------------------------------------
- *
- * Address of the status register of the MIDI interface
- *
- * Type: 16 bit address
+ * Type: Boolean
  *
  * ---------------------------------------------------------------- */ 
 
-midiInterfaceStatusRegister:
-    .byte(0)
-    .byte(0)
+.label MIDI_BUFFER_SIZE = 128
+.label MIDI_BUFFER_MASK = MIDI_BUFFER_SIZE - 1
 
+midiBuffer:
+    .fill MIDI_BUFFER_SIZE, 0
 
-/* -------------------------------------------------------------------
- *
- * Address of the recieve register of the MIDI interface
- *
- * Type: 16 bit address
- *
- * ---------------------------------------------------------------- */ 
-
-midiInterfaceRecieveRegister:
-    .byte(0)
+midiWritePtr:
     .byte(0)
 
-
-/* -------------------------------------------------------------------
- *
- * Value of the last recieved byte
- *
- * Type: Integer
- *
- * ---------------------------------------------------------------- */ 
-
-midiLastRecievedByte:
+midiReadPtr:
     .byte(0)
 
 

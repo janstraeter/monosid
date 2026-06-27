@@ -205,6 +205,16 @@
     .label F3                       = $86
 }
 
+.namespace MIDI_CARTRIDGE {
+    .label NONE                     = 0
+    .label SEQUENTIAL               = 1
+    .label NAMESOFT                 = 2
+    .label DATEL_SIEL_JMS           = 3
+    .label PASSPORT                 = 4
+    .label MAPLIN                   = 5
+}
+
+
 .namespace MIDI_INTERFACE_DATEL {
     .label CONTROL                  = $de04
     .label STATUS                   = $de06

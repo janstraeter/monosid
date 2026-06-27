@@ -115,6 +115,9 @@ mainProgram:
     // detect if PAL or NTSC
     jsr detectC64Model
 
+    // detect MIDI cartridge
+    jsr detectMidiCartridge
+
     // let all keys repeat
     lda $80
     sta REPEAT_FLAG
@@ -136,9 +139,11 @@ mainProgram:
     jsr setupCustomInterruptServiceRoutine
 
     // initialize the MIDI interface (if any is present)
-    jsr midiInit
+    // jsr midiInit
 
 waitLoop:
+    lda midiDetectedCartridge
+    jsr debugDumpByte
     // check if the CIA interrupt called our custom ISR,
     // if so, call the emulation of the default Kernal ISR
     // so the Kernal routines can work properly
@@ -153,6 +158,9 @@ doNotCallEmulationOfKernalISR:
     // read the current pressed key and save it in a global variable
     lda ZP.CURRENT_PRESSED_KEY
     sta currentPressedKey
+
+    // process all MIDI bytes currently in the ring buffer
+    jsr midiProcessBuffer
 
     // check if the last note was played not by MIDI but the C64 keyboard
     // instead. If so ignore the MIDI notes in this loop iteration

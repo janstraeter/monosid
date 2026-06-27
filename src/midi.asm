@@ -107,12 +107,18 @@ midiInterruptServiceRoutine:
     bit ErrorBitSet
     bne isError
 
-    // load recieved byte
+    // load recieved MIDI byte
     lda (ZPR_MIDI_RECIEVE_REGISTER_ADDRESS), y
-    sta midiLastRecievedByte
-
-    // process the newly recieved byte
-    jsr midiProcessLastRecievedByte
+    
+    // store MIDI byte in ring buffer
+    ldx midiWritePtr
+    sta midiBuffer, x
+    
+    // increase write pointer (wrap around via AND)
+    inx
+    txa
+    and #MIDI_BUFFER_MASK
+    sta midiWritePtr
 
 exit:
     pla
@@ -152,6 +158,37 @@ ErrorBitSet:
 }
 
 
+midiProcessBuffer:
+{
+bufferReadLoop:
+    // if read pointer = write pointer, no new byte to process
+    ldx midiReadPtr
+    cpx midiWritePtr
+    beq bufferEmpty
+    
+    // read next byte
+    lda midiBuffer, x
+
+    // save A, increase write pointer
+    // and wrap around via AND, restore A
+    pha
+    inx
+    txa
+    and #MIDI_BUFFER_MASK
+    sta midiReadPtr
+    pla
+
+    // process MIDI byte in A
+    jsr midiProcessLastRecievedByte
+    
+    // and check for further bytes
+    jmp bufferReadLoop
+
+bufferEmpty:
+    rts
+}
+
+
 /* -------------------------------------------------------------------
  * Subroutine
  * ----------
@@ -181,6 +218,10 @@ midiProcessLastRecievedByte:
     // status byte
     // -----------------------------------------------------------
     
+    // save A in X because we need an AND for the next check,
+    // which destroys A
+    tax
+
     // check if it is a realtime message,
     // because these can happen always - even in the middle of other
     // messages, we need to check early and ignore them,
@@ -189,8 +230,8 @@ midiProcessLastRecievedByte:
     cmp #%11111000
     beq exitStatusByte
 
-    // save the recieved byte as the new current status
-    lda midiLastRecievedByte
+    // restore A and save the recieved byte as the new current status
+    txa
     sta midiCurrentStatus
 
     // first check for system messages, as they are independent from the channel
@@ -592,10 +633,6 @@ exit:
 
 midiUpdateCurrentNote:
 {
-    // Suppress interrupts to make sure that the content
-    // of the MIDI active notes buffer does not change during the process
-    sei
-    
     // check if any note in the buffer, if not jump to the according label
     lda midiActiveNotesNum
     beq notNoteActive
@@ -639,9 +676,6 @@ doNotUpdateLastPlayedNote:
     sta noteHasChangedFlag
 
 noteHasNotChanged:
-    
-    // allow interrupts again and exit
-    cli
     rts
 
 tempCurrentNote:
