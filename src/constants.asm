@@ -3,8 +3,11 @@
 .label REPEAT_FLAG                  = $028A
 .label INTERRUPT_VECTOR_LO          = $0314
 .label INTERRUPT_VECTOR_HI          = $0315
+.label NMI_VECTOR_LO                = $0318
+.label NMI_VECTOR_HI                = $0319
 .label SCREENMEM                    = $0400
 .label COLORMEM                     = $D800
+
 
 .namespace ZP {
     .label LAST_PRESSED_KEY         = $C5

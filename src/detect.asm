@@ -226,9 +226,12 @@ cmidi_done:
  * Detects if the Sequantial or the Namesoft MIDI cartridge is active
  * Becuse these two cartridges use the exact same register addresses,
  * the only way to differentiate them is to set up test IRQ-
- * and NMI-routines and check which of the two get invoced.
+ * and NMI-routines and check which of the two get invoked.
  *
- * This routine should only be called when it is clear, that a
+ * In case of a Squential cartridge the IRQ handler will be called,
+ * for the Namesoft the NMI handler will be called.
+ *
+ * This routine should only be called when it is clear that a
  * Sequential or Namesoft cartridge ist installed.
  *
  * Writes global variables: midiDetectedCartridge
@@ -237,46 +240,37 @@ cmidi_done:
 
 detectSequentialOrNamesoft:
 {
-    .const IRQ_VEC_LO   = $0314
-    .const IRQ_VEC_HI   = $0315
-    .const NMI_VEC_LO   = $0318
-    .const NMI_VEC_HI   = $0319
-    .const KERNAL_IRQ   = $EA31     // Kernal IRQ-Returnpfad
-    .const IRQ_FIRED    = $FC
-    .const NMI_FIRED    = $FD
-    .const MIDI_CTRL    = $DE00
+    .const MIDI_CTRL    = $DE00     // Control register for Squential/Namesoft
     .const MIDI_RESET   = $03       // Master Reset
-    .const MIDI_TXINT   = $35       // 8N1, /16, TxInt ein
-    .const MIDI_ENABLE  = $15       // 8N1, /16, kein Interrupt
-    .const MIDI_RXINT   = $95       // 8N1, /16, RxInt ein
-    .const CIA1_ICR     = $DC0D     // CIA1 Interrupt Control Register
+    .const MIDI_TXINT   = $35       // 8N1, /16, transmit interrupt enabled
+    .const MIDI_ENABLE  = $15       // 8N1, /16, no interrupt enabled
 
     // suppress IRQ interrupts
     sei
 
     // initialize variables
     lda #0
-    sta IRQ_FIRED
-    sta NMI_FIRED
+    sta irqFired
+    sta nmiFired
 
     // deactivate CIA1, so it can not mess up our code
     lda #$7F
-    sta CIA1_ICR
+    sta CIA.INTERRUPT_CONTROL_STATE
 
     // clear CIA1 for good measure
-    lda CIA1_ICR
+    lda CIA.INTERRUPT_CONTROL_STATE
 
     // set our test IRQ handler
-    lda #<TEST_IRQ_HANDLER
-    sta IRQ_VEC_LO
-    lda #>TEST_IRQ_HANDLER
-    sta IRQ_VEC_HI
+    lda #<testIrqHandler
+    sta INTERRUPT_VECTOR_LO
+    lda #>testIrqHandler
+    sta INTERRUPT_VECTOR_HI
 
     // set our test NMI handler
-    lda #<TEST_NMI_HANDLER
-    sta NMI_VEC_LO
-    lda #>TEST_NMI_HANDLER
-    sta NMI_VEC_HI
+    lda #<testNmiHandler
+    sta NMI_VECTOR_LO
+    lda #>testNmiHandler
+    sta NMI_VECTOR_HI
 
     // 6850 Master Reset
     lda #MIDI_RESET
@@ -302,43 +296,43 @@ detectSequentialOrNamesoft:
 
     // re-activate the CIA1 timer
     lda #$81
-    sta CIA1_ICR
+    sta CIA.INTERRUPT_CONTROL_STATE
 
     // set the IRQ vector back to the original
-    lda #<KERNAL_IRQ
-    sta IRQ_VEC_LO
-    lda #>KERNAL_IRQ
-    sta IRQ_VEC_HI
+    lda #<KERNAL.INTERRUPT_ROUTINE
+    sta INTERRUPT_VECTOR_LO
+    lda #>KERNAL.INTERRUPT_ROUTINE
+    sta INTERRUPT_VECTOR_HI
 
     // allow interrupts again
     cli
 
     // check the results
-    lda IRQ_FIRED
-    beq CHECK_NMI
+    lda irqFired
+    beq checkNmi
     lda #MIDI_CARTRIDGE.SEQUENTIAL
     sta midiDetectedCartridge
     rts
 
-CHECK_NMI:
-    lda NMI_FIRED
-    beq UNKNOWN
+checkNmi:
+    lda nmiFired
+    beq unknown
     lda #MIDI_CARTRIDGE.NAMESOFT
     sta midiDetectedCartridge
     rts
 
-UNKNOWN:
+unknown:
     rts
 
     // ------------------------------------------
     // Test IRQ handler
     // ------------------------------------------
 
-TEST_IRQ_HANDLER:
+testIrqHandler:
     lda #MIDI_ENABLE
     sta MIDI_CTRL
     lda #1
-    sta IRQ_FIRED
+    sta irqFired
     pla
     tay
     pla
@@ -350,14 +344,20 @@ TEST_IRQ_HANDLER:
     // Test NMI handler
     // ------------------------------------------
     
-TEST_NMI_HANDLER:
+testNmiHandler:
     pha
     lda #MIDI_ENABLE
     sta MIDI_CTRL
     lda #1
-    sta NMI_FIRED
+    sta nmiFired
     pla
     rti
+
+irqFired:
+    .byte(0)
+
+nmiFired:
+    .byte(0)
 }
 
 
