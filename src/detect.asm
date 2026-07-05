@@ -262,9 +262,9 @@ detectSequentialOrNamesoft:
 
     // set our test IRQ handler
     lda #<testIrqHandler
-    sta INTERRUPT_VECTOR_LO
+    sta IRQ_VECTOR_LO
     lda #>testIrqHandler
-    sta INTERRUPT_VECTOR_HI
+    sta IRQ_VECTOR_HI
 
     // set our test NMI handler
     lda #<testNmiHandler
@@ -300,9 +300,9 @@ detectSequentialOrNamesoft:
 
     // set the IRQ vector back to the original
     lda #<KERNAL.INTERRUPT_ROUTINE
-    sta INTERRUPT_VECTOR_LO
+    sta IRQ_VECTOR_LO
     lda #>KERNAL.INTERRUPT_ROUTINE
-    sta INTERRUPT_VECTOR_HI
+    sta IRQ_VECTOR_HI
 
     // allow interrupts again
     cli
@@ -373,11 +373,15 @@ nmiFired:
 
 detectMidiCartridge:
 {
+    // first try to detect by register address
     jsr detectMidiCartridgeByRegisterAddresses
+    
+    // check for value of 1 (Sequential/Namesoft)
     lda midiDetectedCartridge
     cmp #1
     bne exit
 
+    // yes, Sequential or Namesoft, now try to determine which one
     jsr detectSequentialOrNamesoft
 
 exit:

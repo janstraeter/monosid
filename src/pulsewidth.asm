@@ -331,10 +331,6 @@ pulseWidthCalculateModulatedValuesForAllVoices:
     lda #2
     jsr pulseWidthCalculateModulatedValueForVoice
 
-    /*ldx currentSidVoice1ModulatedPulseWidth
-    ldy currentSidVoice1ModulatedPulseWidth+1
-    jsr debugDumpWord*/
-
     rts
 }
 

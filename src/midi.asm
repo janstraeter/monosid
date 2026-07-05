@@ -9,18 +9,40 @@
  * ---------------------------------------------------------------- */ 
 
 midiInit: {
-    sei 
-        
-    jsr midiLoadInterfaceRegisterAddressesForDatel
-    jsr midiInitializeInterfaceDatel
+    // switch for midiDetectedCartridge
+    lda midiDetectedCartridge
+    cmp #MIDI_CARTRIDGE.SEQUENTIAL
+    beq setupSequential
+    cmp #MIDI_CARTRIDGE.NAMESOFT
+    beq setupNamesoft
+    cmp #MIDI_CARTRIDGE.DATEL_SIEL_JMS
+    beq setupDatel
+    cmp #MIDI_CARTRIDGE.PASSPORT
+    beq setupPassport
+    cmp #MIDI_CARTRIDGE.MAPLIN
+    beq setupMaplin
 
-    lda #<midiInterruptServiceRoutine
-    sta INTERRUPT_VECTOR_LO
-    lda #>midiInterruptServiceRoutine
-    sta INTERRUPT_VECTOR_HI
+    // no cartridge detected, do nothing
+    rts
 
-    cli
+setupSequential:
+    jsr midiSetupCartridgeSequential
+    rts
 
+setupNamesoft:
+    jsr midiSetupCartridgeNamesoft
+    rts
+
+setupDatel:
+    jsr midiSetupCartridgeDatel
+    rts
+
+setupPassport:
+    jsr midiSetupCartridgePassport
+    rts
+
+setupMaplin:
+    jsr midiSetupCartridgeMaplin
     rts
 }
 
@@ -29,30 +51,41 @@ midiInit: {
  * Subroutine
  * ----------
  *
- * Loads the zero page registers containing the addresses 
- * of the MIDI registers with the addresses for DATEL/SIEL/JMS/C-LAB
+ * Sets up register addresses and initializes MIDI cartridge.
+ * Version for: Sequential
  *
  * ---------------------------------------------------------------- */ 
 
-midiLoadInterfaceRegisterAddressesForDatel:
+midiSetupCartridgeSequential:
 {
-    // Control register
-    lda #<MIDI_INTERFACE_DATEL.CONTROL
+    // set control register
+    lda #<MIDI_CARTRIDGE_SEQUENTIAL.CONTROL
     sta ZPR_MIDI_CONTROL_REGISTER_ADDRESS_LO
-    lda #>MIDI_INTERFACE_DATEL.CONTROL
+    lda #>MIDI_CARTRIDGE_SEQUENTIAL.CONTROL
     sta ZPR_MIDI_CONTROL_REGISTER_ADDRESS_HI
 
-    // status register
-    lda #<MIDI_INTERFACE_DATEL.STATUS
+    // set status register
+    lda #<MIDI_CARTRIDGE_SEQUENTIAL.STATUS
     sta ZPR_MIDI_STATUS_REGISTER_ADDRESS_LO
-    lda #>MIDI_INTERFACE_DATEL.STATUS
+    lda #>MIDI_CARTRIDGE_SEQUENTIAL.STATUS
     sta ZPR_MIDI_STATUS_REGISTER_ADDRESS_HI
 
-    // recieve register
-    lda #<MIDI_INTERFACE_DATEL.RECIEVE
+    // set recieve register
+    lda #<MIDI_CARTRIDGE_SEQUENTIAL.RECIEVE
     sta ZPR_MIDI_RECIEVE_REGISTER_ADDRESS_LO
-    lda #>MIDI_INTERFACE_DATEL.RECIEVE
+    lda #>MIDI_CARTRIDGE_SEQUENTIAL.RECIEVE
     sta ZPR_MIDI_RECIEVE_REGISTER_ADDRESS_HI
+
+    // initialize
+    ldy #0
+    lda #MIDI_CARTRIDGE_SEQUENTIAL.MASTER_RESET_VALUE
+    sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
+    lda #MIDI_CARTRIDGE_SEQUENTIAL.SETUP_VALUE
+    sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
+
+    // Sequential uses IRQ
+    jsr midiSetupIrqRoutine
+
     rts
 }
 
@@ -61,17 +94,230 @@ midiLoadInterfaceRegisterAddressesForDatel:
  * Subroutine
  * ----------
  *
- * Initializes the MIDI interface (version for DATEL/SIEL/JMS/C-LAB)
+ * Sets up register addresses and initializes MIDI cartridge.
+ * Version for: Namesoft
  *
  * ---------------------------------------------------------------- */ 
 
-midiInitializeInterfaceDatel:
+midiSetupCartridgeNamesoft:
 {
+    // set control register
+    lda #<MIDI_CARTRIDGE_NAMESOFT.CONTROL
+    sta ZPR_MIDI_CONTROL_REGISTER_ADDRESS_LO
+    lda #>MIDI_CARTRIDGE_NAMESOFT.CONTROL
+    sta ZPR_MIDI_CONTROL_REGISTER_ADDRESS_HI
+
+    // set status register
+    lda #<MIDI_CARTRIDGE_NAMESOFT.STATUS
+    sta ZPR_MIDI_STATUS_REGISTER_ADDRESS_LO
+    lda #>MIDI_CARTRIDGE_NAMESOFT.STATUS
+    sta ZPR_MIDI_STATUS_REGISTER_ADDRESS_HI
+
+    // set recieve register
+    lda #<MIDI_CARTRIDGE_NAMESOFT.RECIEVE
+    sta ZPR_MIDI_RECIEVE_REGISTER_ADDRESS_LO
+    lda #>MIDI_CARTRIDGE_NAMESOFT.RECIEVE
+    sta ZPR_MIDI_RECIEVE_REGISTER_ADDRESS_HI
+
+    // Namesoft uses NMI
+    jsr midiSetupNmiRoutine
+
+    // initialize
     ldy #0
-    lda #$03
+    lda #MIDI_CARTRIDGE_NAMESOFT.MASTER_RESET_VALUE
     sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
-    lda #$92
+    lda #MIDI_CARTRIDGE_NAMESOFT.SETUP_VALUE
     sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Sets up register addresses and initializes MIDI cartridge.
+ * Version for: DATEL/SIEL/JMS/C-LAB
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiSetupCartridgeDatel:
+{
+    // set control register
+    lda #<MIDI_CARTRIDGE_DATEL.CONTROL
+    sta ZPR_MIDI_CONTROL_REGISTER_ADDRESS_LO
+    lda #>MIDI_CARTRIDGE_DATEL.CONTROL
+    sta ZPR_MIDI_CONTROL_REGISTER_ADDRESS_HI
+
+    // set status register
+    lda #<MIDI_CARTRIDGE_DATEL.STATUS
+    sta ZPR_MIDI_STATUS_REGISTER_ADDRESS_LO
+    lda #>MIDI_CARTRIDGE_DATEL.STATUS
+    sta ZPR_MIDI_STATUS_REGISTER_ADDRESS_HI
+
+    // set recieve register
+    lda #<MIDI_CARTRIDGE_DATEL.RECIEVE
+    sta ZPR_MIDI_RECIEVE_REGISTER_ADDRESS_LO
+    lda #>MIDI_CARTRIDGE_DATEL.RECIEVE
+    sta ZPR_MIDI_RECIEVE_REGISTER_ADDRESS_HI
+
+    // initialize
+    ldy #0
+    lda #MIDI_CARTRIDGE_DATEL.MASTER_RESET_VALUE
+    sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
+    lda #MIDI_CARTRIDGE_DATEL.SETUP_VALUE
+    sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
+
+    // Datel uses IRQ
+    jsr midiSetupIrqRoutine
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Sets up register addresses and initializes MIDI cartridge.
+ * Version for: Passport/Syntech
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiSetupCartridgePassport:
+{
+    // set control register
+    lda #<MIDI_CARTRIDGE_PASSPORT.CONTROL
+    sta ZPR_MIDI_CONTROL_REGISTER_ADDRESS_LO
+    lda #>MIDI_CARTRIDGE_PASSPORT.CONTROL
+    sta ZPR_MIDI_CONTROL_REGISTER_ADDRESS_HI
+
+    // set status register
+    lda #<MIDI_CARTRIDGE_PASSPORT.STATUS
+    sta ZPR_MIDI_STATUS_REGISTER_ADDRESS_LO
+    lda #>MIDI_CARTRIDGE_PASSPORT.STATUS
+    sta ZPR_MIDI_STATUS_REGISTER_ADDRESS_HI
+
+    // set recieve register
+    lda #<MIDI_CARTRIDGE_PASSPORT.RECIEVE
+    sta ZPR_MIDI_RECIEVE_REGISTER_ADDRESS_LO
+    lda #>MIDI_CARTRIDGE_PASSPORT.RECIEVE
+    sta ZPR_MIDI_RECIEVE_REGISTER_ADDRESS_HI
+
+    // initialize
+    ldy #0
+    lda #MIDI_CARTRIDGE_PASSPORT.MASTER_RESET_VALUE
+    sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
+    lda #MIDI_CARTRIDGE_PASSPORT.SETUP_VALUE
+    sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
+
+    // Passport uses IRQ
+    jsr midiSetupIrqRoutine
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Sets up register addresses and initializes MIDI cartridge.
+ * Version for: Maplin
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiSetupCartridgeMaplin:
+{
+    // set control register
+    lda #<MIDI_CARTRIDGE_MAPLIN.CONTROL
+    sta ZPR_MIDI_CONTROL_REGISTER_ADDRESS_LO
+    lda #>MIDI_CARTRIDGE_MAPLIN.CONTROL
+    sta ZPR_MIDI_CONTROL_REGISTER_ADDRESS_HI
+
+    // set status register
+    lda #<MIDI_CARTRIDGE_MAPLIN.STATUS
+    sta ZPR_MIDI_STATUS_REGISTER_ADDRESS_LO
+    lda #>MIDI_CARTRIDGE_MAPLIN.STATUS
+    sta ZPR_MIDI_STATUS_REGISTER_ADDRESS_HI
+
+    // set recieve register
+    lda #<MIDI_CARTRIDGE_MAPLIN.RECIEVE
+    sta ZPR_MIDI_RECIEVE_REGISTER_ADDRESS_LO
+    lda #>MIDI_CARTRIDGE_MAPLIN.RECIEVE
+    sta ZPR_MIDI_RECIEVE_REGISTER_ADDRESS_HI
+
+    // Maplin does not offer IRQ or NMI, just polling
+    jsr midiSetupNmiPollingRoutine
+
+    // initialize
+    ldy #0
+    lda #MIDI_CARTRIDGE_MAPLIN.MASTER_RESET_VALUE
+    sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
+    lda #MIDI_CARTRIDGE_MAPLIN.SETUP_VALUE
+    sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
+
+    rts
+}
+
+midiSetupIrqRoutine:
+{
+    // setup the IRQ interrupt service routine
+    sei 
+    lda #<midiInterruptServiceRoutine
+    sta IRQ_VECTOR_LO
+    lda #>midiInterruptServiceRoutine
+    sta IRQ_VECTOR_HI
+    cli
+    rts
+}
+
+midiSetupNmiRoutine:
+{
+    // setup the NMI interrupt service routine
+    sei 
+    lda #<midiInterruptServiceRoutineNMI
+    sta NMI_VECTOR_LO
+    lda #>midiInterruptServiceRoutineNMI
+    sta NMI_VECTOR_HI
+    cli
+    rts
+}
+
+
+midiSetupNmiPollingRoutine:
+{
+    sei
+
+    // Stop Timer A if running
+    lda CIA2.CONTROL_A
+    and #%11111110              // Bit 0 = 0 → stop
+    sta CIA2.CONTROL_A
+
+    // Load timer value
+    lda #<MIDI_POLL_TIMER
+    sta CIA2.TIMER_A_LO
+    lda #>MIDI_POLL_TIMER
+    sta CIA2.TIMER_A_HI
+
+    // Enable CIA2 Timer A NMI
+    // Bit 7 = 1 → enable, Bit 0 = Timer A
+    lda #%10000001
+    sta CIA2.INTERRUPT_CONTROL_STATE
+
+    // Hook NMI vector
+    lda #<midiInterruptServiceRoutineNMI
+    sta NMI_VECTOR_LO
+    lda #>midiInterruptServiceRoutineNMI
+    sta NMI_VECTOR_HI
+
+    // Start Timer A: continuous mode, count system clock
+    // Bit 0 = 1 (start), Bit 3 = 0 (continuous), Bit 4 = 1 (auto-reload)
+    lda #%00010001
+    sta CIA2.CONTROL_A
+
+    cli
     rts
 }
 
@@ -145,6 +391,85 @@ notMidiInterrupt:
 interruptBitSet:
     // MSB high indicates MIDI interrupt
     .byte(%10000000)
+
+RDRFBitSet:
+    // LSB high indicates recieved byte ready for reading
+    .byte(%00000001)
+
+ErrorBitSet:
+    // bits 6-4 high indicate that an error has happend and the recieved byte is probably corrupted
+    // bit 6 (Parity Error), bit 5 (Receiver Overrun), bit 4 (Framing Error)
+    // we do not check bit 6, because we do not use parity checking at all
+    .byte(%00110000)
+}
+
+
+/* -------------------------------------------------------------------
+ * Interrupt Service Routine
+ * -------------------------
+ *
+ * The NMI version of midiInterruptServiceRoutine
+ * Does not check for other interrupt sources, because it only can
+ * be triggered by the MIDI cartridge.
+ *
+ * Writes global variables: midiLastRecievedByte
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiInterruptServiceRoutineNMI:
+{
+    // in the NMI version we need to save the registers manually
+    pha
+    txa
+    pha
+    tya
+    pha
+
+    // Read CIA2 interrupt control and status — this also acknowledges the NMI
+    // Bit 0 is high = Timer A fired, continue   
+    // if not Timer A it could be the RESTORE key, so exit
+    lda CIA2.INTERRUPT_CONTROL_STATE
+    and #%00000001
+    beq exit
+
+    // read status register
+    ldy #0
+    lda (ZPR_MIDI_STATUS_REGISTER_ADDRESS), y
+
+    // check if byte recieved
+    bit RDRFBitSet
+    beq exit
+
+    // check if the recieved byte has an error
+    bit ErrorBitSet
+    bne isError
+
+    // load recieved MIDI byte
+    lda (ZPR_MIDI_RECIEVE_REGISTER_ADDRESS), y
+    
+    // store MIDI byte in ring buffer
+    ldx midiWritePtr
+    sta midiBuffer, x
+    
+    // increase write pointer (wrap around via AND)
+    inx
+    txa
+    and #MIDI_BUFFER_MASK
+    sta midiWritePtr
+
+exit:
+    pla
+    tay
+    pla
+    tax
+    pla
+    rti
+
+isError:
+    // read the recieve register to reset the error status,
+    // but then just exit and ignore this byte
+    lda (ZPR_MIDI_RECIEVE_REGISTER_ADDRESS), y
+    jmp exit
 
 RDRFBitSet:
     // LSB high indicates recieved byte ready for reading

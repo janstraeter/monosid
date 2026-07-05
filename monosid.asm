@@ -139,11 +139,9 @@ mainProgram:
     jsr setupCustomInterruptServiceRoutine
 
     // initialize the MIDI interface (if any is present)
-    // jsr midiInit
+    jsr midiInit
 
 waitLoop:
-    lda midiDetectedCartridge
-    jsr debugDumpByte
     // check if the CIA interrupt called our custom ISR,
     // if so, call the emulation of the default Kernal ISR
     // so the Kernal routines can work properly
@@ -360,9 +358,9 @@ setupCustomInterruptServiceRoutine:
 
     // set the interrupt vector to our custom ISR
     lda #<customInterruptServiceRoutine
-    sta INTERRUPT_VECTOR_LO
+    sta IRQ_VECTOR_LO
     lda #>customInterruptServiceRoutine
-    sta INTERRUPT_VECTOR_HI
+    sta IRQ_VECTOR_HI
 
     // now interrupts are allowed again
     cli

@@ -1,8 +1,8 @@
 #importonce
 
 .label REPEAT_FLAG                  = $028A
-.label INTERRUPT_VECTOR_LO          = $0314
-.label INTERRUPT_VECTOR_HI          = $0315
+.label IRQ_VECTOR_LO                = $0314
+.label IRQ_VECTOR_HI                = $0315
 .label NMI_VECTOR_LO                = $0318
 .label NMI_VECTOR_HI                = $0319
 .label SCREENMEM                    = $0400
@@ -20,6 +20,14 @@
 .namespace CIA {
     .label INTERRUPT_CONTROL_STATE  = $dc0d
 }
+
+.namespace CIA2 {
+    .label TIMER_A_LO               = $dd04
+    .label TIMER_A_HI               = $dd05
+    .label CONTROL_A                = $dd0e
+    .label INTERRUPT_CONTROL_STATE  = $dd0d
+}
+
 
 .namespace VIC {
     .label SPRITE_0_BLOCK_REGISTER  = SCREENMEM + $03f8;
@@ -217,14 +225,49 @@
     .label MAPLIN                   = 5
 }
 
+.namespace MIDI_CARTRIDGE_SEQUENTIAL {
+    .label CONTROL                  = $de00
+    .label STATUS                   = $de02
+    .label TRANSMIT                 = $de01
+    .label RECIEVE                  = $de03
+    .label MASTER_RESET_VALUE       = $03
+    .label SETUP_VALUE              = $95
+}
 
-.namespace MIDI_INTERFACE_DATEL {
+.namespace MIDI_CARTRIDGE_NAMESOFT {
+    .label CONTROL                  = $de00
+    .label STATUS                   = $de02
+    .label TRANSMIT                 = $de01
+    .label RECIEVE                  = $de03
+    .label MASTER_RESET_VALUE       = $03
+    .label SETUP_VALUE              = $95
+}
+
+.namespace MIDI_CARTRIDGE_DATEL {
     .label CONTROL                  = $de04
     .label STATUS                   = $de06
     .label TRANSMIT                 = $de05
     .label RECIEVE                  = $de07
     .label MASTER_RESET_VALUE       = $03
     .label SETUP_VALUE              = $92
+}
+
+.namespace MIDI_CARTRIDGE_PASSPORT {
+    .label CONTROL                  = $de08
+    .label STATUS                   = $de08
+    .label TRANSMIT                 = $de09
+    .label RECIEVE                  = $de09
+    .label MASTER_RESET_VALUE       = $03
+    .label SETUP_VALUE              = $95
+}
+
+.namespace MIDI_CARTRIDGE_MAPLIN {
+    .label CONTROL                  = $df00
+    .label STATUS                   = $df00
+    .label TRANSMIT                 = $df01
+    .label RECIEVE                  = $df01
+    .label MASTER_RESET_VALUE       = $03
+    .label SETUP_VALUE              = $96
 }
 
 .namespace MIDI_MESSAGE {
@@ -234,8 +277,8 @@
     .label PITCH_BEND_CHANGE        = $03
 }
 
+.label MIDI_POLL_TIMER              = 300 // ~3.284x per second
 .label MIDI_MAX_ACTIVE_NOTES        = 10
-
 .label MAX_NOTE_INDEX               = 95 // 8 octaves, highest index number is 95
 
 .namespace IID {

@@ -42,10 +42,6 @@ pitchCalculateVoiceFrequency:
     adc voiceDetuningHi
     sta detuningHi
 
-    // ldx voiceDetuningLo
-    // ldy voiceDetuningHi
-    // jsr debugDumpWord
-
     // check if resulting detuning value is negative 
     // (flags from adding the high bytes still set, check for negative flag)
     bmi detuneDown

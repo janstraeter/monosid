@@ -24,10 +24,92 @@ menuDrawMain:
     screenPutString(10, 11, strMainMenuReturn)
 
     // print developer info
-    screenPutStringColor(5, 23, strMainMenuDevelopedBy, DARK_GRAY)
+    screenPutStringColor(3, 23, strVersion, DARK_GRAY)
+    screenPutStringColor(8, 23, strMainMenuDevelopedBy, DARK_GRAY)
     screenPutStringColor(9, 24, strMainMenuWebsite, DARK_GRAY)
+
+    // print MIDI info headline
+    screenPutStringColor(10, 14, strMidiInfoHeadline, WHITE)
+
+    // print MIDI cartridge info
+    screenPutString(10, 15, strMidiDetectedCartridge)
+
+    // switch for midiDetectedCartridge
+    lda midiDetectedCartridge
+    cmp #MIDI_CARTRIDGE.SEQUENTIAL
+    bne *+5
+    jmp printMidiCartridgeSequential
+    cmp #MIDI_CARTRIDGE.NAMESOFT
+    bne *+5
+    jmp printMidiCartridgeNamesoft
+    cmp #MIDI_CARTRIDGE.DATEL_SIEL_JMS
+    bne *+5
+    jmp printMidiCartridgeDatel
+    cmp #MIDI_CARTRIDGE.PASSPORT
+    bne *+5
+    jmp printMidiCartridgePassport
+    cmp #MIDI_CARTRIDGE.MAPLIN
+    bne *+5
+    jmp printMidiCartridgeMaplin
+
+    // no cartridge detected
+    screenPutString(21, 15, strMidiCartridgeNone)
+    jmp printMidiChannelInfo
+
+printMidiCartridgeSequential:
+    screenPutString(21, 15, strMidiCartridgeSequential)
+    jmp printMidiChannelInfo
+
+printMidiCartridgeNamesoft:
+    screenPutString(21, 15, strMidiCartridgeNamesoft)
+    jmp printMidiChannelInfo
+
+printMidiCartridgeDatel:
+    screenPutString(21, 15, strMidiCartridgeDatel)
+    jmp printMidiChannelInfo
+
+printMidiCartridgePassport:
+    screenPutString(21, 15, strMidiCartridgePassport)
+    jmp printMidiChannelInfo
+
+printMidiCartridgeMaplin:
+    screenPutString(21, 15, strMidiCartridgeMaplin)
+    jmp printMidiChannelInfo
+
+printMidiChannelInfo:
+    // print MIDI channel info
+    screenPutString(10, 16, strMidiChannel)
     
+    // check if a specific channel is set (<> 255)
+    lda midiChannel
+    cmp #255
+    beq printMidiChannelAny
+
+    // add 1, because by convention the zero based MIDI channel is communicated to the user as 1-16
+    clc
+    adc #1
+    
+    // convert the channel number into string
+    sta ZPR_1_LO
+    lda #$00
+    sta ZPR_1_HI
+    loadPointerToZPR(stringBuffer, ZPR_2)
+    lda #$30
+    sta ZPR_0
+    jsr convertIntegerToString
+
+    // print the converted channel number
+    screenPutString(21, 16, stringBuffer)
+
     rts
+
+printMidiChannelAny:
+    screenPutString(21, 16, strMidiChannelAny)
+
+    rts
+
+stringBuffer:
+    .fill 6, 0
 }
 
 

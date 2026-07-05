@@ -263,6 +263,10 @@ strSetMidiChannelInfo2:
 
 .encoding "screencode_mixed"
 
+strVersion:
+    .text "V1.0"
+    .byte(0)
+
 strMainMenuSavePatchesToDisk:
     .text "Save patches to disk"
     .byte(0)
@@ -288,7 +292,7 @@ strMainMenuReturn:
     .byte(0)
 
 strMainMenuDevelopedBy:
-    .text "Developed 2026 by Jan Straeter"
+    .text "developed 2026 by Jan Straeter"
     .byte(0)
 
 strMainMenuWebsite:
@@ -321,4 +325,44 @@ strKernalFileOpenError:
 
 strErrorPressAnyKey:
     .text "Press any key to return to menu"
+    .byte(0)
+
+strMidiInfoHeadline:
+    .text "MIDI"
+    .byte(0)
+
+strMidiDetectedCartridge:
+    .text "Cartridge:"
+    .byte(0)
+
+strMidiCartridgeNone:
+    .text "None"
+    .byte(0)
+
+strMidiCartridgeSequential:
+    .text "Sequential"
+    .byte(0)
+
+strMidiCartridgeNamesoft:
+    .text "Namesoft"
+    .byte(0)
+
+strMidiCartridgeDatel:
+    .text "DATEL/Siel/JMS"
+    .byte(0)
+
+strMidiCartridgePassport:
+    .text "Passport/Syntech"
+    .byte(0)
+
+strMidiCartridgeMaplin:
+    .text "Maplin"
+    .byte(0)
+
+strMidiChannel:
+    .text "Channel:"
+    .byte(0)
+
+strMidiChannelAny:
+    .text "Any"
     .byte(0)
