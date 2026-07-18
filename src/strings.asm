@@ -62,8 +62,8 @@ strModuleNameVelocity:
     .text "VELOCITY"
     .byte $00
 
-strModuleNameVoice3Features:
-    .text "VOICE 3 SPECIAL FEATURES"
+strModuleNameLfo:
+    .text "LFO"
     .byte $00
 
 strInputNameVoiceWaveform:   
@@ -174,31 +174,55 @@ strInputNameVelocitySustain:
     .text "SUSTAIN"
     .byte $00
 
-strInputNameVoice3FeaturesInputMuteVoice3:
-    .text "MUTE VOC 3"
+strInputNameLfoModulatePitch:
+    .text "MOD PITCH"
     .byte $00
 
-strInputNameVoice3FeaturesModulatePulseWidth:
+strInputNameLfoModulatePulseWidth:
     .text "MOD PULSE"
     .byte $00
 
-strInputNameVoice3FeaturesModulateFilter:
+strInputNameLfoModulateFilter:
     .text "MOD FILTER"
     .byte $00
 
-strInputNameVoice3FeaturesPulseWidth:
+strInputNameLfoSquareWave:
+    .text "SQUARE WAVE"
+    .byte $00
+
+strInputNameLfoResetOscillator:
+    .text "RESET OSCILLATOR"
+    .byte $00
+
+strInputNameLfoModulateWithVoice3Envelope:
+    .text "MOD WITH VOC 3 ENVELOPE"
+    .byte $00
+
+strInputNameLfoInputMuteVoice3:
+    .text "MUTE VOICE 3"
+    .byte $00
+
+strInputNameLfoCycleLength:
+    .text "LENGTH"
+    .byte $00
+
+strInputNameLfoPitch:
+    .text "PITCH"
+    .byte $00
+
+strInputNameLfoPulseWidth:
     .text "PULSE"
     .byte $00
 
-strInputNameVoice3FeaturesPulseWidthNegative:
+strInputNameLfoPulseWidthNegative:
     .text "NEG"
     .byte $00
 
-strInputNameVoice3FeaturesFilterCutoff:
+strInputNameLfoFilterCutoff:
     .text "CUTOFF"
     .byte $00
 
-strInputNameVoice3FeaturesFilterCutoffNegative:
+strInputNameLfoFilterCutoffNegative:
     .text "NEG"
     .byte $00
 

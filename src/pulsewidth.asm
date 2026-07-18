@@ -4,26 +4,26 @@
  * Subroutine
  * ----------
  *
- * Updates the global variable "currentVoice3EnvelopeModulatePulseWidth" which the
+ * Updates the global variable "currentLfoModulatePulseWidth" which the
  * current value of the "Voice 3 special features" input "mod pulse"
  *
- * Reads global variable:  voice3FeaturesModulatePulseWidth
+ * Reads global variable:  lfoModulatePulseWidth
  *
- * Writes global variable: currentVoice3EnvelopeModulatePulseWidth
+ * Writes global variable: currentLfoModulatePulseWidth
  *
  * ---------------------------------------------------------------- */ 
  
-pulseWidthUpdateVoice3EnvelopeModulatePulseWidthValue:
+pulseWidthUpdateLfoModulatePulseWidthValue:
 {
     // load the current value of the "Voice 3 special features" input "mod pulse"
-    loadPointerToZPR(voice3FeaturesModulatePulseWidth, ZPR_7)
+    loadPointerToZPR(lfoModulatePulseWidth, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into the global variable for easier access
-    sta currentVoice3EnvelopeModulatePulseWidth
+    sta currentLfoModulatePulseWidth
 
     // check if voice #3 envelope should modulate the pulse width
-    lda currentVoice3EnvelopeModulatePulseWidth
+    lda currentLfoModulatePulseWidth
     cmp #0
     bne exit
 
@@ -58,10 +58,10 @@ exit:
  * Subroutine
  * ----------
  *
- * Updates the global variable "currentVoice3EnvelopeModulatePulseWidth" which the
+ * Updates the global variable "currentLfoModulatePulseWidth" which the
  * current value of the "Voice 3 special features" input "pulse"
  *
- * Reads global variable:  voice3FeaturesPulseWidth
+ * Reads global variable:  lfoPulseWidth
  *
  * Writes global variable: currentVoice3PulseWidth
  *
@@ -70,7 +70,7 @@ exit:
 pulseWidthUpdateVoice3PulseWidthValue:
 {
     // load the current value of the "Voice 3 special features" input "pulse"
-    loadPointerToZPR(voice3FeaturesPulseWidth, ZPR_7)
+    loadPointerToZPR(lfoPulseWidth, ZPR_7)
     structLoadWordToXAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into the global variable for easier access
@@ -85,10 +85,10 @@ pulseWidthUpdateVoice3PulseWidthValue:
  * Subroutine
  * ----------
  *
- * Updates the global variable "currentVoice3EnvelopeModulatePulseWidth" which the
+ * Updates the global variable "currentLfoModulatePulseWidth" which the
  * current value of the "Voice 3 special features" input (pulse) "neg"
  *
- * Reads global variable:  voice3FeaturesPulseWidthNegative
+ * Reads global variable:  lfoPulseWidthNegative
  *
  * Writes global variable: currentVoice3PulseWidthNegative
  *
@@ -97,7 +97,7 @@ pulseWidthUpdateVoice3PulseWidthValue:
 pulseWidthUpdateVoice3PulseWidthNegativeValue:
 {
     // load the current value of the "Voice 3 special features" input (pulse) "neg"
-    loadPointerToZPR(voice3FeaturesPulseWidthNegative, ZPR_7)
+    loadPointerToZPR(lfoPulseWidthNegative, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into the global variable for easier access
@@ -123,7 +123,7 @@ pulseWidthCalculateModulationValue:
 {
     // load current value of voice #3 envelope (0-255)
     // and save it into ZPR_1
-    lda SID.ENVELOPE_VOICE_3
+    lda lfoValue
     sta ZPR_1_LO
     lda #0
     sta ZPR_1_HI
@@ -345,7 +345,7 @@ pulseWidthCalculateModulatedValuesForAllVoices:
  *
  * Reads global variables:  currentSidVoice1PulseWidth, currentSidVoice2PulseWidth,
  *                          currentSidVoice3PulseWidth, currentVoice3PulseWidthNegative,
- *                          currentVoice3EnvelopeModulatePulseWidth
+ *                          currentLfoModulatePulseWidth
  *
  * Writes global variable:  currentSidVoice1ModulatedPulseWidth,
  *                          currentSidVoice2ModulatedPulseWidth,
@@ -356,7 +356,7 @@ pulseWidthCalculateModulatedValuesForAllVoices:
 pulseWidthUpdateModulatedValuesIfNeccessary:
 {
     // check if voice #3 envelope should modulate the pulse width
-    lda currentVoice3EnvelopeModulatePulseWidth
+    lda currentLfoModulatePulseWidth
     cmp #0
     beq exit
 

@@ -20,45 +20,6 @@ logoSetupSprites:
     sprite4SetBlockRegister(spriteLogo5);
     sprite5SetBlockRegister(spriteLogo6);
 
-    jsr logoSetupMainLogo
-
-    rts
-}
-
-logoSetupMainLogo:
-{
-    // The first 4 sprites ("mono") are dark gray
-    lda #DARK_GRAY
-    sta VIC.SPRITE_0_COLOR
-    sta VIC.SPRITE_1_COLOR
-    sta VIC.SPRITE_2_COLOR
-    sta VIC.SPRITE_3_COLOR
-
-    // The last two sprites ("SID") are white
-    lda #WHITE
-    sta VIC.SPRITE_4_COLOR
-    sta VIC.SPRITE_5_COLOR
-
-    // center the logo horizontally
-    .var logoLeft = 320 / 2 - 144 / 2
-    
-    // align the logo to the bottom, leaving space for the legal notice
-    .var logoTop = 200 - 21 - 15
-    
-
-    // set all logo sprites accordingly
-    sprite0SetPosition(logoLeft + 0,   logoTop);
-    sprite1SetPosition(logoLeft + 24,  logoTop);
-    sprite2SetPosition(logoLeft + 48,  logoTop);
-    sprite3SetPosition(logoLeft + 72,  logoTop);
-    sprite4SetPosition(logoLeft + 96,  logoTop);
-    sprite5SetPosition(logoLeft + 120, logoTop);
-
-    rts
-}
-
-logoSetupMenuLogo:
-{
     // The first 4 sprites ("mono") are dark gray
     lda #YELLOW
     sta VIC.SPRITE_0_COLOR
@@ -86,7 +47,6 @@ logoSetupMenuLogo:
     sprite5SetPosition(logoLeft + 120, logoTop);
 
     rts
-
 }
 
 
@@ -118,30 +78,5 @@ logoHide:
 {
     lda #0
     sta VIC.SPRITE_ACTIVE
-    rts
-}
-
-
-/* -------------------------------------------------------------------
- * Subroutine
- * ----------
- *
- * If second page, showx the logo, otherwise hides the logo
- *
- * Reads global variables: currentPage
- *               
- * ---------------------------------------------------------------- */ 
-
-logoShowIfCurrentPageIsLast:
-{
-    lda #1
-    cmp currentPage
-    bne hideLogo
-    
-    jsr logoShow
-    rts
-
-hideLogo:
-    jsr logoHide
     rts
 }

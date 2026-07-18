@@ -4,26 +4,26 @@
  * Subroutine
  * ----------
  *
- * Updates the global variable "currentVoice3EnvelopeModulateFilter" which the
+ * Updates the global variable "currentLfoModulateFilter" which the
  * current value of the "Voice 3 special features" input "mod filter"
  *
- * Reads global variable:  voice3FeaturesModulateFilter
+ * Reads global variable:  lfoModulateFilter
  *
- * Writes global variable: currentVoice3EnvelopeModulateFilter
+ * Writes global variable: currentLfoModulateFilter
  *
  * ---------------------------------------------------------------- */ 
  
-filterUpdateVoice3EnvelopeModulateFilterValue:
+filterUpdateLfoModulateFilterValue:
 {
     // load the current value of the "Voice 3 special features" input "mod filter"
-    loadPointerToZPR(voice3FeaturesModulateFilter, ZPR_7)
+    loadPointerToZPR(lfoModulateFilter, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into the global variable for easier access
-    sta currentVoice3EnvelopeModulateFilter
+    sta currentLfoModulateFilter
 
     // check if voice #3 envelope should modulate the filter cutoff
-    lda currentVoice3EnvelopeModulateFilter
+    lda currentLfoModulateFilter
     cmp #0
     bne exit
 
@@ -45,10 +45,10 @@ exit:
  * Subroutine
  * ----------
  *
- * Updates the global variable "currentVoice3EnvelopeModulatePulseWidth" which the
+ * Updates the global variable "currentLfoModulatePulseWidth" which the
  * current value of the "Voice 3 special features" input "cutoff"
  *
- * Reads global variable:  voice3FeaturesFilterCutoff
+ * Reads global variable:  lfoFilterCutoff
  *
  * Writes global variable: currentVoice3FilterCutoff:
 
@@ -58,7 +58,7 @@ exit:
 filterUpdateVoice3FilterCutoffValue:
 {
     // load the current value of the "Voice 3 special features" input "cutoff"
-    loadPointerToZPR(voice3FeaturesFilterCutoff, ZPR_7)
+    loadPointerToZPR(lfoFilterCutoff, ZPR_7)
     structLoadWordToXAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into the global variable for easier access
@@ -73,10 +73,10 @@ filterUpdateVoice3FilterCutoffValue:
  * Subroutine
  * ----------
  *
- * Updates the global variable "currentVoice3EnvelopeModulatePulseWidth" which the
+ * Updates the global variable "currentLfoModulatePulseWidth" which the
  * current value of the "Voice 3 special features" input (cutoff) "neg"
  *
- * Reads global variable:  voice3FeaturesFilterCutoffNegative
+ * Reads global variable:  lfoFilterCutoffNegative
  *
  * Writes global variable: currentVoice3FilterCutoffNegative
  *
@@ -85,7 +85,7 @@ filterUpdateVoice3FilterCutoffValue:
 filterUpdateVoice3FilterCutoffNegativeValue:
 {
     // load the current value of the "Voice 3 special features" input (cutoff) "neg"
-    loadPointerToZPR(voice3FeaturesFilterCutoffNegative, ZPR_7)
+    loadPointerToZPR(lfoFilterCutoffNegative, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into the global variable for easier access
@@ -111,7 +111,7 @@ filterCalculateModulationValue:
 {
     // load current value of voice #3 envelope (0-255)
     // and save it into ZPR_1
-    lda SID.ENVELOPE_VOICE_3
+    lda lfoValue
     sta ZPR_1_LO
     lda #0
     sta ZPR_1_HI
@@ -288,7 +288,7 @@ save:
  * and calculates the modulated pulse widths for all voices
  * if neccessary.
  *
- * Reads global variables:  currentVoice3EnvelopeModulateFilter,
+ * Reads global variables:  currentLfoModulateFilter,
  *                          sidCurrentFilterCutoffFrequency,
  *                          currentVoice3FilterCutoffNegative
  *                          
@@ -299,7 +299,7 @@ save:
 filterUpdateModulatedCutoffValueIfNeccessary:
 {
     // check if voice #3 envelope should modulate the pulse width
-    lda currentVoice3EnvelopeModulateFilter
+    lda currentLfoModulateFilter
     cmp #0
     beq exit
 

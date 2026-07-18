@@ -244,9 +244,15 @@ sidUpdateAllRegisters:
     jsr sidUpdateResetOscillatorVoice2
     jsr sidUpdateResetOscillatorVoice3
 
-    // update voice 3 special features
-    jsr pulseWidthUpdateVoice3EnvelopeModulatePulseWidthValue
-    jsr filterUpdateVoice3EnvelopeModulateFilterValue
+    // update LFO
+    jsr lfoUpdateLfoCycleLengthValue
+    jsr lfoUpdateLfoSquareWaveValue
+    jsr lfoUpdateLfoResetOscillatorValue
+    jsr lfoUpdateLfoModulateWithVoice3EnvelopeValue
+    jsr lfoUpdateLfoModulatePitchValue
+    jsr pulseWidthUpdateLfoModulatePulseWidthValue
+    jsr filterUpdateLfoModulateFilterValue
+    jsr lfoUpdateLfoPitchValue
     jsr pulseWidthUpdateVoice3PulseWidthValue
     jsr pulseWidthUpdateVoice3PulseWidthNegativeValue
     jsr filterUpdateVoice3FilterCutoffValue
@@ -1009,7 +1015,7 @@ controlByte:
 sidUpdateVoice3SustainRelease:
 {
     // check if ((NOT muteVoice3) AND currentVelocitySustain AND currentVelocityUse)
-    loadPointerToZPR(voice3FeaturesInputMuteVoice3, ZPR_7)
+    loadPointerToZPR(lfoInputMuteVoice3, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
     eor #$FF
     and currentVelocitySustain
@@ -1335,7 +1341,7 @@ saveUseLowpassFilter:
     // -----------------------------------------
 
     // load the current value of the mute voice 3 input
-    loadPointerToZPR(voice3FeaturesInputMuteVoice3, ZPR_7)
+    loadPointerToZPR(lfoInputMuteVoice3, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // check if voice #3 should be muted

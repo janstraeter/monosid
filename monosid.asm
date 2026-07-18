@@ -1,7 +1,4 @@
 /* -----------------------------------------------------------------------------------------------------------------------
- *
- * monosid
- * -------
  * 
  * ░▒███████████████████████████████████████████████████████████████████▓▓█▓▒█▓▒▓░   ░▓▓▓▓▓▒      ▓▓▓▓▓░░▓▓▓▓▓▓▓▓▒         
  * ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▒▒▓░▓░  ░▓▓▓▓▓▓▓▓▓▓▓▒   ▓▓▓▓▓░░▓▓▓▓▓▓▓▓▓▓▓▓▓▓░   
@@ -15,11 +12,14 @@
  * ████     ▓████░     ░█████ ░▓████████████░ ░████▓     █████░ ░▒████████████░  ░▓▓▓▓▓▓▓▓▓▓▓▓░  ▓▓▓▓▓░░▓▓▓▓▓▓▓▓▓▓▓▓▓▓░   
  * ████     ▓████░     ░█████   ░▒███████▒▒░  ░████▓     █████░   ░▒▓██████▓▒░      ░▓▓▓▓▓▓▒     ▓▓▓▓▓░░▓▓▓▓▓▓▓▓▓▓░       
  * 
- * A litte MIDI capable mono-synth for the SID chip of the good old C64
+ * A litte MIDI capable mono-synth for the Commodore 64´s SID chip
  *
  * ---------------------------------------------------------------------------------------------------------------------- */ 
 
+
+// *******************************************************************
 .file [name="monosid.prg", segments="Start, MainProgram, SpriteData, Subroutines, Data, Patches"]
+// *******************************************************************
 
 
 // *******************************************************************
@@ -42,7 +42,6 @@
 #import "src/screenmemoryfunctions.asm"
 #import "src/structs.asm"
 
-
 /* -------------------------------------------------------------------
  *
  * Strings and global variables
@@ -53,21 +52,34 @@
 #import "src/lookuptables.asm"
 #import "src/globals.asm"
 
+
 // *******************************************************************
 .segment Patches [startAfter="Data"]
 // *******************************************************************
 
+/* -------------------------------------------------------------------
+ *
+ * Patch data - a pointer to a buffer - it needs to be at the end
+ * of the program so it can use a couple of kilobytes which
+ * do not interfere with the rest of the program.
+ *
+ * ---------------------------------------------------------------- */ 
+
 patches:
     .byte(0)
-
 
 
 // *******************************************************************
 .segment SpriteData [start=$2000]
 // *******************************************************************
 
-#import "src/spritedata.asm"
+/* -------------------------------------------------------------------
+ *
+ * Sprite data (currently only the logo)
+ *
+ * ---------------------------------------------------------------- */ 
 
+#import "src/spritedata.asm"
 
 
 // *******************************************************************
@@ -86,6 +98,7 @@ patches:
 #import "src/filter.asm"
 #import "src/input.asm"
 #import "src/logo.asm"
+#import "src/lfo.asm"
 #import "src/math.asm"
 #import "src/menu.asm"
 #import "src/midi.asm"
@@ -112,6 +125,10 @@ patches:
 
 mainProgram:
 {
+    // ------------------------------------------------
+    // Initialization
+    // ------------------------------------------------
+
     // detect if PAL or NTSC
     jsr detectC64Model
 
@@ -137,11 +154,17 @@ mainProgram:
 
     // initialize a custom ISR for the Kernal functionality
     jsr setupCustomInterruptServiceRoutine
+    jsr lfoSetupTimer
 
     // initialize the MIDI interface (if any is present)
     jsr midiInit
+    jsr lfoCalculateModuloInc
+    
+    // ------------------------------------------------
+    // Begin main loop
+    // ------------------------------------------------
 
-waitLoop:
+mainLoop:
     // check if the CIA interrupt called our custom ISR,
     // if so, call the emulation of the default Kernal ISR
     // so the Kernal routines can work properly
@@ -169,7 +192,6 @@ doNotCallEmulationOfKernalISR:
     jsr midiUpdateCurrentNote
 
 ignoreMidiNote:
-
     // Update the SID chip
     jsr updateVoiceFrequenciesIfNecessary
     jsr pulseWidthUpdateModulatedValuesIfNeccessary
@@ -184,7 +206,7 @@ ignoreMidiNote:
 	beq modeMenu
 	cmp #MODE.PATCH_SELECTOR
 	beq modePatchSelector
-    jmp waitLoop
+    jmp mainLoop
 
 modeMain:
 	// Switch for the main sub mode
@@ -193,7 +215,7 @@ modeMain:
 	beq subModeMainSelectInput
 	cmp #MODE_MAIN_SUBMODE.INPUT_EDITOR
 	beq subModeMainInputEditor
-    jmp waitLoop
+    jmp mainLoop
 
 subModeMainSelectInput:
     // check for pressed keys,
@@ -201,13 +223,13 @@ subModeMainSelectInput:
     jsr updateCurrentKeyboardPianoOctave
     jsr updateCurrentKeyboardNote
     jsr mainModeHandleKeyboardInputForSubModeSelectInput
-    jmp waitLoop
+    jmp mainLoop
 
 subModeMainInputEditor:
     // check for pressed keys, update content of editor,
     // remove editor and update value if return key pressed
     jsr inputHandleKeyboardInputForEditor
-    jmp waitLoop
+    jmp mainLoop
 
 modeMenu:
 	// Switch for the menu submode
@@ -220,32 +242,32 @@ modeMenu:
     beq subModeMenuRenamePatch
     cmp #MODE_MENU_SUBMODE.SET_MIDI_CHANNEL
     beq subModeMenuSetMidiChannel
-    jmp waitLoop
+    jmp mainLoop
 
 subModeMenuSelectItem:
     // handle the keyboard input for the main menu
     jsr menuHandleKeyboardInput
-    jmp waitLoop
+    jmp mainLoop
 
 subModeMenuShowErrorMessage:
     // wait for any key pressed after a disk error happend 
     jsr KERNAL.GETIN
     cmp #$00
     bne *+5
-    jmp waitLoop
+    jmp mainLoop
     jsr switchToModeMenu
-    jmp waitLoop
+    jmp mainLoop
 
 subModeMenuRenamePatch:
 subModeMenuSetMidiChannel:
     // handle the keyboard input for the main menu input editor
     jsr menuHandleKeyboardInputForEditor
-    jmp waitLoop
+    jmp mainLoop
 
 modePatchSelector:
     // handle the keyboard input for the patch selector
     jsr patchSelectorHandleKeyboardInput
-    jmp waitLoop
+    jmp mainLoop
 }
 
 
@@ -267,12 +289,11 @@ switchToModeMain:
     sta currentMode
     lda #MODE_MAIN_SUBMODE.SELECT_INPUT
     sta currentSubMode
+    jsr logoHide
     jsr userinterfaceInitScreen
     jsr userinterfaceDrawMain
     jsr userinterfaceAddModuleFocus
     jsr userinterfaceAddInputFocus
-    jsr logoSetupMainLogo
-    jsr logoShowIfCurrentPageIsLast
     rts
 }
 
@@ -297,7 +318,6 @@ switchToModeMenu:
     sta currentSubMode
     lda #0
     sta currentMenuIndex
-    jsr logoSetupMenuLogo
     jsr logoShow
     jsr menuDrawMain
     jsr menuAddItemFocus
@@ -339,13 +359,25 @@ switchToModePatchSelector:
  *
  * Sets up the custom ISR. Because the C64 is so slow, we need
  * a very, very fast interrupt routine. Almost everything must be
- * done in the main loop, only reading the MIDI input can be
- * done via interrupt. But we need a machanism to get the timing
- * for the jiffy clock, cursor blinking and keyboard reading right.
- * So we setup a custom ISR - this ISR is called 60 times per second,
- * as setup by the Kernal. This custom ISR only indicates to the
- * main loop, that the usual Kernal stuff is due - but does not do the
- * actual updating in the ISR itself. 
+ * done in the main loop.
+ *
+ * Reading the MIDI input (if a MIDI cartridge is installed) and
+ * calculating the next value of the LFO have to be done via interrupt,
+ * there is no way around it.
+ *
+ * But everything else needs to be handled in the main loop, otherwise
+ * we would probably lose MIDI bytes.
+ *
+ * We need to know when it is time to update the jiffy clock,
+ * cursor blinking etc. The standard Kernal stuff.
+ *
+ * Therefore we setup a custom ISR - this ISR is called 60 times per second,
+ * as setup by the Kernal. The ISR only indicates to the
+ * main loop, that the standrd Kernal stuff is due - but does not do the
+ * actual updating in the ISR itself.
+ *
+ * For the LFO we set up a second timer (CIA1 Timer B), which calles
+ * this ISR 200x per second. 
  *
  * ---------------------------------------------------------------- */ 
 
@@ -375,18 +407,38 @@ setupCustomInterruptServiceRoutine:
  *
  * The actual ISR, for explaination see above.
  *
+ * This ISR will be called by CIA1 Timer A and B underflow
+ *
  * ---------------------------------------------------------------- */ 
 
 customInterruptServiceRoutine:
 {
     // acknowledge the interrupt
-    lda CIA.INTERRUPT_CONTROL_STATE
-    
+    lda CIA1.INTERRUPT_CONTROL_STATE
+
+    // save the value, because the value of the register will change with every read
+    sta interruptSource
+
+    // check if timer A -> Kernal ISR
+    and #%00000001          // Bit 0 = Timer A underflow
+    beq checkTimerB
+
     // set the variable to 1, to indicate the main loop
     // to call the Kernal ISR emulation
     lda #1
     sta callEmulationOfKernalISR
+    jmp exit
 
+checkTimerB:
+    // check Timer B -> LFO timer
+    lda interruptSource
+    and #%00000010          // Bit 1 = Timer B underflow
+    beq exit
+
+    // is Timer B underflow, so calculate next value of the LFO
+    jsr lfoCalculateValue
+
+exit:
     // restore the registers from the stack and return
     pla
     tay
@@ -394,6 +446,9 @@ customInterruptServiceRoutine:
     tax
     pla
     rti
+
+interruptSource:
+    .byte(0)
 }
 
 
@@ -643,6 +698,11 @@ updateVoiceFrequenciesIfNecessary:
     lda midiPitchBendValueChangedFlag
     bne pitchBendValueHasChanged
 
+    // check if the LFO modulates the pitch,
+    // if so then the frequencies must be updated
+    lda lfoModulatePitchValue
+    bne updateFrequencies
+
     // if the pitch bend wheel was not moved check if the currently played note has changed
     // and the new note is a playable note (and not 255 indicating "no note")
     // if either of this checks is false, note frequency update is neccessary
@@ -652,7 +712,7 @@ updateVoiceFrequenciesIfNecessary:
     cmp #$FF
     beq frequenciesHaveNotChanged
 
-    // note has changed and is not a playable note, update the voice frequencies
+    // note has changed, update the voice frequencies
     jmp updateFrequencies
 
 pitchBendValueHasChanged:
@@ -662,6 +722,7 @@ pitchBendValueHasChanged:
 
 updateFrequencies:
     // calculate the (possibly detuned) frequencies for all voices and update the SID chip
+    jsr pitchCalculateGlobalDetuning
     jsr pitchCalculateAllVoiceFrequencies
     jsr sidUpdateVoiceFrequencies
 
@@ -686,6 +747,9 @@ playCurrentNote:
     // ceck if new note to play, if no -> exit
     lda noteHasChangedFlag
     beq exit
+
+    // reset the LFO if necessary
+    jsr lfoResetOscillatorIfNecessary
 
     // update the gate bits
     jsr sidUpdateGateBitsForAllVoices
@@ -849,9 +913,6 @@ cursorKeyPressedFinalize:
     // swap the page
     jsr userinterfaceInitScreen
     jsr userinterfaceDrawMain
-
-    // show the logo if necessary
-    jsr logoShowIfCurrentPageIsLast
 
     // after the redrawing of the whole screen, add the focus
     jsr userinterfaceAddModuleFocus

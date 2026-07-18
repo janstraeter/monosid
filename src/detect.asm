@@ -255,10 +255,10 @@ detectSequentialOrNamesoft:
 
     // deactivate CIA1, so it can not mess up our code
     lda #$7F
-    sta CIA.INTERRUPT_CONTROL_STATE
+    sta CIA1.INTERRUPT_CONTROL_STATE
 
     // clear CIA1 for good measure
-    lda CIA.INTERRUPT_CONTROL_STATE
+    lda CIA1.INTERRUPT_CONTROL_STATE
 
     // set our test IRQ handler
     lda #<testIrqHandler
@@ -296,7 +296,7 @@ detectSequentialOrNamesoft:
 
     // re-activate the CIA1 timer
     lda #$81
-    sta CIA.INTERRUPT_CONTROL_STATE
+    sta CIA1.INTERRUPT_CONTROL_STATE
 
     // set the IRQ vector back to the original
     lda #<KERNAL.INTERRUPT_ROUTINE

@@ -4,6 +4,67 @@
  * Subroutine
  * ----------
  *
+ * Calculates the the global detuning value for all voices.
+ *
+ * Formula:
+ * globalDetuning = midiPitchBendValue + (lfoModulatePitchValue * lfoPitchValue / 255)
+ *
+ * Parameters:              Accu - index of voice (0-2)
+ * 
+ * Reads global variables:  voiceDetunings, midiPitchBendValueLo
+ *                          midiPitchBendValueHi, freqTablePalLo
+ *                          freqTablePalHi
+ *
+ * Writes global variables: voiceFrequencies
+ *
+ * ---------------------------------------------------------------- */ 
+
+pitchCalculateGlobalDetuning:
+{
+    lda midiPitchBendValueLo
+    sta globalDetuningLo
+    lda midiPitchBendValueHi
+    sta globalDetuningHi
+
+    lda lfoModulatePitchValue
+    beq exit
+
+    lda lfoPitchValue
+    sta ZPR_1_LO
+    lda lfoPitchValue+1
+    sta ZPR_1_HI
+
+    lda lfoValue
+    sta ZPR_3_LO
+    lda #0
+    sta ZPR_3_HI
+
+    jsr mathMultiply16Bit
+
+    // The full 32-bit result is in (from high to low bytes):
+    // ZPR_2_HI ZPR_2_LO ZPR_1_HI ZPR_1_LO.
+    // We use ZPR_2_LO and ZPR_1_HI which is equal
+    // to the result / 256 (8 bit shifts to the right).
+    // It should be a division by 255 really, but as a division is
+    // computational very costly and the difference in the result is
+    // barely audible we use this slightly wrong but much easier way.
+    clc
+    lda globalDetuningLo
+    adc ZPR_1_HI
+    sta globalDetuningLo
+    lda globalDetuningHi
+    adc ZPR_2_LO
+    sta globalDetuningHi
+
+exit:
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
  * Calculates the (possibly detuned) frequency for a voice
  *
  * Parameters:              Accu - index of voice (0-2)
@@ -34,11 +95,19 @@ pitchCalculateVoiceFrequency:
 
     // add the value of the MIDI pitch bend wheel
     // in cent (signed 16 bit integer) and save the result
-    clc
+    /*clc
     lda midiPitchBendValueLo
     adc voiceDetuningLo
     sta detuningLo
     lda midiPitchBendValueHi
+    adc voiceDetuningHi
+    sta detuningHi*/
+
+    clc
+    lda globalDetuningLo
+    adc voiceDetuningLo
+    sta detuningLo
+    lda globalDetuningHi
     adc voiceDetuningHi
     sta detuningHi
 

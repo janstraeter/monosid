@@ -457,15 +457,21 @@
     .label VELOCITY_USE                            = 61
     .label VELOCITY_SUSTAIN                        = 62
 
-    // voice 3 special features
-    .label VOICE_3_FEATURES_INPUT_MUTE_VOICE_3     = 63
-    .label VOICE_3_FEATURES_MODULATE_PULSE_WIDTH   = 64
-    .label VOICE_3_FEATURES_MODULATE_FILTER        = 65
-    .label VOICE_3_FEATURES_PULSE_WIDTH            = 66
-    .label VOICE_3_FEATURES_PULSE_WIDTH_NEGATIVE   = 68
-    .label VOICE_3_FEATURES_FILTER_CUTOFF          = 69
-    .label VOICE_3_FEATURES_FILTER_CUTOFF_NEGATIVE = 71
+    // LFO
+    .label LFO_MOD_PITCH                           = 63
+    .label LFO_MOD_PULSE                           = 64
+    .label LFO_MOD_FILTER                          = 65
+    .label LFO_SQUARE_WAVE                         = 66
+    .label LFO_RESET_OSC                           = 67
+    .label LFO_MOD_WITH_V3_EG                      = 68
+    .label LFO_MUTE_VOICE_3                        = 69
+    .label LFO_CYCLE_TIME                          = 70
+    .label LFO_PITCH                               = 72
+    .label LFO_PULSE                               = 74
+    .label LFO_PULSE_NEG                           = 76
+    .label LFO_CUTOFF                              = 77
+    .label LFO_CUTOFF_NEG                          = 79
 
-    // 8 bytes reserved for future use
-    .label RESERVED_FOR_FUTURE_USE                 = 72  
+    // 10 bytes reserved for future use
+    .label RESERVED_FOR_FUTURE_USE                 = 80  
 }

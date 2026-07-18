@@ -271,14 +271,20 @@ patchesTransferFromModulesToPatch:
     patchesTransferByteFromInputField(velocityUse, STRUCT_PATCH.VELOCITY_USE)                            
     patchesTransferByteFromInputField(velocitySustain, STRUCT_PATCH.VELOCITY_SUSTAIN)                        
 
-    // voice 3 special features
-    patchesTransferByteFromInputField(voice3FeaturesInputMuteVoice3, STRUCT_PATCH.VOICE_3_FEATURES_INPUT_MUTE_VOICE_3)     
-    patchesTransferByteFromInputField(voice3FeaturesModulatePulseWidth, STRUCT_PATCH.VOICE_3_FEATURES_MODULATE_PULSE_WIDTH)   
-    patchesTransferByteFromInputField(voice3FeaturesModulateFilter, STRUCT_PATCH.VOICE_3_FEATURES_MODULATE_FILTER)        
-    patchesTransferWordFromInputField(voice3FeaturesPulseWidth, STRUCT_PATCH.VOICE_3_FEATURES_PULSE_WIDTH)            
-    patchesTransferByteFromInputField(voice3FeaturesPulseWidthNegative, STRUCT_PATCH.VOICE_3_FEATURES_PULSE_WIDTH_NEGATIVE)   
-    patchesTransferWordFromInputField(voice3FeaturesFilterCutoff, STRUCT_PATCH.VOICE_3_FEATURES_FILTER_CUTOFF)          
-    patchesTransferByteFromInputField(voice3FeaturesFilterCutoffNegative, STRUCT_PATCH.VOICE_3_FEATURES_FILTER_CUTOFF_NEGATIVE)
+    // LFO
+    patchesTransferByteFromInputField(lfoModulatePitch, STRUCT_PATCH.LFO_MOD_PITCH)
+    patchesTransferByteFromInputField(lfoModulatePulseWidth, STRUCT_PATCH.LFO_MOD_PULSE)
+    patchesTransferByteFromInputField(lfoModulateFilter, STRUCT_PATCH.LFO_MOD_FILTER)
+    patchesTransferByteFromInputField(lfoSquareWave, STRUCT_PATCH.LFO_SQUARE_WAVE)
+    patchesTransferByteFromInputField(lfoResetOscillator, STRUCT_PATCH.LFO_RESET_OSC)
+    patchesTransferByteFromInputField(lfoModulateWithVoice3Envelope, STRUCT_PATCH.LFO_MOD_WITH_V3_EG)
+    patchesTransferByteFromInputField(lfoInputMuteVoice3, STRUCT_PATCH.LFO_MUTE_VOICE_3)
+    patchesTransferWordFromInputField(lfoCycleLength, STRUCT_PATCH.LFO_CYCLE_TIME)
+    patchesTransferWordFromInputField(lfoPitch, STRUCT_PATCH.LFO_PITCH)
+    patchesTransferWordFromInputField(lfoPulseWidth, STRUCT_PATCH.LFO_PULSE)
+    patchesTransferByteFromInputField(lfoPulseWidthNegative, STRUCT_PATCH.LFO_PULSE_NEG)
+    patchesTransferWordFromInputField(lfoFilterCutoff, STRUCT_PATCH.LFO_CUTOFF)
+    patchesTransferByteFromInputField(lfoFilterCutoffNegative, STRUCT_PATCH.LFO_CUTOFF_NEG)
 
     rts
 }
@@ -408,14 +414,20 @@ patchesTransferFromPatchToModules:
     patchesTransferByteToInputField(STRUCT_PATCH.VELOCITY_USE, velocityUse)                            
     patchesTransferByteToInputField(STRUCT_PATCH.VELOCITY_SUSTAIN, velocitySustain)                        
 
-    // voice 3 special features
-    patchesTransferByteToInputField(STRUCT_PATCH.VOICE_3_FEATURES_INPUT_MUTE_VOICE_3, voice3FeaturesInputMuteVoice3)     
-    patchesTransferByteToInputField(STRUCT_PATCH.VOICE_3_FEATURES_MODULATE_PULSE_WIDTH, voice3FeaturesModulatePulseWidth)   
-    patchesTransferByteToInputField(STRUCT_PATCH.VOICE_3_FEATURES_MODULATE_FILTER, voice3FeaturesModulateFilter)        
-    patchesTransferWordToInputField(STRUCT_PATCH.VOICE_3_FEATURES_PULSE_WIDTH, voice3FeaturesPulseWidth)            
-    patchesTransferByteToInputField(STRUCT_PATCH.VOICE_3_FEATURES_PULSE_WIDTH_NEGATIVE, voice3FeaturesPulseWidthNegative)   
-    patchesTransferWordToInputField(STRUCT_PATCH.VOICE_3_FEATURES_FILTER_CUTOFF, voice3FeaturesFilterCutoff)          
-    patchesTransferByteToInputField(STRUCT_PATCH.VOICE_3_FEATURES_FILTER_CUTOFF_NEGATIVE, voice3FeaturesFilterCutoffNegative)
+    // LFO
+    patchesTransferByteToInputField(STRUCT_PATCH.LFO_MOD_PITCH, lfoModulatePitch)
+    patchesTransferByteToInputField(STRUCT_PATCH.LFO_MOD_PULSE, lfoModulatePulseWidth)
+    patchesTransferByteToInputField(STRUCT_PATCH.LFO_MOD_FILTER, lfoModulateFilter)
+    patchesTransferByteToInputField(STRUCT_PATCH.LFO_SQUARE_WAVE, lfoSquareWave)
+    patchesTransferByteToInputField(STRUCT_PATCH.LFO_RESET_OSC, lfoResetOscillator)
+    patchesTransferByteToInputField(STRUCT_PATCH.LFO_MOD_WITH_V3_EG, lfoModulateWithVoice3Envelope)
+    patchesTransferByteToInputField(STRUCT_PATCH.LFO_MUTE_VOICE_3, lfoInputMuteVoice3)
+    patchesTransferWordToInputField(STRUCT_PATCH.LFO_CYCLE_TIME, lfoCycleLength)
+    patchesTransferWordToInputField(STRUCT_PATCH.LFO_PITCH, lfoPitch)
+    patchesTransferWordToInputField(STRUCT_PATCH.LFO_PULSE, lfoPulseWidth)
+    patchesTransferByteToInputField(STRUCT_PATCH.LFO_PULSE_NEG, lfoPulseWidthNegative)
+    patchesTransferWordToInputField(STRUCT_PATCH.LFO_CUTOFF, lfoFilterCutoff)
+    patchesTransferByteToInputField(STRUCT_PATCH.LFO_CUTOFF_NEG, lfoFilterCutoffNegative)
 
     rts
 }

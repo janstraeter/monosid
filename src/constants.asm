@@ -17,7 +17,10 @@
     .label CURSOR_CURRENT_LINE      = $D6
 }
 
-.namespace CIA {
+.namespace CIA1 {
+    .label TIMER_B_LO               = $dc06
+    .label TIMER_B_HI               = $dc07
+    .label CONTROL_B                = $dc0f
     .label INTERRUPT_CONTROL_STATE  = $dc0d
 }
 
@@ -337,17 +340,23 @@
     .label VELOCITY_USE             = 46
     .label VELOCITY_SUS             = 47
 
-    .label V3SPECIAL_MUTE           = 48
-    .label V3SPECIAL_MOD_PULSE      = 49
-    .label V3SPECIAL_MOD_FILTER     = 50
-    .label V3SPECIAL_PULSE          = 51
-    .label V3SPECIAL_PULSE_NEG      = 52
-    .label V3SPECIAL_CUTOFF         = 53
-    .label V3SPECIAL_CUTOFF_NEG     = 54
+    .label LFO_MOD_PITCH            = 48
+    .label LFO_MOD_PULSE            = 49
+    .label LFO_MOD_FILTER           = 50
+    .label LFO_SQUARE_WAVE          = 51
+    .label LFO_RESET_OSC            = 52
+    .label LFO_MOD_WITH_V3_EG       = 53
+    .label LFO_MUTE_VOICE_3         = 54
+    .label LFO_CYCLE_TIME           = 55
+    .label LFO_PITCH                = 56
+    .label LFO_PULSE                = 57
+    .label LFO_PULSE_NEG            = 58
+    .label LFO_CUTOFF               = 59
+    .label LFO_CUTOFF_NEG           = 60
 }
 
 .label PATCHES_NUM                  = 64
-.label PATCH_MEMORY_SIZE            = 80
+.label PATCH_MEMORY_SIZE            = 90
 .label PATCH_ARRAY_MEMORY_SIZE      = PATCHES_NUM * PATCH_MEMORY_SIZE
 
 .label MENU_ITEMS_NUM               = 6
