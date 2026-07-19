@@ -492,6 +492,13 @@ patchesTransferFromPatchToModules:
 
 patchesPrepareForDiskIO:
 {
+    // ---------------------------------------------
+    // Reset MIDI cartridge, stop CIA2 Timer B,
+    // reset NMI service routine to standard
+    // ---------------------------------------------
+
+    jsr midiSwitchOff
+
     // ----------------------------------------------
     // Reset CIA1 Timer B to it's default values.
     // The Kernal uses this timer for it's internal
@@ -517,6 +524,17 @@ patchesPrepareForDiskIO:
     // allow interrupts again
     cli
 
+    // ---------------------------------------------
+    // reset IRQ routine to standard
+    // ---------------------------------------------
+
+    sei
+    lda #<KERNAL.INTERRUPT_ROUTINE
+    sta IRQ_VECTOR_LO
+    lda #>KERNAL.INTERRUPT_ROUTINE
+    sta IRQ_VECTOR_HI
+    cli
+
     // ----------------------------------------------
     // Stop playing any notes to avoid a hanging note
     // during disk I/O
@@ -532,12 +550,18 @@ patchesPrepareForDiskIO:
  * Subroutine
  * ----------
  *
- * Starts CIA1 Timer B again after any disk I/O
+ * Sets up all neccessary IRQ and NMI ISRs and timers again after a disk I/O
  *
  * ---------------------------------------------------------------- */ 
 
 patchesRestoreAfterDiskIO:
 {
+    // setup our custom ISR again
+    jsr setupCustomInterruptServiceRoutine
+
+    // initialize MIDI cartridge again
+    jsr midiInit
+
     // setup the CIA1 Timer B for the LFO again
     jsr lfoSetupTimer
 

@@ -6,6 +6,8 @@
  *
  * Sets up the MIDI support
  *
+ * Reads global variables: midiDetectedCartridge
+ *
  * ---------------------------------------------------------------- */ 
 
 midiInit: {
@@ -51,6 +53,71 @@ setupMaplin:
  * Subroutine
  * ----------
  *
+ * Switches off the MIDI support (necessary before disk I/O)
+ *
+ * Reads global variables: midiDetectedCartridge
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiSwitchOff:
+{
+    // ---------------------------------------------
+    // rest CIA2 Timer A to standard
+    // ---------------------------------------------
+
+    // suppress interrupts
+    sei
+
+    // stop timer B
+    lda #$00
+    sta CIA2.CONTROL_A
+
+    // set timer B to default latch $FFFF
+    lda #$ff
+    sta CIA2.TIMER_A_LO
+    sta CIA2.TIMER_A_HI
+
+    // bit7=0 -> clear/disable Timer A NMI
+    lda #%00000001
+    sta CIA2.INTERRUPT_CONTROL_STATE
+
+    // allow interrupts again
+    cli
+
+    // ---------------------------------------------
+    // reset MIDI cartridge to disable IRQs/NMIs
+    // ---------------------------------------------
+
+    // check if any MIDI cartridge is installed
+    lda midiDetectedCartridge
+    cmp #MIDI_CARTRIDGE.NONE
+    beq exit
+
+    // MIDI cartridge master reset
+    ldy #0
+    lda #MIDI_CARTRIDGE_MASTER_RESET
+    sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
+
+    // ---------------------------------------------
+    // reset NMI routine to standard
+    // ---------------------------------------------
+
+    sei
+    lda #<KERNAL.NMI_ROUTINE
+    sta NMI_VECTOR_LO
+    lda #>KERNAL.NMI_ROUTINE
+    sta NMI_VECTOR_HI
+    cli
+
+exit:
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
  * Sets up register addresses and initializes MIDI cartridge.
  * Version for: Sequential
  *
@@ -78,7 +145,7 @@ midiSetupCartridgeSequential:
 
     // initialize
     ldy #0
-    lda #MIDI_CARTRIDGE_SEQUENTIAL.MASTER_RESET_VALUE
+    lda #MIDI_CARTRIDGE_MASTER_RESET
     sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
     lda #MIDI_CARTRIDGE_SEQUENTIAL.SETUP_VALUE
     sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
@@ -124,7 +191,7 @@ midiSetupCartridgeNamesoft:
 
     // initialize
     ldy #0
-    lda #MIDI_CARTRIDGE_NAMESOFT.MASTER_RESET_VALUE
+    lda #MIDI_CARTRIDGE_MASTER_RESET
     sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
     lda #MIDI_CARTRIDGE_NAMESOFT.SETUP_VALUE
     sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
@@ -164,7 +231,7 @@ midiSetupCartridgeDatel:
 
     // initialize
     ldy #0
-    lda #MIDI_CARTRIDGE_DATEL.MASTER_RESET_VALUE
+    lda #MIDI_CARTRIDGE_MASTER_RESET
     sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
     lda #MIDI_CARTRIDGE_DATEL.SETUP_VALUE
     sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
@@ -207,7 +274,7 @@ midiSetupCartridgePassport:
 
     // initialize
     ldy #0
-    lda #MIDI_CARTRIDGE_PASSPORT.MASTER_RESET_VALUE
+    lda #MIDI_CARTRIDGE_MASTER_RESET
     sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
     lda #MIDI_CARTRIDGE_PASSPORT.SETUP_VALUE
     sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
@@ -253,13 +320,21 @@ midiSetupCartridgeMaplin:
 
     // initialize
     ldy #0
-    lda #MIDI_CARTRIDGE_MAPLIN.MASTER_RESET_VALUE
+    lda #MIDI_CARTRIDGE_MASTER_RESET
     sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
     lda #MIDI_CARTRIDGE_MAPLIN.SETUP_VALUE
     sta (ZPR_MIDI_CONTROL_REGISTER_ADDRESS), y
 
     rts
 }
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Sets up the MIDI IRQ routine
+ *
+ * ---------------------------------------------------------------- */ 
 
 midiSetupIrqRoutine:
 {
@@ -273,6 +348,15 @@ midiSetupIrqRoutine:
     rts
 }
 
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Sets up the MIDI NMI routine
+ *
+ * ---------------------------------------------------------------- */ 
+
 midiSetupNmiRoutine:
 {
     // setup the NMI interrupt service routine
@@ -285,6 +369,14 @@ midiSetupNmiRoutine:
     rts
 }
 
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Sets up the MIDI polling routine (via CIA2 Timer A and NMI)
+ *
+ * ---------------------------------------------------------------- */ 
 
 midiSetupNmiPollingRoutine:
 {
@@ -307,9 +399,9 @@ midiSetupNmiPollingRoutine:
     sta CIA2.INTERRUPT_CONTROL_STATE
 
     // Hook NMI vector
-    lda #<midiInterruptServiceRoutineNMI
+    lda #<midiInterruptServiceRoutinePolling
     sta NMI_VECTOR_LO
-    lda #>midiInterruptServiceRoutineNMI
+    lda #>midiInterruptServiceRoutinePolling
     sta NMI_VECTOR_HI
 
     // Start Timer A: continuous mode, count system clock
@@ -425,6 +517,76 @@ midiInterruptServiceRoutineNMI:
     tya
     pha
 
+    // read status register
+    ldy #0
+    lda (ZPR_MIDI_STATUS_REGISTER_ADDRESS), y
+
+    // check if byte recieved
+    bit RDRFBitSet
+    beq exit
+
+    // check if the recieved byte has an error
+    bit ErrorBitSet
+    bne isError
+
+    // load recieved MIDI byte
+    lda (ZPR_MIDI_RECIEVE_REGISTER_ADDRESS), y
+    
+    // store MIDI byte in ring buffer
+    ldx midiWritePtr
+    sta midiBuffer, x
+    
+    // increase write pointer (wrap around via AND)
+    inx
+    txa
+    and #MIDI_BUFFER_MASK
+    sta midiWritePtr
+
+exit:
+    pla
+    tay
+    pla
+    tax
+    pla
+    rti
+
+isError:
+    // read the recieve register to reset the error status,
+    // but then just exit and ignore this byte
+    lda (ZPR_MIDI_RECIEVE_REGISTER_ADDRESS), y
+    jmp exit
+
+RDRFBitSet:
+    // LSB high indicates recieved byte ready for reading
+    .byte(%00000001)
+
+ErrorBitSet:
+    // bits 6-4 high indicate that an error has happend and the recieved byte is probably corrupted
+    // bit 6 (Parity Error), bit 5 (Receiver Overrun), bit 4 (Framing Error)
+    // we do not check bit 6, because we do not use parity checking at all
+    .byte(%00110000)
+}
+
+
+/* -------------------------------------------------------------------
+ * Interrupt Service Routine
+ * -------------------------
+ *
+ * The NMI version of midiInterruptServiceRoutine for polling (via CIA2 Timer A)
+ *
+ * Writes global variables: midiLastRecievedByte
+ *
+ * ---------------------------------------------------------------- */ 
+
+midiInterruptServiceRoutinePolling:
+{
+    // in the NMI version we need to save the registers manually
+    pha
+    txa
+    pha
+    tya
+    pha
+
     // Read CIA2 interrupt control and status — this also acknowledges the NMI
     // Bit 0 is high = Timer A fired, continue   
     // if not Timer A it could be the RESTORE key, so exit
@@ -482,6 +644,17 @@ ErrorBitSet:
     .byte(%00110000)
 }
 
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Reads all MIDI bytes which are currently
+ * in the ring buffer and processes them
+ *
+ * Reads global variables: midiReadPtr, midiWritePtr
+ *
+ * ---------------------------------------------------------------- */ 
 
 midiProcessBuffer:
 {

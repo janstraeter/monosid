@@ -99,6 +99,7 @@
     .label CURSORCOLOR              = $0287
     .label CLS                      = $e544
     .label INTERRUPT_ROUTINE        = $ea31
+    .label NMI_ROUTINE              = $fe47
     .label GETIN                    = $ffe4
     .label PLOT                     = $FFF0
 
@@ -228,12 +229,13 @@
     .label MAPLIN                   = 5
 }
 
+.label MIDI_CARTRIDGE_MASTER_RESET  = $03
+
 .namespace MIDI_CARTRIDGE_SEQUENTIAL {
     .label CONTROL                  = $de00
     .label STATUS                   = $de02
     .label TRANSMIT                 = $de01
     .label RECIEVE                  = $de03
-    .label MASTER_RESET_VALUE       = $03
     .label SETUP_VALUE              = $95
 }
 
@@ -242,7 +244,6 @@
     .label STATUS                   = $de02
     .label TRANSMIT                 = $de01
     .label RECIEVE                  = $de03
-    .label MASTER_RESET_VALUE       = $03
     .label SETUP_VALUE              = $95
 }
 
@@ -251,7 +252,6 @@
     .label STATUS                   = $de06
     .label TRANSMIT                 = $de05
     .label RECIEVE                  = $de07
-    .label MASTER_RESET_VALUE       = $03
     .label SETUP_VALUE              = $92
 }
 
@@ -260,7 +260,6 @@
     .label STATUS                   = $de08
     .label TRANSMIT                 = $de09
     .label RECIEVE                  = $de09
-    .label MASTER_RESET_VALUE       = $03
     .label SETUP_VALUE              = $95
 }
 
@@ -269,7 +268,6 @@
     .label STATUS                   = $df00
     .label TRANSMIT                 = $df01
     .label RECIEVE                  = $df01
-    .label MASTER_RESET_VALUE       = $03
     .label SETUP_VALUE              = $96
 }
 
