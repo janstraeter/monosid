@@ -210,11 +210,11 @@ currentNoteWasPlayedByKeyboardFlag:
 
 voice1InputWaveform:
     createStructInput(INPUT_TYPE.WAVEFORM, 1, 4, 5, strInputNameVoiceWaveform, WAVEFORM.SQUARE, $00, sidUpdateVoice1WaveFormControl,
-                      IID.V1_WAVE, IID.V1_RING, IID.V1_PULSE, IID.LFO_CYCLE_TIME, IID.V2_WAVE)
+                      IID.V1_WAVE, IID.V1_RING, IID.V1_PULSE, IID.LFO_PITCH, IID.V2_WAVE)
 
 voice1InputPulseWidth:
     createStructInput(INPUT_TYPE.INTEGER_12_BITS, 7, 4, 6, strInputNameVoicePulseWidth, $FF, $07, sidUpdateVoice1PulseWidth,
-                      IID.V1_PULSE, IID.V1_WAVE, IID.V1_ATC, IID.LFO_PITCH, IID.V2_PULSE)
+                      IID.V1_PULSE, IID.V1_WAVE, IID.V1_ATC, IID.LFO_PITCH_NEG, IID.V2_PULSE)
 
 voice1InputAttack:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 14, 4, 4, strInputNameVoiceAttack, $00, $00, sidUpdateVoice1AttackDecay,
@@ -522,7 +522,7 @@ detuningInputArray:
 
 resetOscillatorVoice1:
     createStructInput(INPUT_TYPE.BOOLEAN, 1, 10, 6, strInputNameResetOscillatorVoice1, $00, $00, sidUpdateResetOscillatorVoice1,
-                      IID.RESOSC_V1, IID.VELOCITY_SUS, IID.RESOSC_V2, IID.DETUNING_V1, IID.LFO_MOD_PITCH)
+                      IID.RESOSC_V1, IID.VELOCITY_SUS, IID.RESOSC_V2, IID.DETUNING_V1, IID.LFO_CYCLE_LENGTH)
 
 resetOscillatorVoice2:
     createStructInput(INPUT_TYPE.BOOLEAN, 8, 10, 6, strInputNameResetOscillatorVoice2, $00, $00, sidUpdateResetOscillatorVoice2,
@@ -530,7 +530,7 @@ resetOscillatorVoice2:
 
 resetOscillatorVoice3:
     createStructInput(INPUT_TYPE.BOOLEAN, 15, 10, 6, strInputNameResetOscillatorVoice3, $00, $00, sidUpdateResetOscillatorVoice3,
-                      IID.RESOSC_V3, IID.RESOSC_V2, IID.VELOCITY_USE, IID.DETUNING_V2, IID.LFO_SQUARE_WAVE)
+                      IID.RESOSC_V3, IID.RESOSC_V2, IID.VELOCITY_USE, IID.DETUNING_V2, IID.LFO_MOD_PITCH)
 
 resetOscillatorsInputArray:
     .byte(<resetOscillatorVoice1)
@@ -570,59 +570,65 @@ velocityInputArray:
  *
  * ---------------------------------------------------------------- */ 
 
+lfoCycleLength:
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 1, 16, 6, strInputNameLfoCycleLength, $01, $00, lfoUpdateLfoCycleLengthValue,
+                      IID.LFO_CYCLE_LENGTH, IID.LFO_MOD_WITH_V3_EG, IID.LFO_MOD_FILTER, IID.RESOSC_V1, IID.LFO_PITCH)
+
 lfoModulatePitch:
-    createStructInput(INPUT_TYPE.BOOLEAN, 1, 15, 10, strInputNameLfoModulatePitch, $00, $00, lfoUpdateLfoModulatePitchValue,
-                      IID.LFO_MOD_PITCH, IID.LFO_SQUARE_WAVE, IID.LFO_SQUARE_WAVE, IID.RESOSC_V1, IID.LFO_MOD_PULSE)
+    createStructInput(INPUT_TYPE.BOOLEAN, 9, 15, 10, strInputNameLfoModulatePitch, $00, $00, lfoUpdateLfoModulatePitchValue,
+                      IID.LFO_MOD_PITCH, IID.LFO_CYCLE_LENGTH, IID.LFO_SQUARE_WAVE, IID.RESOSC_V2, IID.LFO_MOD_PULSE)
 
 lfoModulatePulseWidth:
-    createStructInput(INPUT_TYPE.BOOLEAN, 1, 16, 10, strInputNameLfoModulatePulseWidth, $00, $00, pulseWidthUpdateLfoModulatePulseWidthValue,
-                      IID.LFO_MOD_PULSE, IID.LFO_RESET_OSC, IID.LFO_RESET_OSC, IID.LFO_MOD_PITCH, IID.LFO_MOD_FILTER)
+    createStructInput(INPUT_TYPE.BOOLEAN, 9, 16, 10, strInputNameLfoModulatePulseWidth, $00, $00, pulseWidthUpdateLfoModulatePulseWidthValue,
+                      IID.LFO_MOD_PULSE, IID.LFO_CYCLE_LENGTH, IID.LFO_RESET_OSC, IID.LFO_MOD_PITCH, IID.LFO_MOD_FILTER)
 
 lfoModulateFilter:
-    createStructInput(INPUT_TYPE.BOOLEAN, 1, 17, 11, strInputNameLfoModulateFilter, $00, $00, filterUpdateLfoModulateFilterValue,
-                      IID.LFO_MOD_FILTER, IID.LFO_MOD_WITH_V3_EG, IID.LFO_MOD_WITH_V3_EG, IID.LFO_MOD_PULSE, IID.LFO_CYCLE_TIME)
+    createStructInput(INPUT_TYPE.BOOLEAN, 9, 17, 11, strInputNameLfoModulateFilter, $00, $00, filterUpdateLfoModulateFilterValue,
+                      IID.LFO_MOD_FILTER, IID.LFO_CYCLE_LENGTH, IID.LFO_MOD_WITH_V3_EG, IID.LFO_MOD_PULSE, IID.LFO_PITCH_NEG)
 
 lfoSquareWave:
-    createStructInput(INPUT_TYPE.BOOLEAN, 15, 15, 12, strInputNameLfoSquareWave, $00, $00, lfoUpdateLfoSquareWaveValue,
-                      IID.LFO_SQUARE_WAVE, IID.LFO_MOD_PITCH, IID.LFO_MOD_PITCH, IID.RESOSC_V3, IID.LFO_RESET_OSC)
+    createStructInput(INPUT_TYPE.BOOLEAN, 22, 15, 12, strInputNameLfoSquareWave, $00, $00, lfoUpdateLfoSquareWaveValue,
+                      IID.LFO_SQUARE_WAVE, IID.LFO_MOD_PITCH, IID.LFO_CYCLE_LENGTH, IID.VELOCITY_USE, IID.LFO_RESET_OSC)
 
 lfoResetOscillator:
-    createStructInput(INPUT_TYPE.BOOLEAN, 15, 16, 16, strInputNameLfoResetOscillator, $00, $00, lfoUpdateLfoResetOscillatorValue,
-                      IID.LFO_RESET_OSC, IID.LFO_MOD_PULSE, IID.LFO_MOD_PULSE, IID.LFO_SQUARE_WAVE, IID.LFO_MOD_WITH_V3_EG)
+    createStructInput(INPUT_TYPE.BOOLEAN, 22, 16, 16, strInputNameLfoResetOscillator, $00, $00, lfoUpdateLfoResetOscillatorValue,
+                      IID.LFO_RESET_OSC, IID.LFO_MOD_PULSE, IID.LFO_CYCLE_LENGTH, IID.LFO_SQUARE_WAVE, IID.LFO_MOD_WITH_V3_EG)
 
 lfoModulateWithVoice3Envelope:
-    createStructInput(INPUT_TYPE.BOOLEAN, 15, 17, 24, strInputNameLfoModulateWithVoice3Envelope, $00, $00, lfoUpdateLfoModulateWithVoice3EnvelopeValue,
-                      IID.LFO_MOD_WITH_V3_EG, IID.LFO_MOD_FILTER, IID.LFO_MOD_FILTER, IID.LFO_RESET_OSC, IID.LFO_MUTE_VOICE_3)
+    createStructInput(INPUT_TYPE.BOOLEAN, 22, 17, 15, strInputNameLfoModulateWithVoice3Envelope, $00, $00, lfoUpdateLfoModulateWithVoice3EnvelopeValue,
+                      IID.LFO_MOD_WITH_V3_EG, IID.LFO_MOD_FILTER, IID.LFO_CYCLE_LENGTH, IID.LFO_RESET_OSC, IID.LFO_MUTE_VOICE_3)
 
 lfoInputMuteVoice3:
-    createStructInput(INPUT_TYPE.BOOLEAN, 15, 18, 13, strInputNameLfoInputMuteVoice3, $00, $00, sidUpdateFilterModesAndVolume,
-                      IID.LFO_MUTE_VOICE_3, IID.LFO_MOD_FILTER, IID.LFO_MOD_FILTER, IID.LFO_MOD_WITH_V3_EG, IID.LFO_PULSE)
-
-lfoCycleLength:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 1, 22, 6, strInputNameLfoCycleLength, $01, $00, lfoUpdateLfoCycleLengthValue,
-                      IID.LFO_CYCLE_TIME, IID.LFO_CUTOFF, IID.LFO_PITCH, IID.LFO_MOD_FILTER, IID.V1_WAVE)
+    createStructInput(INPUT_TYPE.BOOLEAN, 22, 18, 13, strInputNameLfoInputMuteVoice3, $00, $00, sidUpdateFilterModesAndVolume,
+                      IID.LFO_MUTE_VOICE_3, IID.LFO_MOD_FILTER, IID.LFO_CYCLE_LENGTH, IID.LFO_MOD_WITH_V3_EG, IID.LFO_PULSE_NEG)
 
 lfoPitch:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 8, 22, 6, strInputNameLfoPitch, $01, $00, lfoUpdateLfoPitchValue,
-                      IID.LFO_PITCH, IID.LFO_CYCLE_TIME, IID.LFO_PULSE, IID.LFO_MOD_FILTER, IID.V1_PULSE)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 1, 22, 6, strInputNameLfoPitch, $01, $00, lfoUpdateLfoPitchValue,
+                      IID.LFO_PITCH, IID.LFO_CUTOFF_NEG, IID.LFO_PITCH_NEG, IID.LFO_CYCLE_LENGTH, IID.V1_WAVE)
+
+lfoPitchNegative:
+    createStructInput(INPUT_TYPE.BOOLEAN, 8, 23, 5, strInputNameLfoPitchNegative, $00, $00, lfoUpdateLfoPitchNegativeValue,
+                      IID.LFO_PITCH_NEG, IID.LFO_PITCH, IID.LFO_PULSE, IID.LFO_MOD_FILTER, IID.V1_PULSE)
 
 lfoPulseWidth:
-    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 15, 22, 6, strInputNameLfoPulseWidth, $FF, $0F, pulseWidthUpdateVoice3PulseWidthValue,
-                      IID.LFO_PULSE, IID.LFO_PITCH, IID.LFO_PULSE_NEG, IID.LFO_MUTE_VOICE_3, IID.V1_ATC)
+    createStructInput(INPUT_TYPE.INTEGER_12_BITS, 14, 22, 6, strInputNameLfoPulseWidth, $FF, $0F, pulseWidthUpdateLfoPulseWidthValue,
+                      IID.LFO_PULSE, IID.LFO_PITCH_NEG, IID.LFO_PULSE_NEG, IID.LFO_MOD_FILTER, IID.V1_ATC)
 
 lfoPulseWidthNegative:
-    createStructInput(INPUT_TYPE.BOOLEAN, 22, 23, 5, strInputNameLfoPulseWidthNegative, $00, $00, pulseWidthUpdateVoice3PulseWidthNegativeValue,
+    createStructInput(INPUT_TYPE.BOOLEAN, 21, 23, 5, strInputNameLfoPulseWidthNegative, $00, $00, pulseWidthUpdateLfoPulseWidthNegativeValue,
                       IID.LFO_PULSE_NEG, IID.LFO_PULSE, IID.LFO_CUTOFF, IID.LFO_MUTE_VOICE_3, IID.V1_SUS)
 
 lfoFilterCutoff:
-    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 27, 22, 6, strInputNameLfoFilterCutoff, $FF, $07, filterUpdateVoice3FilterCutoffValue,
+    createStructInput(INPUT_TYPE.INTEGER_11_BITS, 27, 22, 6, strInputNameLfoFilterCutoff, $FF, $07, filterUpdateLfoFilterCutoffValue,
                       IID.LFO_CUTOFF, IID.LFO_PULSE_NEG, IID.LFO_CUTOFF_NEG, IID.LFO_MUTE_VOICE_3, IID.V1_RLS)
 
 lfoFilterCutoffNegative:
-    createStructInput(INPUT_TYPE.BOOLEAN, 34, 23, 5, strInputNameLfoFilterCutoffNegative, $00, $00, filterUpdateVoice3FilterCutoffNegativeValue,
-                      IID.LFO_CUTOFF_NEG, IID.LFO_CUTOFF, IID.LFO_CYCLE_TIME, IID.LFO_MUTE_VOICE_3, IID.V1_USE)
+    createStructInput(INPUT_TYPE.BOOLEAN, 34, 23, 5, strInputNameLfoFilterCutoffNegative, $00, $00, filterUpdateLfoFilterCutoffNegativeValue,
+                      IID.LFO_CUTOFF_NEG, IID.LFO_CUTOFF, IID.LFO_CYCLE_LENGTH, IID.LFO_MUTE_VOICE_3, IID.V1_USE)
 
 lfoInputArray:
+    .byte(<lfoCycleLength)
+    .byte(>lfoCycleLength)
     .byte(<lfoModulatePitch)
     .byte(>lfoModulatePitch)
     .byte(<lfoModulatePulseWidth)
@@ -637,10 +643,10 @@ lfoInputArray:
     .byte(>lfoModulateWithVoice3Envelope)
     .byte(<lfoInputMuteVoice3)
     .byte(>lfoInputMuteVoice3)
-    .byte(<lfoCycleLength)
-    .byte(>lfoCycleLength)
     .byte(<lfoPitch)
     .byte(>lfoPitch)
+    .byte(<lfoPitchNegative)
+    .byte(>lfoPitchNegative)
     .byte(<lfoPulseWidth)
     .byte(>lfoPulseWidth)
     .byte(<lfoPulseWidthNegative)
@@ -756,7 +762,7 @@ moduleVelocity:
  * ---------------------------------------------------------------- */ 
 
 moduleLfo:
-    createStructModule(strModuleNameLfo, 0,  14, 38, 9, LIGHT_RED, 13, lfoInputArray, 1)
+    createStructModule(strModuleNameLfo, 0,  14, 38, 9, LIGHT_RED, 14, lfoInputArray, 1)
 
 
 /* -------------------------------------------------------------------
@@ -1434,6 +1440,12 @@ menuInputEditorAllowedCharactersMax:
 
 
 
+/* -------------------------------------------------------------------
+ *
+ * Global variables for the LFO
+ *
+ * ---------------------------------------------------------------- */ 
+
 lfoCycleLengthValue:
     .word(0)
 
@@ -1460,3 +1472,6 @@ lfoModulatePitchValue:
 
 lfoPitchValue:
     .word(0)
+
+lfoPitchNegativeValue:
+    .byte(0)

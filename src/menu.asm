@@ -382,14 +382,17 @@ menuHandleSelectedMainMenuItem:
 savePatches:
     lda currentPatchIndex
     jsr patchesTransferFromModulesToPatch
+    jsr patchesPrepareForDiskIO
     jsr patchesDrawSaveScreen
     jsr patchesSaveToDisk
     bcc savePatchesSuccessful
+    jsr patchesRestoreAfterDiskIO
     lda #MODE_MENU_SUBMODE.SHOW_ERROR_MESSAGE
     sta currentSubMode
     rts
 
 savePatchesSuccessful:
+    jsr patchesRestoreAfterDiskIO
     jsr switchToModeMain
     rts
 
@@ -398,14 +401,17 @@ savePatchesSuccessful:
     // ----------------------------------------------------
 
 loadPatches:
+    jsr patchesPrepareForDiskIO
     jsr patchesDrawLoadScreen
     jsr patchesLoadFromDisk
     bcc loadPatchesSuccessful
     lda #MODE_MENU_SUBMODE.SHOW_ERROR_MESSAGE
     sta currentSubMode
+    jsr patchesRestoreAfterDiskIO    
     rts
 
 loadPatchesSuccessful:
+    jsr patchesRestoreAfterDiskIO
     lda currentPatchIndex
     jsr patchesTransferFromPatchToModules
     jsr sidUpdateAllRegisters

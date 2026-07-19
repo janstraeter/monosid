@@ -195,7 +195,7 @@ strInputNameLfoResetOscillator:
     .byte $00
 
 strInputNameLfoModulateWithVoice3Envelope:
-    .text "MOD WITH VOC 3 ENVELOPE"
+    .text "MOD WITH V3 EG"
     .byte $00
 
 strInputNameLfoInputMuteVoice3:
@@ -208,6 +208,10 @@ strInputNameLfoCycleLength:
 
 strInputNameLfoPitch:
     .text "PITCH"
+    .byte $00
+
+strInputNameLfoPitchNegative:
+    .text "NEG"
     .byte $00
 
 strInputNameLfoPulseWidth:

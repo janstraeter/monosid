@@ -340,19 +340,20 @@
     .label VELOCITY_USE             = 46
     .label VELOCITY_SUS             = 47
 
-    .label LFO_MOD_PITCH            = 48
-    .label LFO_MOD_PULSE            = 49
-    .label LFO_MOD_FILTER           = 50
-    .label LFO_SQUARE_WAVE          = 51
-    .label LFO_RESET_OSC            = 52
-    .label LFO_MOD_WITH_V3_EG       = 53
-    .label LFO_MUTE_VOICE_3         = 54
-    .label LFO_CYCLE_TIME           = 55
+    .label LFO_CYCLE_LENGTH         = 48
+    .label LFO_MOD_PITCH            = 49
+    .label LFO_MOD_PULSE            = 50
+    .label LFO_MOD_FILTER           = 51
+    .label LFO_SQUARE_WAVE          = 52
+    .label LFO_RESET_OSC            = 53
+    .label LFO_MOD_WITH_V3_EG       = 54
+    .label LFO_MUTE_VOICE_3         = 55
     .label LFO_PITCH                = 56
-    .label LFO_PULSE                = 57
-    .label LFO_PULSE_NEG            = 58
-    .label LFO_CUTOFF               = 59
-    .label LFO_CUTOFF_NEG           = 60
+    .label LFO_PITCH_NEG            = 57
+    .label LFO_PULSE                = 58
+    .label LFO_PULSE_NEG            = 59
+    .label LFO_CUTOFF               = 60
+    .label LFO_CUTOFF_NEG           = 61
 }
 
 .label PATCHES_NUM                  = 64

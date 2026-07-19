@@ -253,10 +253,11 @@ sidUpdateAllRegisters:
     jsr pulseWidthUpdateLfoModulatePulseWidthValue
     jsr filterUpdateLfoModulateFilterValue
     jsr lfoUpdateLfoPitchValue
-    jsr pulseWidthUpdateVoice3PulseWidthValue
-    jsr pulseWidthUpdateVoice3PulseWidthNegativeValue
-    jsr filterUpdateVoice3FilterCutoffValue
-    jsr filterUpdateVoice3FilterCutoffNegativeValue
+    jsr lfoUpdateLfoPitchNegativeValue
+    jsr pulseWidthUpdateLfoPulseWidthValue
+    jsr pulseWidthUpdateLfoPulseWidthNegativeValue
+    jsr filterUpdateLfoFilterCutoffValue
+    jsr filterUpdateLfoFilterCutoffNegativeValue
 
     rts
 }

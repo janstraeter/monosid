@@ -488,3 +488,25 @@ lfoUpdateLfoPitchValue:
     sta lfoPitchValue+1
     rts
 }
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Copies the current value of the lfoPitchNegative input into
+ * lfoPitchNegativeValue for faster/easier access
+ *
+ * Reads global variables:  lfoPitch
+ *
+ * Writes global variables: lfoPitchValue
+ *
+ * ---------------------------------------------------------------- */ 
+ 
+lfoUpdateLfoPitchNegativeValue:
+{
+    loadPointerToZPR(lfoPitchNegative, ZPR_7)
+    structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
+    sta lfoPitchNegativeValue
+    rts
+}

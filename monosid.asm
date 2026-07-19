@@ -777,6 +777,46 @@ exit:
  * Subroutine
  * ----------
  *
+ * Clears the MIDI buffer and stops playing any note.
+ *
+ * Writes global variables: midiActiveNotesNum, midiWritePtr, midiReadPtr,
+ *                          currentNoteWasPlayedByKeyboardFlag, previousNote,
+ *                          lastPlayedNote, noteHasChangedFlag, currentNote
+ *
+ * ---------------------------------------------------------------- */ 
+
+stopAnyNote:
+{
+    // clear MIDI buffer
+    sei
+    lda #0
+    sta midiActiveNotesNum
+    sta midiWritePtr
+    sta midiReadPtr
+    jsr midiProcessBuffer
+    cli
+
+    // simulate a note change from #0 to #255 (no note to play)
+    lda #0
+    sta currentNoteWasPlayedByKeyboardFlag
+    sta previousNote
+    sta lastPlayedNote
+    lda #1
+    sta noteHasChangedFlag
+    lda #255
+    sta currentNote
+
+    // update the gate bits of the SID chip, which in this case will stop any note
+    jsr sidUpdateGateBitsForAllVoices
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
  * Handles the keyboard input while the program is in main mode,
  * submode select input.
  * 

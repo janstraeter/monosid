@@ -272,6 +272,7 @@ patchesTransferFromModulesToPatch:
     patchesTransferByteFromInputField(velocitySustain, STRUCT_PATCH.VELOCITY_SUSTAIN)                        
 
     // LFO
+    patchesTransferWordFromInputField(lfoCycleLength, STRUCT_PATCH.LFO_CYCLE_LENGTH)
     patchesTransferByteFromInputField(lfoModulatePitch, STRUCT_PATCH.LFO_MOD_PITCH)
     patchesTransferByteFromInputField(lfoModulatePulseWidth, STRUCT_PATCH.LFO_MOD_PULSE)
     patchesTransferByteFromInputField(lfoModulateFilter, STRUCT_PATCH.LFO_MOD_FILTER)
@@ -279,8 +280,8 @@ patchesTransferFromModulesToPatch:
     patchesTransferByteFromInputField(lfoResetOscillator, STRUCT_PATCH.LFO_RESET_OSC)
     patchesTransferByteFromInputField(lfoModulateWithVoice3Envelope, STRUCT_PATCH.LFO_MOD_WITH_V3_EG)
     patchesTransferByteFromInputField(lfoInputMuteVoice3, STRUCT_PATCH.LFO_MUTE_VOICE_3)
-    patchesTransferWordFromInputField(lfoCycleLength, STRUCT_PATCH.LFO_CYCLE_TIME)
     patchesTransferWordFromInputField(lfoPitch, STRUCT_PATCH.LFO_PITCH)
+    patchesTransferByteFromInputField(lfoPitchNegative, STRUCT_PATCH.LFO_PITCH_NEG)
     patchesTransferWordFromInputField(lfoPulseWidth, STRUCT_PATCH.LFO_PULSE)
     patchesTransferByteFromInputField(lfoPulseWidthNegative, STRUCT_PATCH.LFO_PULSE_NEG)
     patchesTransferWordFromInputField(lfoFilterCutoff, STRUCT_PATCH.LFO_CUTOFF)
@@ -415,6 +416,7 @@ patchesTransferFromPatchToModules:
     patchesTransferByteToInputField(STRUCT_PATCH.VELOCITY_SUSTAIN, velocitySustain)                        
 
     // LFO
+    patchesTransferWordToInputField(STRUCT_PATCH.LFO_CYCLE_LENGTH, lfoCycleLength)
     patchesTransferByteToInputField(STRUCT_PATCH.LFO_MOD_PITCH, lfoModulatePitch)
     patchesTransferByteToInputField(STRUCT_PATCH.LFO_MOD_PULSE, lfoModulatePulseWidth)
     patchesTransferByteToInputField(STRUCT_PATCH.LFO_MOD_FILTER, lfoModulateFilter)
@@ -422,8 +424,8 @@ patchesTransferFromPatchToModules:
     patchesTransferByteToInputField(STRUCT_PATCH.LFO_RESET_OSC, lfoResetOscillator)
     patchesTransferByteToInputField(STRUCT_PATCH.LFO_MOD_WITH_V3_EG, lfoModulateWithVoice3Envelope)
     patchesTransferByteToInputField(STRUCT_PATCH.LFO_MUTE_VOICE_3, lfoInputMuteVoice3)
-    patchesTransferWordToInputField(STRUCT_PATCH.LFO_CYCLE_TIME, lfoCycleLength)
     patchesTransferWordToInputField(STRUCT_PATCH.LFO_PITCH, lfoPitch)
+    patchesTransferByteToInputField(STRUCT_PATCH.LFO_PITCH_NEG, lfoPitchNegative)
     patchesTransferWordToInputField(STRUCT_PATCH.LFO_PULSE, lfoPulseWidth)
     patchesTransferByteToInputField(STRUCT_PATCH.LFO_PULSE_NEG, lfoPulseWidthNegative)
     patchesTransferWordToInputField(STRUCT_PATCH.LFO_CUTOFF, lfoFilterCutoff)
@@ -476,6 +478,70 @@ patchesTransferFromPatchToModules:
     lda (ZPR_8), y
     inx
     sta inputField, x
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Stops CIA1 Timer B (LFO processing) and stops playing any note as
+ * a preperation for any disk I/O.
+ *
+ * ---------------------------------------------------------------- */ 
+
+patchesPrepareForDiskIO:
+{
+    // ----------------------------------------------
+    // Reset CIA1 Timer B to it's default values.
+    // The Kernal uses this timer for it's internal
+    // purposes when performing disk I/O.
+    // ----------------------------------------------
+
+    // suppress interrupts
+    sei
+
+    // stop timer B
+    lda #$00
+    sta CIA1.CONTROL_B
+
+    // set timer B to default latch $FFFF
+    lda #$ff
+    sta CIA1.TIMER_B_LO
+    sta CIA1.TIMER_B_HI
+
+    // bit7=0 -> clear/disable Timer B IRQ
+    lda #%00000010
+    sta CIA1.INTERRUPT_CONTROL_STATE
+
+    // allow interrupts again
+    cli
+
+    // ----------------------------------------------
+    // Stop playing any notes to avoid a hanging note
+    // during disk I/O
+    // ----------------------------------------------
+
+    jsr stopAnyNote
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Starts CIA1 Timer B again after any disk I/O
+ *
+ * ---------------------------------------------------------------- */ 
+
+patchesRestoreAfterDiskIO:
+{
+    // setup the CIA1 Timer B for the LFO again
+    jsr lfoSetupTimer
+
+    rts
 }
 
 

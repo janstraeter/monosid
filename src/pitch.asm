@@ -21,26 +21,32 @@
 
 pitchCalculateGlobalDetuning:
 {
+    // first load the current pitch band detuning value
     lda midiPitchBendValueLo
     sta globalDetuningLo
     lda midiPitchBendValueHi
     sta globalDetuningHi
 
+    // check if LFO pitch modulation is activated
     lda lfoModulatePitchValue
     beq exit
 
+    // LFO pitch modulation is active, load the LFO pitch value
     lda lfoPitchValue
     sta ZPR_1_LO
     lda lfoPitchValue+1
     sta ZPR_1_HI
 
+    // load the current LFO value
     lda lfoValue
     sta ZPR_3_LO
     lda #0
     sta ZPR_3_HI
 
+    // multiply lfoPitchValue and lfoValue
     jsr mathMultiply16Bit
 
+    // ---------------------------------------------------------
     // The full 32-bit result is in (from high to low bytes):
     // ZPR_2_HI ZPR_2_LO ZPR_1_HI ZPR_1_LO.
     // We use ZPR_2_LO and ZPR_1_HI which is equal
@@ -48,6 +54,13 @@ pitchCalculateGlobalDetuning:
     // It should be a division by 255 really, but as a division is
     // computational very costly and the difference in the result is
     // barely audible we use this slightly wrong but much easier way.
+    // ---------------------------------------------------------
+    
+    // check if LFO pitch modulation should be negative
+    lda lfoPitchNegativeValue
+    bne subtractLfoPitchValue
+
+    // LFO pitch modulation is positive, add the value
     clc
     lda globalDetuningLo
     adc ZPR_1_HI
@@ -55,7 +68,18 @@ pitchCalculateGlobalDetuning:
     lda globalDetuningHi
     adc ZPR_2_LO
     sta globalDetuningHi
+    rts
 
+subtractLfoPitchValue:
+    // LFO pitch modulation is negative, substract the value
+    sec
+    lda globalDetuningLo
+    sbc ZPR_1_HI
+    sta globalDetuningLo
+    lda globalDetuningHi
+    sbc ZPR_2_LO
+    sta globalDetuningHi
+    
 exit:
     rts
 }

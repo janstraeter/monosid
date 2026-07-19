@@ -55,7 +55,7 @@ exit:
  *
  * ---------------------------------------------------------------- */ 
  
-filterUpdateVoice3FilterCutoffValue:
+filterUpdateLfoFilterCutoffValue:
 {
     // load the current value of the "Voice 3 special features" input "cutoff"
     loadPointerToZPR(lfoFilterCutoff, ZPR_7)
@@ -82,7 +82,7 @@ filterUpdateVoice3FilterCutoffValue:
  *
  * ---------------------------------------------------------------- */ 
  
-filterUpdateVoice3FilterCutoffNegativeValue:
+filterUpdateLfoFilterCutoffNegativeValue:
 {
     // load the current value of the "Voice 3 special features" input (cutoff) "neg"
     loadPointerToZPR(lfoFilterCutoffNegative, ZPR_7)

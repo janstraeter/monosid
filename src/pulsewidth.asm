@@ -67,7 +67,7 @@ exit:
  *
  * ---------------------------------------------------------------- */ 
  
-pulseWidthUpdateVoice3PulseWidthValue:
+pulseWidthUpdateLfoPulseWidthValue:
 {
     // load the current value of the "Voice 3 special features" input "pulse"
     loadPointerToZPR(lfoPulseWidth, ZPR_7)
@@ -94,7 +94,7 @@ pulseWidthUpdateVoice3PulseWidthValue:
  *
  * ---------------------------------------------------------------- */ 
  
-pulseWidthUpdateVoice3PulseWidthNegativeValue:
+pulseWidthUpdateLfoPulseWidthNegativeValue:
 {
     // load the current value of the "Voice 3 special features" input (pulse) "neg"
     loadPointerToZPR(lfoPulseWidthNegative, ZPR_7)
