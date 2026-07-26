@@ -9,14 +9,14 @@
  * and the voice is active.
  *
  * Reads global variables:
- * currentNote, currentSidWaveFormControlRegisterVoice1,
- * currentSidWaveFormControlRegisterVoice2, currentSidWaveFormControlRegisterVoice3,
- * currentSidActiveVoice1, currentSidActiveVoice2, currentSidActiveVoice3
+ * currentNote, sidCurrentWaveFormControlRegisterVoice1,
+ * sidCurrentWaveFormControlRegisterVoice2, sidCurrentWaveFormControlRegisterVoice3,
+ * sidCurrentActiveVoice1, sidCurrentActiveVoice2, sidCurrentActiveVoice3
  *
  * Writes global variables:
- * currentSidWaveFormControlRegisterVoice1, currentSidWaveFormControlRegisterVoice2,
- * currentSidWaveFormControlRegisterVoice3, currentSidActiveVoice1,
- * currentSidActiveVoice2, currentSidActiveVoice3
+ * sidCurrentWaveFormControlRegisterVoice1, sidCurrentWaveFormControlRegisterVoice2,
+ * sidCurrentWaveFormControlRegisterVoice3, sidCurrentActiveVoice1,
+ * sidCurrentActiveVoice2, sidCurrentActiveVoice3
  *
  * ---------------------------------------------------------------- */ 
 
@@ -28,20 +28,20 @@ sidUpdateGateBitsForAllVoices:
     bne playNote
     
     // no note should be played, so set the gate bit for all voices to zero
-    lda currentSidWaveFormControlRegisterVoice1
+    lda sidCurrentWaveFormControlRegisterVoice1
     and #%11111110
     sta SID.VOICE_1_CONTROL_REGISTER
-    sta currentSidWaveFormControlRegisterVoice1
+    sta sidCurrentWaveFormControlRegisterVoice1
 
-    lda currentSidWaveFormControlRegisterVoice2
+    lda sidCurrentWaveFormControlRegisterVoice2
     and #%11111110
     sta SID.VOICE_2_CONTROL_REGISTER
-    sta currentSidWaveFormControlRegisterVoice2
+    sta sidCurrentWaveFormControlRegisterVoice2
 
-    lda currentSidWaveFormControlRegisterVoice3
+    lda sidCurrentWaveFormControlRegisterVoice3
     and #%11111110
     sta SID.VOICE_3_CONTROL_REGISTER
-    sta currentSidWaveFormControlRegisterVoice3
+    sta sidCurrentWaveFormControlRegisterVoice3
 
     rts
 
@@ -57,19 +57,19 @@ playNote:
     // -------------------------------------
 
     // check if voice 1 is active
-    lda currentSidActiveVoice1
+    lda sidCurrentActiveVoice1
     cmp #0
     beq doNotUseVoice1
 
     // check if test bit for voice 1 should be set
-    lda currentSidResetOscillatorVoice1
+    lda sidCurrentResetOscillatorVoice1
     cmp #0
     beq setGateBitVoice1
     
     // yes, the test bit should be set (and cleared again) before opening the gate
     // first check if the gate is currently closed, because we want to reset the oscillator only
     // before opening the gate, not on every note change
-    lda currentSidWaveFormControlRegisterVoice1
+    lda sidCurrentWaveFormControlRegisterVoice1
     bit gateBitSet
     bne setGateBitVoice1
 
@@ -77,43 +77,43 @@ playNote:
     // and then clear it again, immediatly
     ora #%00001000
     sta SID.VOICE_1_CONTROL_REGISTER
-    lda currentSidWaveFormControlRegisterVoice1
+    lda sidCurrentWaveFormControlRegisterVoice1
     sta SID.VOICE_1_CONTROL_REGISTER
 
     // yes, use voice 1 -> set the gate bit
 setGateBitVoice1:    
-    lda currentSidWaveFormControlRegisterVoice1
+    lda sidCurrentWaveFormControlRegisterVoice1
     ora #%00000001
     jmp saveVoice1
 
 doNotUseVoice1:
     // no, do not use voice 1 -> clear the gate bit
-    lda currentSidWaveFormControlRegisterVoice1
+    lda sidCurrentWaveFormControlRegisterVoice1
     and #%11111110
 
 saveVoice1:
     // save the control register for voice 1
     sta SID.VOICE_1_CONTROL_REGISTER
-    sta currentSidWaveFormControlRegisterVoice1
+    sta sidCurrentWaveFormControlRegisterVoice1
 
     // -------------------------------------
     // Gate bit for Voice 2
     // -------------------------------------
 
     // check if voice 2 is active
-    lda currentSidActiveVoice2
+    lda sidCurrentActiveVoice2
     cmp #0
     beq doNotUseVoice2
 
     // check if test bit for voice 2 should be set
-    lda currentSidResetOscillatorVoice2
+    lda sidCurrentResetOscillatorVoice2
     cmp #0
     beq setGateBitVoice2
     
     // yes, the test bit should be set (and cleared again) before opening the gate
     // first check if the gate is currently closed, because we want to reset the oscillator only
     // before opening the gate, not on every note change
-    lda currentSidWaveFormControlRegisterVoice2
+    lda sidCurrentWaveFormControlRegisterVoice2
     bit gateBitSet
     bne setGateBitVoice2
 
@@ -121,43 +121,43 @@ saveVoice1:
     // and then clear it again, immediatly
     ora #%00001000
     sta SID.VOICE_2_CONTROL_REGISTER
-    lda currentSidWaveFormControlRegisterVoice2
+    lda sidCurrentWaveFormControlRegisterVoice2
     sta SID.VOICE_2_CONTROL_REGISTER
 
     // yes, use voice 2 -> set the gate bit
 setGateBitVoice2:
-    lda currentSidWaveFormControlRegisterVoice2
+    lda sidCurrentWaveFormControlRegisterVoice2
     ora #%00000001
     jmp saveVoice2
 
 doNotUseVoice2:
     // no, do not use voice 2 -> clear the gate bit
-    lda currentSidWaveFormControlRegisterVoice2
+    lda sidCurrentWaveFormControlRegisterVoice2
     and #%11111110
 
 saveVoice2:
     // save the control register for voice 2
     sta SID.VOICE_2_CONTROL_REGISTER
-    sta currentSidWaveFormControlRegisterVoice2
+    sta sidCurrentWaveFormControlRegisterVoice2
 
     // -------------------------------------
     // Gate bit for Voice 3
     // -------------------------------------
 
     // check if voice 3 is active
-    lda currentSidActiveVoice3
+    lda sidCurrentActiveVoice3
     cmp #0
     beq doNotUseVoice3
 
     // check if test bit for voice 3 should be set
-    lda currentSidResetOscillatorVoice3
+    lda sidCurrentResetOscillatorVoice3
     cmp #0
     beq setGateBitVoice3
     
     // yes, the test bit should be set (and cleared again) before opening the gate
     // first check if the gate is currently closed, because we want to reset the oscillator only
     // before opening the gate, not on every note change
-    lda currentSidWaveFormControlRegisterVoice3
+    lda sidCurrentWaveFormControlRegisterVoice3
     bit gateBitSet
     bne setGateBitVoice3
 
@@ -165,24 +165,24 @@ saveVoice2:
     // and then clear it again, immediatly
     ora #%00001000
     sta SID.VOICE_3_CONTROL_REGISTER
-    lda currentSidWaveFormControlRegisterVoice3
+    lda sidCurrentWaveFormControlRegisterVoice3
     sta SID.VOICE_3_CONTROL_REGISTER
 
     // yes, use voice 3 -> set the gate bit
 setGateBitVoice3:
-    lda currentSidWaveFormControlRegisterVoice3
+    lda sidCurrentWaveFormControlRegisterVoice3
     ora #%00000001
     jmp saveVoice3
 
 doNotUseVoice3:
     // no, do not use voice 3 -> clear the gate bit
-    lda currentSidWaveFormControlRegisterVoice3
+    lda sidCurrentWaveFormControlRegisterVoice3
     and #%11111110
 
 saveVoice3:
     // save the control register for voice 3
     sta SID.VOICE_3_CONTROL_REGISTER
-    sta currentSidWaveFormControlRegisterVoice3
+    sta sidCurrentWaveFormControlRegisterVoice3
 
     rts
 
@@ -279,8 +279,8 @@ sidUpdateVoice1PulseWidth:
     structLoadWordToXAccu(ZPR_7, STRUCT_INPUT.VALUE)
     stx SID.VOICE_1_PULSE_WAVE_LO
     sta SID.VOICE_1_PULSE_WAVE_HI
-    stx currentSidVoice1PulseWidth
-    sta currentSidVoice1PulseWidth+1
+    stx sidCurrentVoice1PulseWidth
+    sta sidCurrentVoice1PulseWidth+1
     rts
 }
 
@@ -395,7 +395,7 @@ saveRingModFlag:
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into global variable for later easy access
-    sta currentSidActiveVoice1
+    sta sidCurrentActiveVoice1
 
     // check if the voice should be used and set the gate bit to zero if not used,
     // or the the current value if used
@@ -405,7 +405,7 @@ saveRingModFlag:
 
 useVoice:
     // set the gate bit according to the current value in the control register
-    lda currentSidWaveFormControlRegisterVoice1
+    lda sidCurrentWaveFormControlRegisterVoice1
     and #%00000001
 
     // OR the gate bit to the current value in controlByte
@@ -417,7 +417,7 @@ useVoice:
     // -----------------------------------------
 
     // save the value in controlByte into the global variable
-    sta currentSidWaveFormControlRegisterVoice1
+    sta sidCurrentWaveFormControlRegisterVoice1
 
     // finally save it into the control register of the SID chip
     sta SID.VOICE_1_CONTROL_REGISTER
@@ -547,8 +547,8 @@ sidUpdateVoice2PulseWidth:
     structLoadWordToXAccu(ZPR_7, STRUCT_INPUT.VALUE)
     stx SID.VOICE_2_PULSE_WAVE_LO
     sta SID.VOICE_2_PULSE_WAVE_HI
-    stx currentSidVoice2PulseWidth
-    sta currentSidVoice2PulseWidth+1
+    stx sidCurrentVoice2PulseWidth
+    sta sidCurrentVoice2PulseWidth+1
     rts
 }
 
@@ -663,7 +663,7 @@ saveRingModFlag:
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into global variable for later easy access
-    sta currentSidActiveVoice2
+    sta sidCurrentActiveVoice2
 
     // check if the voice should be used and set the gate bit to zero if not used,
     // or the the current value if used
@@ -673,7 +673,7 @@ saveRingModFlag:
 
 useVoice:
     // set the gate bit according to the current value in the control register
-    lda currentSidWaveFormControlRegisterVoice2
+    lda sidCurrentWaveFormControlRegisterVoice2
     and #%00000001
 
     // OR the gate bit to the current value in controlByte
@@ -685,7 +685,7 @@ useVoice:
     // -----------------------------------------
 
     // save the value in controlByte into the global variable
-    sta currentSidWaveFormControlRegisterVoice2
+    sta sidCurrentWaveFormControlRegisterVoice2
 
     // finally save it into the control register of the SID chip
     sta SID.VOICE_2_CONTROL_REGISTER
@@ -813,8 +813,8 @@ sidUpdateVoice3PulseWidth:
     structLoadWordToXAccu(ZPR_7, STRUCT_INPUT.VALUE)
     stx SID.VOICE_3_PULSE_WAVE_LO
     sta SID.VOICE_3_PULSE_WAVE_HI
-    stx currentSidVoice3PulseWidth
-    sta currentSidVoice3PulseWidth+1
+    stx sidCurrentVoice3PulseWidth
+    sta sidCurrentVoice3PulseWidth+1
     rts
 }
 
@@ -929,7 +929,7 @@ saveRingModFlag:
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into global variable for later easy access
-    sta currentSidActiveVoice3
+    sta sidCurrentActiveVoice3
 
     // check if the voice should be used and set the gate bit to zero if not used,
     // or the the current value if used
@@ -939,7 +939,7 @@ saveRingModFlag:
 
 useVoice:
     // set the gate bit according to the current value in the control register
-    lda currentSidWaveFormControlRegisterVoice3
+    lda sidCurrentWaveFormControlRegisterVoice3
     and #%00000001
 
     // OR the gate bit to the current value in controlByte
@@ -951,7 +951,7 @@ useVoice:
     // -----------------------------------------
 
     // save the value in controlByte into the global variable
-    sta currentSidWaveFormControlRegisterVoice3
+    sta sidCurrentWaveFormControlRegisterVoice3
 
     // finally save it into the control register of the SID chip
     sta SID.VOICE_3_CONTROL_REGISTER
@@ -1507,7 +1507,7 @@ sidUpdateVoiceFrequencies:
  *
  * Reads global variable:  resetOscillatorVoice1
  *
- * Writes global variable: currentSidResetOscillatorVoice1
+ * Writes global variable: sidCurrentResetOscillatorVoice1
  *
  * ---------------------------------------------------------------- */ 
  
@@ -1518,7 +1518,7 @@ sidUpdateResetOscillatorVoice1:
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into the global variable for easier access
-    sta currentSidResetOscillatorVoice1
+    sta sidCurrentResetOscillatorVoice1
 
     rts
 }
@@ -1533,7 +1533,7 @@ sidUpdateResetOscillatorVoice1:
  *
  * Reads global variable:  resetOscillatorVoice2
  *
- * Writes global variable: currentSidResetOscillatorVoice2
+ * Writes global variable: sidCurrentResetOscillatorVoice2
  *
  * ---------------------------------------------------------------- */ 
  
@@ -1544,7 +1544,7 @@ sidUpdateResetOscillatorVoice2:
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into the global variable for easier access
-    sta currentSidResetOscillatorVoice2
+    sta sidCurrentResetOscillatorVoice2
 
     rts
 }
@@ -1559,7 +1559,7 @@ sidUpdateResetOscillatorVoice2:
  *
  * Reads global variable:  resetOscillatorVoice3
  *
- * Writes global variable: currentSidResetOscillatorVoice3
+ * Writes global variable: sidCurrentResetOscillatorVoice3
  *
  * ---------------------------------------------------------------- */ 
  
@@ -1570,7 +1570,7 @@ sidUpdateResetOscillatorVoice3:
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into the global variable for easier access
-    sta currentSidResetOscillatorVoice3
+    sta sidCurrentResetOscillatorVoice3
 
     rts
 }

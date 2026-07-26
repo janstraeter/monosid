@@ -5,7 +5,7 @@
  * ----------
  *
  * Updates the global variable "currentLfoModulatePulseWidth" which the
- * current value of the "Voice 3 special features" input "mod pulse"
+ * current value of the LFO input "mod pulse"
  *
  * Reads global variable:  lfoModulatePulseWidth
  *
@@ -15,7 +15,7 @@
  
 pulseWidthUpdateLfoModulatePulseWidthValue:
 {
-    // load the current value of the "Voice 3 special features" input "mod pulse"
+    // load the current value of the LFO input "mod pulse"
     loadPointerToZPR(lfoModulatePulseWidth, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
@@ -32,21 +32,21 @@ pulseWidthUpdateLfoModulatePulseWidthValue:
     // but the user just now switched of the pulse width modulation.
 
     // update the pulse width register for voice #1
-    lda currentSidVoice1PulseWidth
+    lda sidCurrentVoice1PulseWidth
     sta SID.VOICE_1_PULSE_WAVE_LO
-    lda currentSidVoice1PulseWidth+1
+    lda sidCurrentVoice1PulseWidth+1
     sta SID.VOICE_1_PULSE_WAVE_HI
 
     // update the pulse width register for voice #2
-    lda currentSidVoice2PulseWidth
+    lda sidCurrentVoice2PulseWidth
     sta SID.VOICE_2_PULSE_WAVE_LO
-    lda currentSidVoice2PulseWidth+1
+    lda sidCurrentVoice2PulseWidth+1
     sta SID.VOICE_2_PULSE_WAVE_HI
 
     // update the pulse width register for voice #3
-    lda currentSidVoice3PulseWidth
+    lda sidCurrentVoice3PulseWidth
     sta SID.VOICE_3_PULSE_WAVE_LO
-    lda currentSidVoice3PulseWidth+1
+    lda sidCurrentVoice3PulseWidth+1
     sta SID.VOICE_3_PULSE_WAVE_HI
 
 exit:
@@ -59,23 +59,23 @@ exit:
  * ----------
  *
  * Updates the global variable "currentLfoModulatePulseWidth" which the
- * current value of the "Voice 3 special features" input "pulse"
+ * current value of the LFO input "pulse"
  *
  * Reads global variable:  lfoPulseWidth
  *
- * Writes global variable: currentVoice3PulseWidth
+ * Writes global variable: currentLfoPulseWidth
  *
  * ---------------------------------------------------------------- */ 
  
 pulseWidthUpdateLfoPulseWidthValue:
 {
-    // load the current value of the "Voice 3 special features" input "pulse"
+    // load the current value of the LFO input "pulse"
     loadPointerToZPR(lfoPulseWidth, ZPR_7)
     structLoadWordToXAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into the global variable for easier access
-    stx currentVoice3PulseWidth
-    sta currentVoice3PulseWidth+1
+    stx currentLfoPulseWidth
+    sta currentLfoPulseWidth+1
     
     rts
 }
@@ -86,22 +86,22 @@ pulseWidthUpdateLfoPulseWidthValue:
  * ----------
  *
  * Updates the global variable "currentLfoModulatePulseWidth" which the
- * current value of the "Voice 3 special features" input (pulse) "neg"
+ * current value of the LFO input (pulse) "neg"
  *
  * Reads global variable:  lfoPulseWidthNegative
  *
- * Writes global variable: currentVoice3PulseWidthNegative
+ * Writes global variable: currentLfoPulseWidthNegative
  *
  * ---------------------------------------------------------------- */ 
  
 pulseWidthUpdateLfoPulseWidthNegativeValue:
 {
-    // load the current value of the "Voice 3 special features" input (pulse) "neg"
+    // load the current value of the LFO input (pulse) "neg"
     loadPointerToZPR(lfoPulseWidthNegative, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into the global variable for easier access
-    sta currentVoice3PulseWidthNegative
+    sta currentLfoPulseWidthNegative
     
     rts
 }
@@ -113,7 +113,7 @@ pulseWidthUpdateLfoPulseWidthNegativeValue:
  *
  * Calculates the modulation value for voice #3 envelope pulse width modulation
  *
- * Reads global variable:  currentVoice3PulseWidth
+ * Reads global variable:  currentLfoPulseWidth
  *
  * Returns: ZPR_1 - 16 bit unsigned modulation value
  *
@@ -128,10 +128,10 @@ pulseWidthCalculateModulationValue:
     lda #0
     sta ZPR_1_HI
     
-    // copy the value of currentVoice3PulseWidth to ZPR_3
-    lda currentVoice3PulseWidth
+    // copy the value of currentLfoPulseWidth to ZPR_3
+    lda currentLfoPulseWidth
     sta ZPR_3_LO
-    lda currentVoice3PulseWidth+1
+    lda currentLfoPulseWidth+1
     sta ZPR_3_HI
     
     // multiply ZPR_1 and ZPR_3 (16 bit unsigned multiplication)
@@ -160,15 +160,15 @@ pulseWidthCalculateModulationValue:
  *
  * Calculates the modulated pulse width values for a specific voice
  *
- * Reads global variables:  currentSidVoice1PulseWidth, currentSidVoice2PulseWidth,
- *                          currentSidVoice3PulseWidth, currentVoice3PulseWidthNegative
+ * Reads global variables:  sidCurrentVoice1PulseWidth, sidCurrentVoice2PulseWidth,
+ *                          sidCurrentVoice3PulseWidth, currentLfoPulseWidthNegative
  *
  * Parameters: accu - zero based index of the voice (0 through 2)
  *             ZPR_1 - filter cutoff modulation value
  *
- * Writes global variable:  currentSidVoice1ModulatedPulseWidth,
- *                          currentSidVoice2ModulatedPulseWidth,
- *                          currentSidVoice3ModulatedPulseWidth,
+ * Writes global variable:  sidCurrentVoice1ModulatedPulseWidth,
+ *                          sidCurrentVoice2ModulatedPulseWidth,
+ *                          sidCurrentVoice3ModulatedPulseWidth,
  *
  * ---------------------------------------------------------------- */ 
  
@@ -181,14 +181,14 @@ pulseWidthCalculateModulatedValueForVoice:
     tax
 
     // load current pulse width value for selected voice into ZPR_2
-    lda currentSidVoice1PulseWidth, x
+    lda sidCurrentVoice1PulseWidth, x
     sta ZPR_2_LO
     inx
-    lda currentSidVoice1PulseWidth, x
+    lda sidCurrentVoice1PulseWidth, x
     sta ZPR_2_HI
 
     // check if the pulse width modulation should be negative
-    lda currentVoice3PulseWidthNegative
+    lda currentLfoPulseWidthNegative
     cmp #0
     bne substract
 
@@ -196,7 +196,7 @@ pulseWidthCalculateModulatedValueForVoice:
     // not negative, add the modulation value
     // -----------------------------------------------
 
-    // ZPR_1 = ZPR_1 (pulse width modulation value) + ZPR_2 (currentSidVoice1PulseWidth)
+    // ZPR_1 = ZPR_1 (pulse width modulation value) + ZPR_2 (sidCurrentVoice1PulseWidth)
     clc 
     lda ZPR_1_LO
     adc ZPR_2_LO
@@ -294,10 +294,10 @@ save:
     // -----------------------------------------------
 
     lda ZPR_1_HI
-    sta currentSidVoice1ModulatedPulseWidth, x
+    sta sidCurrentVoice1ModulatedPulseWidth, x
     dex
     lda ZPR_1_LO
-    sta currentSidVoice1ModulatedPulseWidth, x
+    sta sidCurrentVoice1ModulatedPulseWidth, x
 
     rts
 }
@@ -309,12 +309,12 @@ save:
  *
  * Calculates the modulated pulse width values for all voices
  *
- * Reads global variables:  currentSidVoice1PulseWidth, currentSidVoice2PulseWidth,
- *                          currentSidVoice3PulseWidth, currentVoice3PulseWidthNegative
+ * Reads global variables:  sidCurrentVoice1PulseWidth, sidCurrentVoice2PulseWidth,
+ *                          sidCurrentVoice3PulseWidth, currentLfoPulseWidthNegative
  *
- * Writes global variable:  currentSidVoice1ModulatedPulseWidth,
- *                          currentSidVoice2ModulatedPulseWidth,
- *                          currentSidVoice3ModulatedPulseWidth,
+ * Writes global variable:  sidCurrentVoice1ModulatedPulseWidth,
+ *                          sidCurrentVoice2ModulatedPulseWidth,
+ *                          sidCurrentVoice3ModulatedPulseWidth,
  *
  * ---------------------------------------------------------------- */ 
  
@@ -343,13 +343,13 @@ pulseWidthCalculateModulatedValuesForAllVoices:
  * and calculates the modulated pulse widths for all voices
  * if neccessary.
  *
- * Reads global variables:  currentSidVoice1PulseWidth, currentSidVoice2PulseWidth,
- *                          currentSidVoice3PulseWidth, currentVoice3PulseWidthNegative,
+ * Reads global variables:  sidCurrentVoice1PulseWidth, sidCurrentVoice2PulseWidth,
+ *                          sidCurrentVoice3PulseWidth, currentLfoPulseWidthNegative,
  *                          currentLfoModulatePulseWidth
  *
- * Writes global variable:  currentSidVoice1ModulatedPulseWidth,
- *                          currentSidVoice2ModulatedPulseWidth,
- *                          currentSidVoice3ModulatedPulseWidth,
+ * Writes global variable:  sidCurrentVoice1ModulatedPulseWidth,
+ *                          sidCurrentVoice2ModulatedPulseWidth,
+ *                          sidCurrentVoice3ModulatedPulseWidth,
  *
  * ---------------------------------------------------------------- */ 
  
@@ -364,21 +364,21 @@ pulseWidthUpdateModulatedValuesIfNeccessary:
     jsr pulseWidthCalculateModulatedValuesForAllVoices
 
     // update the pulse width register for voice #1
-    lda currentSidVoice1ModulatedPulseWidth
+    lda sidCurrentVoice1ModulatedPulseWidth
     sta SID.VOICE_1_PULSE_WAVE_LO
-    lda currentSidVoice1ModulatedPulseWidth+1
+    lda sidCurrentVoice1ModulatedPulseWidth+1
     sta SID.VOICE_1_PULSE_WAVE_HI
 
     // update the pulse width register for voice #2
-    lda currentSidVoice2ModulatedPulseWidth
+    lda sidCurrentVoice2ModulatedPulseWidth
     sta SID.VOICE_2_PULSE_WAVE_LO
-    lda currentSidVoice2ModulatedPulseWidth+1
+    lda sidCurrentVoice2ModulatedPulseWidth+1
     sta SID.VOICE_2_PULSE_WAVE_HI
 
     // update the pulse width register for voice #3
-    lda currentSidVoice3ModulatedPulseWidth
+    lda sidCurrentVoice3ModulatedPulseWidth
     sta SID.VOICE_3_PULSE_WAVE_LO
-    lda currentSidVoice3ModulatedPulseWidth+1
+    lda sidCurrentVoice3ModulatedPulseWidth+1
     sta SID.VOICE_3_PULSE_WAVE_HI
 
 exit:

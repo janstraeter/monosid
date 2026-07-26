@@ -755,7 +755,7 @@ moduleVelocity:
 
 /* -------------------------------------------------------------------
  *
- * Definition of module "VOICE 3 SPECIAL FEATURES"
+ * Definition of module LFO
  *
  * Type: STRUCT_MODULE
  *
@@ -860,13 +860,13 @@ currentInputEditorText:
  *
  * ---------------------------------------------------------------- */ 
 
-currentSidWaveFormControlRegisterVoice1:
+sidCurrentWaveFormControlRegisterVoice1:
     .byte(0)
 
-currentSidWaveFormControlRegisterVoice2:
+sidCurrentWaveFormControlRegisterVoice2:
     .byte(0)
 
-currentSidWaveFormControlRegisterVoice3:
+sidCurrentWaveFormControlRegisterVoice3:
     .byte(0)
 
 
@@ -882,13 +882,13 @@ currentSidWaveFormControlRegisterVoice3:
  *
  * ---------------------------------------------------------------- */ 
 
-currentSidActiveVoice1:
+sidCurrentActiveVoice1:
     .byte(0)
 
-currentSidActiveVoice2:
+sidCurrentActiveVoice2:
     .byte(0)
 
-currentSidActiveVoice3:
+sidCurrentActiveVoice3:
     .byte(0)
 
 
@@ -903,13 +903,13 @@ currentSidActiveVoice3:
  *
  * ---------------------------------------------------------------- */ 
 
-currentSidResetOscillatorVoice1:
+sidCurrentResetOscillatorVoice1:
     .byte(0)
 
-currentSidResetOscillatorVoice2:
+sidCurrentResetOscillatorVoice2:
     .byte(0)
 
-currentSidResetOscillatorVoice3:
+sidCurrentResetOscillatorVoice3:
     .byte(0)
 
 
@@ -1155,7 +1155,7 @@ globalDetuningHi:
 
 /* -------------------------------------------------------------------
  *
- * current value of the "voice 3 special features" input "mod pulse"
+ * current value of the LFO input "mod pulse"
  *
  * Type: boolean
  *
@@ -1167,31 +1167,31 @@ currentLfoModulatePulseWidth:
 
 /* -------------------------------------------------------------------
  *
- * current value of the "voice 3 special features" input "pulse"
+ * current value of the LFO input "pulse"
  *
  * Type: 16 bit unsigned integer
  *
  * ---------------------------------------------------------------- */ 
 
-currentVoice3PulseWidth:
+currentLfoPulseWidth:
     .word(0)
 
 
 /* -------------------------------------------------------------------
  *
- * current value of the "voice 3 special features" input (pulse) "neg"
+ * current value of the LFO input (pulse) "neg"
  *
  * Type: boolean
  *
  * ---------------------------------------------------------------- */ 
 
-currentVoice3PulseWidthNegative:
+currentLfoPulseWidthNegative:
     .byte(0)
 
 
 /* -------------------------------------------------------------------
  *
- * current value of the "voice 3 special features" input "mod filter"
+ * current value of the LFO input "mod filter"
  *
  * Type: boolean
  *
@@ -1203,25 +1203,25 @@ currentLfoModulateFilter:
 
 /* -------------------------------------------------------------------
  *
- * current value of the "voice 3 special features" input "cutoff"
+ * current value of the LFO input "cutoff"
  *
  * Type: 16 bit unsigned integer
  *
  * ---------------------------------------------------------------- */ 
 
-currentVoice3FilterCutoff:
+currentLfoFilterCutoff:
     .word(0)
 
 
 /* -------------------------------------------------------------------
  *
- * current value of the "voice 3 special features" input (cutoff) "neg"
+ * current value of the LFO input (cutoff) "neg"
  *
  * Type: boolean
  *
  * ---------------------------------------------------------------- */ 
 
-currentVoice3FilterCutoffNegative:
+currentLfoFilterCutoffNegative:
     .byte(0)
 
 
@@ -1233,13 +1233,13 @@ currentVoice3FilterCutoffNegative:
  *
  * ---------------------------------------------------------------- */ 
 
-currentSidVoice1PulseWidth:
+sidCurrentVoice1PulseWidth:
     .word(0)
 
-currentSidVoice2PulseWidth:
+sidCurrentVoice2PulseWidth:
     .word(0)
 
-currentSidVoice3PulseWidth:
+sidCurrentVoice3PulseWidth:
     .word(0)
 
 
@@ -1251,13 +1251,13 @@ currentSidVoice3PulseWidth:
  *
  * ---------------------------------------------------------------- */ 
 
-currentSidVoice1ModulatedPulseWidth:
+sidCurrentVoice1ModulatedPulseWidth:
     .word(0)
 
-currentSidVoice2ModulatedPulseWidth:
+sidCurrentVoice2ModulatedPulseWidth:
     .word(0)
 
-currentSidVoice3ModulatedPulseWidth:
+sidCurrentVoice3ModulatedPulseWidth:
     .word(0)   
 
 

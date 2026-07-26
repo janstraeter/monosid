@@ -5,7 +5,7 @@
  * ----------
  *
  * Updates the global variable "currentLfoModulateFilter" which the
- * current value of the "Voice 3 special features" input "mod filter"
+ * current value of the LFO input "mod filter"
  *
  * Reads global variable:  lfoModulateFilter
  *
@@ -15,7 +15,7 @@
  
 filterUpdateLfoModulateFilterValue:
 {
-    // load the current value of the "Voice 3 special features" input "mod filter"
+    // load the current value of the LFO input "mod filter"
     loadPointerToZPR(lfoModulateFilter, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
@@ -46,24 +46,24 @@ exit:
  * ----------
  *
  * Updates the global variable "currentLfoModulatePulseWidth" which the
- * current value of the "Voice 3 special features" input "cutoff"
+ * current value of the LFO input "cutoff"
  *
  * Reads global variable:  lfoFilterCutoff
  *
- * Writes global variable: currentVoice3FilterCutoff:
+ * Writes global variable: currentLfoFilterCutoff:
 
  *
  * ---------------------------------------------------------------- */ 
  
 filterUpdateLfoFilterCutoffValue:
 {
-    // load the current value of the "Voice 3 special features" input "cutoff"
+    // load the current value of the LFO input "cutoff"
     loadPointerToZPR(lfoFilterCutoff, ZPR_7)
     structLoadWordToXAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into the global variable for easier access
-    stx currentVoice3FilterCutoff
-    sta currentVoice3FilterCutoff+1
+    stx currentLfoFilterCutoff
+    sta currentLfoFilterCutoff+1
 
     rts
 }
@@ -74,22 +74,22 @@ filterUpdateLfoFilterCutoffValue:
  * ----------
  *
  * Updates the global variable "currentLfoModulatePulseWidth" which the
- * current value of the "Voice 3 special features" input (cutoff) "neg"
+ * current value of the LFO input (cutoff) "neg"
  *
  * Reads global variable:  lfoFilterCutoffNegative
  *
- * Writes global variable: currentVoice3FilterCutoffNegative
+ * Writes global variable: currentLfoFilterCutoffNegative
  *
  * ---------------------------------------------------------------- */ 
  
 filterUpdateLfoFilterCutoffNegativeValue:
 {
-    // load the current value of the "Voice 3 special features" input (cutoff) "neg"
+    // load the current value of the LFO input (cutoff) "neg"
     loadPointerToZPR(lfoFilterCutoffNegative, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
     // save it into the global variable for easier access
-    sta currentVoice3FilterCutoffNegative
+    sta currentLfoFilterCutoffNegative
     
     rts
 }
@@ -101,7 +101,7 @@ filterUpdateLfoFilterCutoffNegativeValue:
  *
  * Calculates the modulation value for voice #3 envelope filter cutoff modulation
  *
- * Reads global variable:  currentVoice3FilterCutoff
+ * Reads global variable:  currentLfoFilterCutoff
  *
  * Returns: ZPR_1 - 16 bit unsigned modulation value
  *
@@ -116,10 +116,10 @@ filterCalculateModulationValue:
     lda #0
     sta ZPR_1_HI
     
-    // copy the value of currentVoice3FilterCutoff to ZPR_3
-    lda currentVoice3FilterCutoff
+    // copy the value of currentLfoFilterCutoff to ZPR_3
+    lda currentLfoFilterCutoff
     sta ZPR_3_LO
-    lda currentVoice3FilterCutoff+1
+    lda currentLfoFilterCutoff+1
     sta ZPR_3_HI
     
     // multiply ZPR_1 and ZPR_3 (16 bit unsigned multiplication)
@@ -149,7 +149,7 @@ filterCalculateModulationValue:
  * Calculates the filter cutoff value modulated by voice #3 envelope
  *
  * Reads global variables:  sidCurrentFilterCutoffFrequency,
- *                          currentVoice3FilterCutoffNegative
+ *                          currentLfoFilterCutoffNegative
  *
  * Parameter: ZPR_1 - filter cutoff modulation value
  *
@@ -166,7 +166,7 @@ filterCalculateModulatedCutoffValue:
     sta ZPR_2_HI
 
     // check if the filter cutoff modulation should be negative
-    lda currentVoice3FilterCutoffNegative
+    lda currentLfoFilterCutoffNegative
     cmp #0
     bne substract
 
@@ -174,7 +174,7 @@ filterCalculateModulatedCutoffValue:
     // not negative, add the modulation value
     // -----------------------------------------------
 
-    // ZPR_1 = ZPR_1 (filter cutoff modulation value) + ZPR_2 (currentSidVoice1PulseWidth)
+    // ZPR_1 = ZPR_1 (filter cutoff modulation value) + ZPR_2 (sidCurrentVoice1PulseWidth)
     clc 
     lda ZPR_1_LO
     adc ZPR_2_LO
@@ -290,7 +290,7 @@ save:
  *
  * Reads global variables:  currentLfoModulateFilter,
  *                          sidCurrentFilterCutoffFrequency,
- *                          currentVoice3FilterCutoffNegative
+ *                          currentLfoFilterCutoffNegative
  *                          
  * Writes global variable:  sidCurrentModulatedFilterCutoffFrequency
  *
