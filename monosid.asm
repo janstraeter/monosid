@@ -969,6 +969,11 @@ switchKey:
    	bne *+5
     jmp shiftLKeyPressed
 
+    // arrow left
+    cmp #PETSCII.ARROW_LEFT
+    bne *+5
+    jmp arrowLeftKeyPressed
+
     // If no key pressed we can handle here, exit
 exit:
     rts
@@ -1142,6 +1147,11 @@ shiftLKeyPressed:
     // select first input of module LFO
     lda #IID.LFO_CYCLE_LENGTH
     jmp cursorKeyPressedFinalize
+
+arrowLeftKeyPressed:
+    // stop any note (panic button)
+    jsr stopAnyNote
+    rts
     
 iidOfNextSelectedInput:
 	.byte(0)

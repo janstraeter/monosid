@@ -272,6 +272,11 @@ menuHandleKeyboardInput:
 	bne *+5
     jmp f1KeyPressed
 
+    // arrow left
+    cmp #PETSCII.ARROW_LEFT
+    bne *+5
+    jmp arrowLeftKeyPressed
+
 exit:
     // If no key pressed we can handle here, exit
     rts
@@ -329,6 +334,15 @@ f1KeyPressed:
     jsr switchToModeMain
     rts
 
+    // ----------------------------------------------------
+    // arrow left key pressed - panic button - stop any note
+    // ----------------------------------------------------
+
+arrowLeftKeyPressed:
+    // stop any note (panic button)
+    jsr stopAnyNote
+    rts
+    
     // ----------------------------------------------------
     // after each cursor movement move the focus to the
     // newly selected item

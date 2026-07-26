@@ -240,6 +240,8 @@
     .label SHIFT_R                   = $D2
     .label SHIFT_V                   = $D6
     .label SHIFT_L                   = $CC
+
+    .label ARROW_LEFT                = $5F
 }
 
 .namespace MIDI_CARTRIDGE {
