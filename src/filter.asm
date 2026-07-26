@@ -292,10 +292,6 @@ filterUpdateModulatedCutoffValueIfNeccessary:
     sta ZPR_1_HI
     jsr sidSetFilterCutoffFrequency
 
-    ldx sidCurrentModulatedFilterCutoffFrequency
-    ldy sidCurrentModulatedFilterCutoffFrequency+1
-    jsr debugDumpWord
-
 exit:
     rts
 }
