@@ -193,21 +193,10 @@ filterCalculateModulatedCutoffValue:
     lda ZPR_1_HI   // compare high bytes
     cmp ZPR_2_HI
     bcc save       // if ZPR_1_HI < ZPR_2_HI then modulation value < 2047
-    bne wrapAround // if ZPR_1_HI <> ZPR_2_HI then modulation value > 2047 (so modulation value >= 2047)
+    bne clampToMax // if ZPR_1_HI <> ZPR_2_HI then modulation value > 2047 (so modulation value >= 2047)
     lda ZPR_1_LO   // compare low bytes
     cmp ZPR_2_LO
     bcc save       // if ZPR_1_LO < ZPR_2_LO then modulation value < 2047
-
-wrapAround:
-    // wrap around: substract 2047 from the calculated value
-    sec
-    lda ZPR_1_LO
-    sbc ZPR_2_LO
-    sta ZPR_1_LO
-    lda ZPR_1_HI
-    sbc ZPR_2_HI
-    sta ZPR_1_HI
-    jmp save
 
 substract:
     // -----------------------------------------------
@@ -217,19 +206,19 @@ substract:
     // if (currentFilterCutoff >= modulationValue) {
     //     result = currentFilterCutoff - modulationValue
     // } else {
-    //     result = 2047 - (modulationValue - currentFilterCutoff)
+    //     result = 0
     // }
 
     lda ZPR_2_HI             // compare high bytes
     cmp ZPR_1_HI
-    bcc negativeWrapAround   // if ZPR_2_HI < ZPR_1_HI then current filter cutoff < modulation value
-    bne negativeNoWrapAround // if ZPR_2_HI <> ZPR_1_HI then current filter cutoff > modulation value (so current filter cutoff >= modulation value)
+    bcc clampToMin           // if ZPR_2_HI < ZPR_1_HI then current filter cutoff < modulation value
+    bne negativeNoClamp      // if ZPR_2_HI <> ZPR_1_HI then current filter cutoff > modulation value (so current filter cutoff >= modulation value)
     lda ZPR_2_LO             // compare low bytes
     cmp ZPR_1_LO
-    bcs negativeNoWrapAround // if ZPR_2_LO >= ZPR_1_LO then current filter cutoff >= modulation value
-    jmp negativeWrapAround
+    bcs negativeNoClamp      // if ZPR_2_LO >= ZPR_1_LO then current filter cutoff >= modulation value
+    jmp clampToMin
     
-negativeNoWrapAround:
+negativeNoClamp:
     // ZPR_1 = ZPR_2 (currentFilterCutoff) - ZPR_1 (modulationValue)
     sec
     lda ZPR_2_LO
@@ -238,45 +227,34 @@ negativeNoWrapAround:
     lda ZPR_2_HI
     sbc ZPR_1_HI
     sta ZPR_1_HI
-    jmp save
 
-negativeWrapAround:
-    // ZPR_1 = ZPR_1 (modulationValue) - ZPR_2 (currentFilterCutoff)
-    sec
-    lda ZPR_1_LO
-    sbc ZPR_2_LO
-    sta ZPR_1_LO
-    lda ZPR_1_HI
-    sbc ZPR_2_HI
-    sta ZPR_1_HI
-
-    // ZPR_2 = 2047
-    lda #$FF
-    sta ZPR_2_LO
-    lda #$07
-    sta ZPR_2_HI
-
-    // ZPR_1 = ZPR_2 (2047) - ZPR_1 (modulationValue - currentFilterCutoff)
-    sec
-    lda ZPR_2_LO
-    sbc ZPR_1_LO
-    sta ZPR_1_LO
-    lda ZPR_2_HI
-    sbc ZPR_1_HI
-    sta ZPR_1_HI
+    // -----------------------------------------------
+    // save result to global value
+    // -----------------------------------------------
 
 save:
-
-    // -----------------------------------------------
-    // save value
-    // -----------------------------------------------
-
+    // save calculated value
     lda ZPR_1_LO
     sta sidCurrentModulatedFilterCutoffFrequency
     lda ZPR_1_HI
     sta sidCurrentModulatedFilterCutoffFrequency+1
-
     rts
+
+clampToMin:
+    // save clamped to min. filter cutoff value of 0
+    lda #0
+    sta sidCurrentModulatedFilterCutoffFrequency
+    sta sidCurrentModulatedFilterCutoffFrequency+1
+    rts
+
+clampToMax:
+    // save clamped to to max. filter cutoff value of 2047
+    lda #$FF
+    sta sidCurrentModulatedFilterCutoffFrequency
+    lda #$07
+    sta sidCurrentModulatedFilterCutoffFrequency+1
+    rts
+
 }
 
 
@@ -313,6 +291,10 @@ filterUpdateModulatedCutoffValueIfNeccessary:
     lda sidCurrentModulatedFilterCutoffFrequency+1
     sta ZPR_1_HI
     jsr sidSetFilterCutoffFrequency
+
+    ldx sidCurrentModulatedFilterCutoffFrequency
+    ldy sidCurrentModulatedFilterCutoffFrequency+1
+    jsr debugDumpWord
 
 exit:
     rts
