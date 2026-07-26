@@ -8,6 +8,18 @@
 
 .encoding "screencode_upper"
 
+strInfoBarCurrentPage1:
+    .text "1/2"
+    .byte $00
+
+strInfoBarCurrentPage2:
+    .text "2/2"
+    .byte $00
+    
+strInfoBarOct:
+	.text "OCT:"
+	.byte $00
+
 strInfoBarF1:
 	.byte $76, $86, $B1, $61, $00
 
@@ -21,10 +33,6 @@ strInfoBarF3:
 strInfoBarPatch:
     .text "PATCH"
     .byte $00
-
-strInfoBarOct:
-	.text "OCT:"
-	.byte $00
 
 strMonosid:
     .text "MONOSID"
@@ -324,7 +332,7 @@ strMainMenuDevelopedBy:
     .byte(0)
 
 strMainMenuWebsite:
-    .text "monosid.janstraeter.de"
+    .text "https://monosid.janstraeter.de"
     .byte(0)
 
 strMainMenuFocusedItem:

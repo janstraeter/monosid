@@ -122,6 +122,8 @@
 
     .label LFN_ERR                  = 15
     .label SA_ERR                   = 15
+
+    .label SHFLAG                   = $028D
 }
 
 .namespace SID {
@@ -218,6 +220,26 @@
 
     .label F1                       = $85
     .label F3                       = $86
+    .label F5                       = $87
+    .label F7                       = $88
+
+    .label SHIFT_1                   = $21
+    .label SHIFT_2                   = $22
+    .label SHIFT_3                   = $23
+
+    /*.label SHIFT_F                   = $66
+    .label SHIFT_M                   = $6D
+    .label SHIFT_D                   = $64
+    .label SHIFT_R                   = $72
+    .label SHIFT_V                   = $76
+    .label SHIFT_L                   = $6C*/
+
+    .label SHIFT_F                   = $C6
+    .label SHIFT_M                   = $CD
+    .label SHIFT_D                   = $C4
+    .label SHIFT_R                   = $D2
+    .label SHIFT_V                   = $D6
+    .label SHIFT_L                   = $CC
 }
 
 .namespace MIDI_CARTRIDGE {

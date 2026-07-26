@@ -101,7 +101,17 @@ modulesLoop:
 
 userInterfaceDrawInfoBar:
 {
+	// current modules page
+	lda currentPage
+	bne secondPage
+	screenPutString(0, 0, strInfoBarCurrentPage1)
+	jmp currentOctave
+
+secondPage:
+	screenPutString(0, 0, strInfoBarCurrentPage2)
+
 	// current octave
+currentOctave:
 	screenPutString(4, 0, strInfoBarOct)
     jsr userInterfaceOutputInfoBarCurrentKeyboardPianoOctave
 	

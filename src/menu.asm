@@ -26,7 +26,7 @@ menuDrawMain:
     // print developer info
     screenPutStringColor(3, 23, strVersion, DARK_GRAY)
     screenPutStringColor(8, 23, strMainMenuDevelopedBy, DARK_GRAY)
-    screenPutStringColor(9, 24, strMainMenuWebsite, DARK_GRAY)
+    screenPutStringColor(5, 24, strMainMenuWebsite, DARK_GRAY)
 
     // print MIDI info headline
     screenPutStringColor(10, 14, strMidiInfoHeadline, WHITE)

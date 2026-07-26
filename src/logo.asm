@@ -20,15 +20,12 @@ logoSetupSprites:
     sprite4SetBlockRegister(spriteLogo5);
     sprite5SetBlockRegister(spriteLogo6);
 
-    // The first 4 sprites ("mono") are dark gray
+    // The logo is part of the main menu and should be in yellow
     lda #YELLOW
     sta VIC.SPRITE_0_COLOR
     sta VIC.SPRITE_1_COLOR
     sta VIC.SPRITE_2_COLOR
     sta VIC.SPRITE_3_COLOR
-
-    // The last two sprites ("SID") are white
-    lda #YELLOW
     sta VIC.SPRITE_4_COLOR
     sta VIC.SPRITE_5_COLOR
 

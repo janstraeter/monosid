@@ -533,10 +533,16 @@ Kernal_EA7B:
 
 updateCurrentKeyboardPianoOctave:
 {
+    // if the shift-key is pressed, exit
+    lda KERNAL.SHFLAG
+    bne notFound
+
+    // check if there is anay currently pressed key
     lda currentPressedKey
     cmp #64
     beq notFound
 
+    // yes, a key is pressed so check if it is 1-8
     loadPointerToZPR(keyboardPianoOctaveKeyCodes, ZPR_1)
     ldy #$00
 
@@ -550,6 +556,7 @@ arrayLoop:
     jmp notFound
 
 found:
+    // pressed key was found, set the keyboard piano octave to the new value
     sty currentKeyboardPianoOctave
     loadPointerToZPR(keyboardPianoOctaveOffsets, ZPR_1)
     lda (ZPR_1), y
@@ -578,6 +585,10 @@ notFound:
 
 updateCurrentKeyboardNote:
 {
+    // if the shift-key is pressed, exit
+    lda KERNAL.SHFLAG
+    bne notFound
+
     // load the current pressed key and check if the value is not 64 (which means no key pressed)
     lda currentPressedKey
     cmp #64
@@ -837,12 +848,17 @@ mainModeHandleKeyboardInputForSubModeSelectInput:
     // Read pressed keycode, if no key pressed, exit
     jsr KERNAL.GETIN
     cmp #$00
-    beq exit
+    bne switchKey
+    rts
 
-	// Switch for the handled keys.
+switchKey:
+
+	// ----------------------------------------------------------------------------
+    // Switch for the handled keys.
     // Because the subroutine is rather long, use a little trick to avoid the
     // problems with branching instructions on the 6502, which only can jump -127/+127 bytes.
     // see here: https://www.lemon64.com/forum/viewtopic.php?t=81358
+	// ----------------------------------------------------------------------------
     
     // WASD
     cmp #PETSCII.S
@@ -898,6 +914,61 @@ mainModeHandleKeyboardInputForSubModeSelectInput:
 	bne *+5
     jmp f3KeyPressed
 
+    // F5
+    cmp #PETSCII.F5
+	bne *+5
+    jmp f5KeyPressed
+
+    // F7
+    cmp #PETSCII.F7
+	bne *+5
+    jmp f7KeyPressed
+
+    // shift+1
+    cmp #PETSCII.SHIFT_1
+   	bne *+5
+    jmp shift1KeyPressed
+
+    // shift+2
+    cmp #PETSCII.SHIFT_2
+   	bne *+5
+    jmp shift2KeyPressed
+
+    // shift+3
+    cmp #PETSCII.SHIFT_3
+   	bne *+5
+    jmp shift3KeyPressed
+
+    // shift+F
+    cmp #PETSCII.SHIFT_F
+   	bne *+5
+    jmp shiftFKeyPressed
+
+    // shift+M
+    cmp #PETSCII.SHIFT_M
+   	bne *+5
+    jmp shiftMKeyPressed
+
+    // shift+D
+    cmp #PETSCII.SHIFT_D
+   	bne *+5
+    jmp shiftDKeyPressed
+
+    // shift+R
+    cmp #PETSCII.SHIFT_R
+   	bne *+5
+    jmp shiftRKeyPressed
+
+    // shift+V
+    cmp #PETSCII.SHIFT_V
+   	bne *+5
+    jmp shiftVKeyPressed
+
+    // shift+L
+    cmp #PETSCII.SHIFT_L
+   	bne *+5
+    jmp shiftLKeyPressed
+
     // If no key pressed we can handle here, exit
 exit:
     rts
@@ -927,10 +998,7 @@ cursorLeftKeyPressed:
     jmp cursorKeyPressedFinalize
 
 cursorKeyPressedFinalize:
-    // after it has been determined which page, module and index should now be selected,
-    // update the screen accordingly
-
-    // save the IID
+    // save the IID from accu in variable
     sta iidOfNextSelectedInput
     
     // save current page, module and input indecies
@@ -1020,6 +1088,61 @@ f3KeyPressed:
     jsr switchToModePatchSelector
     rts
 
+f5KeyPressed:
+    // select first input of first module of page 1
+    lda #IID.V1_WAVE
+    jmp cursorKeyPressedFinalize
+
+f7KeyPressed:
+    // select first input of first module of page 2
+    lda #IID.DETUNING_V1
+    jmp cursorKeyPressedFinalize
+
+shift1KeyPressed:
+    // select first input of module Voice 1
+    lda #IID.V1_WAVE
+    jmp cursorKeyPressedFinalize
+
+shift2KeyPressed:
+    // select first input of module Voice 2
+    lda #IID.V2_WAVE
+    jmp cursorKeyPressedFinalize
+
+shift3KeyPressed:
+    // select first input of module Voice 3
+    lda #IID.V3_WAVE
+    jmp cursorKeyPressedFinalize
+
+shiftFKeyPressed:
+    // select first input of module Filter
+    lda #IID.FILTER_CUTOFF
+    jmp cursorKeyPressedFinalize
+
+shiftMKeyPressed:
+    // select first input of module Main
+    lda #IID.MAIN_VOL
+    jmp cursorKeyPressedFinalize
+
+shiftDKeyPressed:
+    // select first input of module Detuning
+    lda #IID.DETUNING_V1
+    jmp cursorKeyPressedFinalize
+
+shiftRKeyPressed:
+    // select first input of module Reset Oscillators
+    lda #IID.RESOSC_V1
+    jmp cursorKeyPressedFinalize
+
+shiftVKeyPressed:
+    // select first input of module Velocity
+    lda #IID.VELOCITY_USE
+    jmp cursorKeyPressedFinalize
+
+shiftLKeyPressed:
+    // select first input of module LFO
+    lda #IID.LFO_CYCLE_LENGTH
+    jmp cursorKeyPressedFinalize
+    
 iidOfNextSelectedInput:
 	.byte(0)
 previousPage:
