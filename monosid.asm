@@ -18,6 +18,32 @@
 
 
 // *******************************************************************
+.disk [filename="monosid.d64", name="MONOSID"] 
+{
+    [name="MONOSID", type="prg", segments="Start, MainProgram, SpriteData, Subroutines, Data, Patches"],
+    [name="MONOSID-PATCHES", type="usr", noStartAddr, segments="PatchesFileData"]
+}
+// *******************************************************************
+
+
+// *******************************************************************
+.segment PatchesFileData []
+// *******************************************************************
+
+/* -------------------------------------------------------------------
+ *
+ * Load the binary data from the example patches file.
+ * This segment is not part of the single PRG-file,
+ * but the complete disk-image (the D64-file).
+ *
+ * ---------------------------------------------------------------- */ 
+
+.var ptc = LoadBinary("patches/monosid-patches")
+*=0 "PatchsFileData"
+.fill ptc.getSize(), ptc.get(i)
+
+
+// *******************************************************************
 .file [name="monosid.prg", segments="Start, MainProgram, SpriteData, Subroutines, Data, Patches"]
 // *******************************************************************
 
@@ -70,7 +96,7 @@ patches:
 
 
 // *******************************************************************
-.segment SpriteData [start=$2000]
+.segment SpriteData [startAfter="MainProgram"]
 // *******************************************************************
 
 /* -------------------------------------------------------------------
@@ -93,7 +119,7 @@ patches:
  * ---------------------------------------------------------------- */ 
 
 #import "src/convert.asm"
-#import "src/debug.asm"
+// #import "src/debug.asm" // <- comment in again, when needed
 #import "src/detect.asm"
 #import "src/file.asm"
 #import "src/filter.asm"
@@ -129,6 +155,9 @@ mainProgram:
     // ------------------------------------------------
     // Initialization
     // ------------------------------------------------
+
+    // save the current device number for later use
+    jsr fileSaveDiskDriveDeviceNumber
 
     // detect if PAL or NTSC
     jsr detectC64Model

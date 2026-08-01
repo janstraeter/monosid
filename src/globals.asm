@@ -1392,6 +1392,18 @@ currentMenuIndex:
 
 /* -------------------------------------------------------------------
  *
+ * Device number from which the program was startet
+ *
+ * Type: Unsigned integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+diskDriveDeviceNumber:
+    .byte(0)
+
+
+/* -------------------------------------------------------------------
+ *
  * Buffer to hold the last disk drive error message
  *
  * Type: 40 byte buffer

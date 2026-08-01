@@ -17,7 +17,7 @@
 {
     // set logical file number, device number and secondary address
     lda #logicalFileNumber
-    ldx #8
+    ldx diskDriveDeviceNumber
     ldy #secondaryAddress
     jsr KERNAL.SETLFS
 
@@ -61,7 +61,7 @@
 {
     // logical filenumber to 15, device number and secondary address to 15
     lda #KERNAL.LFN_ERR
-    ldx #8
+    ldx diskDriveDeviceNumber
     ldy #KERNAL.SA_ERR
     jsr KERNAL.SETLFS
 
@@ -173,4 +173,29 @@ tmpErrorNum:
 
 bufferIndex:
     .byte(0)
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Reads the current device number and saves it in a global variable.
+ * This subroutine should therefore be called at the beginning of the program.
+ * All device numbers smaller than #8 are for devices we do not support.
+ * Therefore the routine sets the device number to #8 if smaller.
+ *
+ * Writes global variables: diskDriveDeviceNumber
+ *                
+ * ---------------------------------------------------------------- */ 
+
+fileSaveDiskDriveDeviceNumber:
+{
+    lda ZP.CURRENT_DEVICE_NUMBER
+    cmp #8
+    bcs save
+    lda #8
+save:
+    sta diskDriveDeviceNumber
+    rts
 }

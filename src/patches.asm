@@ -590,7 +590,7 @@ patchesDrawLoadScreen:
  * Subroutine
  * ----------
  *
- * Saves the patches data to a file called "MONOSID.PTC" to disk
+ * Saves the patches data to a file called "MONOSID-PATCHES" to disk
  * Prints an error message if any disk drive errors occur.
  *
  * Sets carry bit on error, clears carry bit on success
@@ -722,11 +722,11 @@ FILENAME:
     // SETNAM expects the filename to be encoded in PETSCII
     .encoding "petscii_upper"
 
-    // filename MONOSID.PTC
+    // filename MONOSID-PATCHES
     // "0:" - 
     // "U" - user file
     // "R" - open for reading
-    .text "0:MONOSID.PTC,U,R"
+    .text "0:MONOSID-PATCHES,U,R"
 
     // calculate string length
     .label FILENAME_LENGTH = * - FILENAME
@@ -767,7 +767,7 @@ patchesDrawSaveScreen:
  * Subroutine
  * ----------
  *
- * Saves the patches data to a file called "MONOSID.PTC" to disk
+ * Saves the patches data to a file called "MONOSID-PATCHES" to disk
  * Prints an error message if any disk drive errors occur.
  *
  * Sets carry bit on error, clears carry bit on success
@@ -892,11 +892,11 @@ FILENAME:
     // SETNAM expects the filename to be encoded in PETSCII
     .encoding "petscii_upper"
 
-    // filename MONOSID.PTC
+    // filename MONOSID-PATCHES
     // "@0:" - overwrite file, if already exsists
     // "U" - user file
     // "W" - open for writing
-    .text "@0:MONOSID.PTC,U,W"
+    .text "@0:MONOSID-PATCHES,U,W"
 
     // calculate string length
     .label FILENAME_LENGTH = * - FILENAME

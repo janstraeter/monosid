@@ -10,6 +10,7 @@
 
 
 .namespace ZP {
+    .label CURRENT_DEVICE_NUMBER    = $BA
     .label LAST_PRESSED_KEY         = $C5
     .label CURRENT_PRESSED_KEY      = $CB
     .label CURSOR_FLASH             = $CC
