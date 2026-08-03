@@ -89,6 +89,31 @@ exit:
  *
  * Shamelessly stolen from here: https://github.com/MichaelTroelsen/SIDDetector-II
  *
+ * It worked fine in the emulator (WinVice 3.8) - but when I tested it on real hardware
+ * (a modern DATEL-replica) it could not detect it. After a few hours of
+ * testing on real hardware and in Vice and with the help of Claude AI
+ * I found the problem - after the hardware reset of the 6850 chip Vice instantly
+ * sets the status register to $02.
+ *
+ * But on real hardware, right after $03 the chip is being maintained in reset,
+ * TDRE is inhibited, and you read $00. TDRE only pops to $02 after you write
+ * a real operating control word to take it out of reset.
+ *
+ * VICE's 6850 model apparently sets TDRE as soon as it sees the master-reset write,
+ * so the check passes in the emulator but not on the metal. That's the whole discrepancy.
+ *
+ * With a little help from Claude I enhanced (well, at least changed :-) the original
+ * code I lifted from "SIDDetector II". This version now works in all 5 cartridges
+ * emulated by Vice AND on my hardware DATEL cartridge. Hopefully it will work
+ * for the real hardware versions of the other 4 as well. But currently I can not get
+ * my hands on some for testing (as they are very old and expensive/hard to come by).
+ *
+ * The logic of the original code is still intact but instead of only setting the
+ * 6850 into master reset and expecting it to return $02 in the status register
+ * immediately, now there is a second step which activates the 6850 by writing
+ * $15 into the control register and then waiting a few CPU cycles to give the hardware
+ * time to settle before checking the status register.
+ *
  * Original description of the subroutine:
  * --------------------------------------------------------------------------------------------------
  * checkmidi: probe each documented C64 MIDI cart for a 6850 ACIA signature.
@@ -136,48 +161,81 @@ detectMidiCartridgeByRegisterAddresses:
     // 1) Sequential / Namesoft @ $DE00 / $DE02
     lda #$03
     sta $DE00              // master reset → ACIA control
+    lda #$15
+    sta $DE00              // take OUT of reset: /16, 8N1, Tx+Rx enabled
+    detectMidiCartridgeWaitLoop()           // let TDRE come up on real silicon
     lda $DE02              // status read
     and #$73               // mask CTS/DCD/IRQ
     cmp #$02
-    bne cmidi_n1
+    bne park_n1
     lda $DE02              // 2nd read confirms it's not bus jitter
     and #$73
     cmp #$02
-    bne cmidi_n1
+    bne park_n1
     lda #MIDI_CARTRIDGE.SEQUENTIAL
     sta midiDetectedCartridge
+    lda #$03
+    sta $DE00              // park matched window before exit
+    detectMidiCartridgeWaitLoop()
     rts
+park_n1:
+    lda #$03
+    sta $DE00              // park this window back into reset (TDRE→0, Rx off)
+    detectMidiCartridgeWaitLoop()
 cmidi_n1:
+
     // 2) DATEL / Siel / JMS @ $DE04 / $DE06
     lda #$03
     sta $DE04
+    lda #$15
+    sta $DE04
+    detectMidiCartridgeWaitLoop()
     lda $DE06
     and #$73
     cmp #$02
-    bne cmidi_n2
+    bne park_n2
     lda $DE06
     and #$73
     cmp #$02
-    bne cmidi_n2
+    bne park_n2
     lda #MIDI_CARTRIDGE.DATEL_SIEL_JMS
     sta midiDetectedCartridge
+    lda #$03
+    sta $DE04              // park matched window before exit
+    detectMidiCartridgeWaitLoop()
     rts
+park_n2:
+    lda #$03
+    sta $DE04              // park
+    detectMidiCartridgeWaitLoop()
 cmidi_n2:
+
     // 3) Passport @ $DE08 (CR/SR share addr; read returns SR)
     lda #$03
-    sta $DE08
+    sta $DE08             // master reset
+    lda #$15
+    sta $DE08             // out of reset (write = CR, read = SR)
+    detectMidiCartridgeWaitLoop()
     lda $DE08
     and #$73
     cmp #$02
-    bne cmidi_n3
+    bne park_n3
     lda $DE08
     and #$73
     cmp #$02
-    bne cmidi_n3
+    bne park_n3
     lda #MIDI_CARTRIDGE.PASSPORT
     sta midiDetectedCartridge
+    lda #$03
+    sta $DE08             // park matched window before exit
+    detectMidiCartridgeWaitLoop()
     rts
+park_n3:
+    lda #$03
+    sta $DE08             // park
+    detectMidiCartridgeWaitLoop()
 cmidi_n3:
+
     // 4) Maplin @ $DF00 — guarded against I/O2 owners
     /*
 
@@ -200,22 +258,51 @@ cmidi_n3:
     beq cmidi_done         // ARM2SID SFX-
     
     // ------------------------------------------------
-
     */
+
     lda #$03
-    sta $DF00
+    sta $DF00             // master reset
+    lda #$15
+    sta $DF00             // out of reset
+    detectMidiCartridgeWaitLoop()
     lda $DF00
     and #$73
     cmp #$02
-    bne cmidi_done
+    bne park_n4
     lda $DF00
     and #$73
     cmp #$02
-    bne cmidi_done
+    bne park_n4
     lda #MIDI_CARTRIDGE.MAPLIN
     sta midiDetectedCartridge
+    lda #$03
+    sta $DF00             // park matched window before exit
+    detectMidiCartridgeWaitLoop()
+    rts
+park_n4:
+    lda #$03
+    sta $DF00             // park the last window too, so we exit clean
+    detectMidiCartridgeWaitLoop()
 cmidi_done:
     rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Macro
+ * -----
+ *
+ * Short settle delay so the 6850 transmitter can leave the 
+ * reset condition and raise TDRE before we sample the status
+ * register. VICE raises it instantly; real silicon may need a moment.
+ * 
+ * ---------------------------------------------------------------- */ 
+
+.macro detectMidiCartridgeWaitLoop() {
+    ldx #$20
+!wait:
+    dex
+    bne !wait-
 }
 
 
