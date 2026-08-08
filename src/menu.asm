@@ -272,10 +272,10 @@ menuHandleKeyboardInput:
 	bne *+5
     jmp f1KeyPressed
 
-    // arrow left
-    cmp #PETSCII.ARROW_LEFT
+    // X
+    cmp #PETSCII.X
     bne *+5
-    jmp arrowLeftKeyPressed
+    jmp xKeyPressed
 
 exit:
     // If no key pressed we can handle here, exit
@@ -335,10 +335,10 @@ f1KeyPressed:
     rts
 
     // ----------------------------------------------------
-    // arrow left key pressed - panic button - stop any note
+    // X key pressed - panic button - stop any note
     // ----------------------------------------------------
 
-arrowLeftKeyPressed:
+xKeyPressed:
     // stop any note (panic button)
     jsr stopAnyNote
     rts

@@ -998,10 +998,10 @@ switchKey:
    	bne *+5
     jmp shiftLKeyPressed
 
-    // arrow left
-    cmp #PETSCII.ARROW_LEFT
+    // X
+    cmp #PETSCII.X
     bne *+5
-    jmp arrowLeftKeyPressed
+    jmp xKeyPressed
 
     // If no key pressed we can handle here, exit
 exit:
@@ -1177,7 +1177,7 @@ shiftLKeyPressed:
     lda #IID.LFO_CYCLE_LENGTH
     jmp cursorKeyPressedFinalize
 
-arrowLeftKeyPressed:
+xKeyPressed:
     // stop any note (panic button)
     jsr stopAnyNote
     rts
