@@ -399,6 +399,6 @@ strMidiChannel:
     .text "Channel:"
     .byte(0)
 
-strMidiChannelAny:
-    .text "Any"
+strMidiChannelOmni:
+    .text "Omni"
     .byte(0)

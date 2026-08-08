@@ -83,7 +83,7 @@ printMidiChannelInfo:
     // check if a specific channel is set (<> 255)
     lda midiChannel
     cmp #255
-    beq printMidiChannelAny
+    beq printMidiChannelOmni
 
     // add 1, because by convention the zero based MIDI channel is communicated to the user as 1-16
     clc
@@ -103,8 +103,8 @@ printMidiChannelInfo:
 
     rts
 
-printMidiChannelAny:
-    screenPutString(21, 16, strMidiChannelAny)
+printMidiChannelOmni:
+    screenPutString(21, 16, strMidiChannelOmni)
 
     rts
 
