@@ -138,8 +138,8 @@ strInputNameFilterHighpass:
     .text "HIGHPASS"
     .byte $00
 
-strInputNameFilterBandwidth: 
-    .text "BANDWIDTH"
+strInputNameFilterBandpass: 
+    .text "BANDPASS"
     .byte $00
 
 strInputNameMainVol:         

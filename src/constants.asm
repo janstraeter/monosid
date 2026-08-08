@@ -345,7 +345,7 @@
     .label FILTER_V3                = 32
     .label FILTER_LOWPASS           = 33
     .label FILTER_HIGHPASS          = 34
-    .label FILTER_BANDWIDTH         = 35
+    .label FILTER_BANDPASS         = 35
 
     .label MAIN_VOL                 = 36
 

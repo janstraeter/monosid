@@ -418,7 +418,7 @@ filterInputVoice2:
 
 filterInputVoice3:
     createStructInput(INPUT_TYPE.BOOLEAN, 13, 23, 7, strInputNameFilterVoice3, $01, $00, sidUpdateFilterSwitchesAndResonance,
-                      IID.FILTER_V3, IID.FILTER_RES, IID.FILTER_BANDWIDTH, IID.FILTER_V2, IID.DETUNING_V2)
+                      IID.FILTER_V3, IID.FILTER_RES, IID.FILTER_BANDPASS, IID.FILTER_V2, IID.DETUNING_V2)
 
 filterInputLowpass:
     createStructInput(INPUT_TYPE.BOOLEAN, 21, 21, 7, strInputNameFilterLowpass, $01, $00, sidUpdateFilterModesAndVolume,
@@ -426,11 +426,11 @@ filterInputLowpass:
 
 filterInputHighpass:
     createStructInput(INPUT_TYPE.BOOLEAN, 21, 22, 7, strInputNameFilterHighpass, $00, $00, sidUpdateFilterModesAndVolume,
-                      IID.FILTER_HIGHPASS, IID.FILTER_V2, IID.MAIN_VOL, IID.FILTER_LOWPASS, IID.FILTER_BANDWIDTH)
+                      IID.FILTER_HIGHPASS, IID.FILTER_V2, IID.MAIN_VOL, IID.FILTER_LOWPASS, IID.FILTER_BANDPASS)
 
-filterInputBandwidth:
-    createStructInput(INPUT_TYPE.BOOLEAN, 21, 23, 7, strInputNameFilterBandwidth, $00, $00, sidUpdateFilterModesAndVolume,
-                      IID.FILTER_BANDWIDTH, IID.FILTER_V3, IID.MAIN_VOL, IID.FILTER_HIGHPASS, IID.DETUNING_V2_NEG)
+filterInputBandpass:
+    createStructInput(INPUT_TYPE.BOOLEAN, 21, 23, 7, strInputNameFilterBandpass, $00, $00, sidUpdateFilterModesAndVolume,
+                      IID.FILTER_BANDPASS, IID.FILTER_V3, IID.MAIN_VOL, IID.FILTER_HIGHPASS, IID.DETUNING_V2_NEG)
 
 filterInputArray:
     .byte(<filterInputCutoff)
@@ -447,8 +447,8 @@ filterInputArray:
     .byte(>filterInputLowpass)
     .byte(<filterInputHighpass)
     .byte(>filterInputHighpass)
-    .byte(<filterInputBandwidth)
-    .byte(>filterInputBandwidth)
+    .byte(<filterInputBandpass)
+    .byte(>filterInputBandpass)
 
 
 /* -------------------------------------------------------------------
@@ -460,7 +460,7 @@ filterInputArray:
 
 mainInputVol:
     createStructInput(INPUT_TYPE.INTEGER_4_BITS, 35, 22, 4, strInputNameMainVol, $0F, $00, sidUpdateFilterModesAndVolume,
-                      IID.MAIN_VOL, IID.FILTER_BANDWIDTH, IID.FILTER_CUTOFF, IID.V3_RING, IID.DETUNING_V3_NEG)
+                      IID.MAIN_VOL, IID.FILTER_BANDPASS, IID.FILTER_CUTOFF, IID.V3_RING, IID.DETUNING_V3_NEG)
 
 mainInputArray:
     .byte(<mainInputVol)
@@ -488,11 +488,11 @@ detuningInputVoice2:
 
 detuningInputDetuneDownVoice2:
     createStructInput(INPUT_TYPE.BOOLEAN, 21, 5, 5, strInputNameDetuningInputDetuneDownVoice, $00, $00, pitchUpdateDetuningInputVoice2,
-                      IID.DETUNING_V2_NEG, IID.DETUNING_V2, IID.DETUNING_V3, IID.FILTER_BANDWIDTH, IID.RESOSC_V3)
+                      IID.DETUNING_V2_NEG, IID.DETUNING_V2, IID.DETUNING_V3, IID.FILTER_BANDPASS, IID.RESOSC_V3)
 
 detuningInputVoice3:
     createStructInput(INPUT_TYPE.INTEGER_12_BITS, 27, 4, 6, strInputNameDetuningInputVoice3, $00, $00, pitchUpdateDetuningInputVoice3,
-                      IID.DETUNING_V3, IID.DETUNING_V2_NEG, IID.DETUNING_V3_NEG, IID.FILTER_BANDWIDTH, IID.VELOCITY_USE)
+                      IID.DETUNING_V3, IID.DETUNING_V2_NEG, IID.DETUNING_V3_NEG, IID.FILTER_BANDPASS, IID.VELOCITY_USE)
 
 detuningInputDetuneDownVoice3:
     createStructInput(INPUT_TYPE.BOOLEAN, 34, 5, 5, strInputNameDetuningInputDetuneDownVoice, $00, $00, pitchUpdateDetuningInputVoice3,

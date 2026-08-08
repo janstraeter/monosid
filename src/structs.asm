@@ -435,7 +435,7 @@
     .label FILTER_INPUT_VOICE_3                    = 44
     .label FILTER_INPUT_LOWPASS                    = 45
     .label FILTER_INPUT_HIGHPASS                   = 46
-    .label FILTER_INPUT_BANDWIDTH                  = 47
+    .label FILTER_INPUT_BANDPASS                  = 47
 
     // main volume
     .label MAIN_INPUT_VOL                          = 48

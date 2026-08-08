@@ -1262,7 +1262,7 @@ controlByte:
  * Updates the filter modes global variable
  *
  * Reads global variables: filterInputLowpass, 
- *                         filterInputHighpass, filterInputBandwidth
+ *                         filterInputHighpass, filterInputBandpass
  *
  * Writes global variables: sidCurrentFilterModesValue
  *
@@ -1293,24 +1293,24 @@ saveUseHighpassFilter:
 
 
     // -----------------------------------------
-    // Use bandwidth filter
+    // Use bandpass filter
     // -----------------------------------------
 
-    // load the current value of the use bandwidth filter input
-    loadPointerToZPR(filterInputBandwidth, ZPR_7)
+    // load the current value of the use bandpass filter input
+    loadPointerToZPR(filterInputBandpass, ZPR_7)
     structLoadByteToAccu(ZPR_7, STRUCT_INPUT.VALUE)
 
-    // check if the bandwidth filter sould be used
+    // check if the bandpass filter sould be used
     // if yes, set the sixth bit to 1, if no set the sixth bit to zero
     cmp #0
-    beq doNotUseBandwithFilter
+    beq doNotUseBandpassFilter
     lda #%00100000
-    jmp saveUseBandwithFilter
+    jmp saveUseBandpassFilter
 
-doNotUseBandwithFilter:
+doNotUseBandpassFilter:
     lda #0
 
-saveUseBandwithFilter:
+saveUseBandpassFilter:
     ora controlByte
     sta controlByte
 

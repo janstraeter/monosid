@@ -249,7 +249,7 @@ patchesTransferFromModulesToPatch:
     patchesTransferByteFromInputField(filterInputVoice3, STRUCT_PATCH.FILTER_INPUT_VOICE_3)                    
     patchesTransferByteFromInputField(filterInputLowpass, STRUCT_PATCH.FILTER_INPUT_LOWPASS)                    
     patchesTransferByteFromInputField(filterInputHighpass, STRUCT_PATCH.FILTER_INPUT_HIGHPASS)                   
-    patchesTransferByteFromInputField(filterInputBandwidth, STRUCT_PATCH.FILTER_INPUT_BANDWIDTH)                  
+    patchesTransferByteFromInputField(filterInputBandpass, STRUCT_PATCH.FILTER_INPUT_BANDPASS)                  
 
     // main volume
     patchesTransferByteFromInputField(mainInputVol, STRUCT_PATCH.MAIN_INPUT_VOL)                          
@@ -393,7 +393,7 @@ patchesTransferFromPatchToModules:
     patchesTransferByteToInputField(STRUCT_PATCH.FILTER_INPUT_VOICE_3, filterInputVoice3)                    
     patchesTransferByteToInputField(STRUCT_PATCH.FILTER_INPUT_LOWPASS, filterInputLowpass)                    
     patchesTransferByteToInputField(STRUCT_PATCH.FILTER_INPUT_HIGHPASS, filterInputHighpass)                   
-    patchesTransferByteToInputField(STRUCT_PATCH.FILTER_INPUT_BANDWIDTH, filterInputBandwidth)                  
+    patchesTransferByteToInputField(STRUCT_PATCH.FILTER_INPUT_BANDPASS, filterInputBandpass)                  
 
     // main volume
     patchesTransferByteToInputField(STRUCT_PATCH.MAIN_INPUT_VOL, mainInputVol)                          

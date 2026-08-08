@@ -15,7 +15,7 @@ Filter
 - Cutoff-Frequency (11 Bit)
 - Resonance (4 Bit)
 - Voice 1-3 (jeweils Boolean)
-- Low-Pass, High-Pass, Bandwidth (jeweils Boolean)
+- Low-Pass, High-Pass, Bandpass (jeweils Boolean)
 
 Main
 -----------------
