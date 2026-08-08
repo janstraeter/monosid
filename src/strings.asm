@@ -300,7 +300,7 @@ strSetMidiChannelInfo2:
 .encoding "screencode_mixed"
 
 strVersion:
-    .text "V1.0"
+    .text "V1.0.2"
     .byte(0)
 
 strMainMenuSavePatchesToDisk:
