@@ -1063,7 +1063,7 @@ cursorLeftKeyPressed:
 cursorKeyPressedFinalize:
     // save the IID from accu in variable
     sta iidOfNextSelectedInput
-    
+
     // save current page, module and input indecies
     lda currentPage
     sta previousPage
@@ -1303,6 +1303,9 @@ inputLoop:
     rts
 
 foundIID:
+    // save the address of the currently selected input element in ZPR_7 to the global variable
+    copyZPR(ZPR_7, currentSelectedInputAddress)
+
     // save the indecies of the current module and input and return
     lda page
     sta currentPage

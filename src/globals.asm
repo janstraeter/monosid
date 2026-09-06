@@ -62,6 +62,18 @@ currentPage:
 
 /* -------------------------------------------------------------------
  *
+ * Address of the currently selected input element
+ *
+ * Type: 16-bit integer
+ *
+ * ---------------------------------------------------------------- */ 
+
+currentSelectedInputAddress:
+    .word(0)
+
+
+/* -------------------------------------------------------------------
+ *
  * If set to one, the Kernal ISR emulation should be called in the main loop
  *
  * Type: Boolean

@@ -727,15 +727,16 @@ inputEditorUpdateCursorPosition:
  * Handles the keyboard input while the program is in main mode,
  * submode input editor
  * 
- * Parameters: ZPR_7: Address of the input struct
- *
- * Reads global variables:  none
+ * Reads global variables:  currentSelectedInputAddress
  * Writes global variables: none
  *
  * ---------------------------------------------------------------- */ 
 
 inputHandleKeyboardInputForEditor:
 {
+    // load the address of the currently selected input element into ZPR_7
+    copyZPR(currentSelectedInputAddress, ZPR_7)
+
     // Read pressed keycode, if no key pressed, exit
     jsr KERNAL.GETIN
     cmp #$00
