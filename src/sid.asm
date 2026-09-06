@@ -4,6 +4,39 @@
  * Subroutine
  * ----------
  *
+ * Clears the gate bit for all three voices
+ *
+ * Writes global variables:
+ * sidCurrentWaveFormControlRegisterVoice1, sidCurrentWaveFormControlRegisterVoice2,
+ * sidCurrentWaveFormControlRegisterVoice3, 
+ *
+ * ---------------------------------------------------------------- */ 
+
+sidClearGateBitsForAllVoices:
+{
+    lda sidCurrentWaveFormControlRegisterVoice1
+    and #%11111110
+    sta SID.VOICE_1_CONTROL_REGISTER
+    sta sidCurrentWaveFormControlRegisterVoice1
+
+    lda sidCurrentWaveFormControlRegisterVoice2
+    and #%11111110
+    sta SID.VOICE_2_CONTROL_REGISTER
+    sta sidCurrentWaveFormControlRegisterVoice2
+
+    lda sidCurrentWaveFormControlRegisterVoice3
+    and #%11111110
+    sta SID.VOICE_3_CONTROL_REGISTER
+    sta sidCurrentWaveFormControlRegisterVoice3
+
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
  * Updates the voice control registers of the SID chip.
  * Sets for each voice the the gate bit to 1 if a note is actually played
  * and the voice is active.
@@ -28,20 +61,7 @@ sidUpdateGateBitsForAllVoices:
     bne playNote
     
     // no note should be played, so set the gate bit for all voices to zero
-    lda sidCurrentWaveFormControlRegisterVoice1
-    and #%11111110
-    sta SID.VOICE_1_CONTROL_REGISTER
-    sta sidCurrentWaveFormControlRegisterVoice1
-
-    lda sidCurrentWaveFormControlRegisterVoice2
-    and #%11111110
-    sta SID.VOICE_2_CONTROL_REGISTER
-    sta sidCurrentWaveFormControlRegisterVoice2
-
-    lda sidCurrentWaveFormControlRegisterVoice3
-    and #%11111110
-    sta SID.VOICE_3_CONTROL_REGISTER
-    sta sidCurrentWaveFormControlRegisterVoice3
+    jsr sidClearGateBitsForAllVoices
 
     rts
 

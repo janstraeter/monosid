@@ -87,6 +87,20 @@ noteHasChangedFlag:
 
 /* -------------------------------------------------------------------
  *
+ * Is true if the MIDI processing routine detected that note buffer
+ * was empty at some point so the gate has to be reset no matter
+ * if the note to play is the same as the one before.
+ *
+ * Type: Boolean
+ *
+ * ---------------------------------------------------------------- */ 
+
+resetGateFlag:
+    .byte($00)
+
+
+/* -------------------------------------------------------------------
+ *
  * Current note to be played (index into the frequency-table)
  * 255 = no note
  *

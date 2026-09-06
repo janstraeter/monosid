@@ -916,12 +916,19 @@ noteOn:
     sec
     sbc #12
 
-    // load the velocity value
+    // load the velocity value and check if it is zero,
+    // because then it has to be interpreted as note-off
     ldy midiDataBufferSecondByte
+    beq noteOnZeroVelocity
 
-    // add the note to the buffer
+
+    // add the note to the buffer and exit
     jsr midiAddActiveNote
+    rts
 
+noteOnZeroVelocity:
+    // remove the note from the buffer and exit
+    jsr midiRemoveActiveNote
     rts
 
     // -----------------------------------------------------------
@@ -1010,17 +1017,27 @@ midiAddActiveNote:
 
     // check if buffer is empty
     ldx midiActiveNotesNum
-    cpx #0
     bne doNotUpdateCurrentNoteVolume
 
+    // --------------------------------------------------------------------------
     // buffer is empty, therefore the current MIDI note is the first pressed note
-    // update the current note volume according to the velocity value of the MIDI note
+    // --------------------------------------------------------------------------
+
+    // save the note value in the accu on the stack
     pha
+
+    // update the current note volume according to the velocity value of the MIDI note
     tya
     tax
     lda midiVelocityToVolumeTable, x
     sta currentNoteVolume
     ldx #0
+
+    // set the flag for resetting the gate
+    lda #1
+    sta resetGateFlag
+
+    // read back the note value into the accu
     pla
 
 doNotUpdateCurrentNoteVolume:

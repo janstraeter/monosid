@@ -217,12 +217,13 @@ doNotCallEmulationOfKernalISR:
     // instead. If so ignore the MIDI notes in this loop iteration
     lda currentNoteWasPlayedByKeyboardFlag
     bne ignoreMidiNote
-    
+     
     // update the current note according to the currently active MIDI notes
     jsr midiUpdateCurrentNote
 
 ignoreMidiNote:
     // Update the SID chip
+    jsr resetGateIfNecessary
     jsr updateVoiceFrequenciesIfNecessary
     jsr pulseWidthUpdateModulatedValuesIfNeccessary
     jsr filterUpdateModulatedCutoffValueIfNeccessary
@@ -768,6 +769,34 @@ updateFrequencies:
     jsr sidUpdateVoiceFrequencies
 
 frequenciesHaveNotChanged:
+    rts
+}
+
+
+/* -------------------------------------------------------------------
+ * Subroutine
+ * ----------
+ *
+ * Clears the gate bits of all voices if the flag is set
+ *
+ * Reads global variables:  resetGateFlag
+ * Writes global variables: resetGateFlag
+ *
+ * ---------------------------------------------------------------- */ 
+
+resetGateIfNecessary:
+{
+    lda resetGateFlag
+    beq exit
+
+    jsr sidClearGateBitsForAllVoices
+    lda #1
+    sta noteHasChangedFlag
+
+    lda #0
+    sta resetGateFlag
+
+exit:
     rts
 }
 
